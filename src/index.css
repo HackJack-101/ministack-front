@@ -1,0 +1,124 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "system-ui", "-apple-system", "sans-serif";
+  --font-mono: "DM Mono", "monospace";
+
+  --color-surface-base: var(--color-bg-base);
+  --color-surface-card: var(--color-bg-card);
+  --color-surface-elevated: var(--color-bg-elevated);
+  --color-surface-input: var(--color-bg-input);
+  --color-surface-hover: var(--color-bg-hover);
+  --color-surface-active: var(--color-bg-active);
+  --color-surface-skeleton: var(--color-bg-skeleton);
+
+  --color-border-subtle: var(--color-border-subtle);
+  --color-border-default: var(--color-border-default);
+  --color-border-strong: var(--color-border-strong);
+  --color-border-focus: var(--color-border-focus);
+
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-muted: var(--color-text-muted);
+  --color-text-faint: var(--color-text-faint);
+
+  --radius-btn: 6px;
+  --radius-card: 8px;
+  --radius-hero: 10px;
+}
+
+@layer base {
+  :root {
+    /* Light mode (default) */
+
+    /* Surfaces */
+    --color-bg-base: #ffffff;
+    --color-bg-card: #f9f9f9;
+    --color-bg-elevated: #f3f3f3;
+    --color-bg-input: rgba(0, 0, 0, 0.03);
+    --color-bg-hover: rgba(0, 0, 0, 0.04);
+    --color-bg-active: rgba(0, 0, 0, 0.07);
+    --color-bg-skeleton: #e8e8e8;
+
+    /* Borders */
+    --color-border-subtle: rgba(0, 0, 0, 0.06);
+    --color-border-default: rgba(0, 0, 0, 0.10);
+    --color-border-strong: rgba(0, 0, 0, 0.22);
+    --color-border-focus: rgba(59, 130, 246, 0.6);
+
+    /* Text */
+    --color-text-primary: #0a0a0a;
+    --color-text-secondary: #555555;
+    --color-text-muted: #888888;
+    --color-text-faint: #bbbbbb;
+
+    /* Feedback */
+    --color-success: #10b981;
+    --color-error: #ef4444;
+    --color-warning: #f59e0b;
+    --color-info: #3b82f6;
+
+    color-scheme: light;
+  }
+
+  .dark {
+    /* Dark mode */
+
+    /* Surfaces */
+    --color-bg-base: #07080a;
+    --color-bg-card: #0d0e12;
+    --color-bg-elevated: #13151b;
+    --color-bg-input: rgba(255, 255, 255, 0.03);
+    --color-bg-hover: rgba(255, 255, 255, 0.03);
+    --color-bg-active: rgba(255, 255, 255, 0.06);
+    --color-bg-skeleton: #1e2029;
+
+    /* Borders */
+    --color-border-subtle: rgba(255, 255, 255, 0.05);
+    --color-border-default: rgba(255, 255, 255, 0.08);
+    --color-border-strong: rgba(255, 255, 255, 0.15);
+    --color-border-focus: rgba(59, 130, 246, 0.5);
+
+    /* Text */
+    --color-text-primary: rgba(255, 255, 255, 0.92);
+    --color-text-secondary: rgba(255, 255, 255, 0.55);
+    --color-text-muted: rgba(255, 255, 255, 0.28);
+    --color-text-faint: rgba(255, 255, 255, 0.15);
+
+    color-scheme: dark;
+  }
+}
+
+:root {
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-base);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+#root {
+  width: 100%;
+}
+
+a,
+a:visited {
+  color: inherit;
+  text-decoration: none;
+}
