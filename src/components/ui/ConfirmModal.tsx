@@ -42,9 +42,7 @@ export const ConfirmModal = ({
       >
         <div className="flex items-start gap-3 mb-4">
           <div className={`p-2 rounded shrink-0 ${confirmVariant === "danger" ? "bg-red-500/10" : "bg-yellow-500/10"}`}>
-            <AlertTriangle
-              className={`w-4 h-4 ${confirmVariant === "danger" ? "text-red-500" : "text-yellow-500"}`}
-            />
+            <AlertTriangle className={`w-4 h-4 ${confirmVariant === "danger" ? "text-red-500" : "text-yellow-500"}`} />
           </div>
           <div>
             <h3 className="text-sm font-semibold text-text-primary">{title}</h3>

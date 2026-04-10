@@ -10,7 +10,7 @@ interface ThemeContextValue {
   resolvedTheme: ResolvedTheme;
 }
 
-export const ThemeContext = createContext<ThemeContextValue | null>(null);
+const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 function getResolved(t: Theme): ResolvedTheme {
   if (t === "system") {
@@ -20,10 +20,14 @@ function getResolved(t: Theme): ResolvedTheme {
 }
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [theme, setThemeState] = useState<Theme>(
-    () => (localStorage.getItem("ministack-theme") as Theme) || "dark",
-  );
+  const [theme, setThemeState] = useState<Theme>(() => (localStorage.getItem("ministack-theme") as Theme) || "dark");
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() => getResolved(theme));
+  const [prevTheme, setPrevTheme] = useState(theme);
+
+  if (theme !== prevTheme) {
+    setPrevTheme(theme);
+    setResolvedTheme(getResolved(theme));
+  }
 
   const setTheme = (t: Theme) => {
     setThemeState(t);
@@ -31,20 +35,16 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    const resolved = getResolved(theme);
-    setResolvedTheme(resolved);
-
     const root = document.documentElement;
     root.classList.remove("light", "dark");
-    root.classList.add(resolved);
+    root.classList.add(resolvedTheme);
+  }, [resolvedTheme]);
 
+  useEffect(() => {
     if (theme === "system") {
       const mq = window.matchMedia("(prefers-color-scheme: dark)");
       const handler = (e: MediaQueryListEvent) => {
-        const next: ResolvedTheme = e.matches ? "dark" : "light";
-        setResolvedTheme(next);
-        root.classList.remove("light", "dark");
-        root.classList.add(next);
+        setResolvedTheme(e.matches ? "dark" : "light");
       };
       mq.addEventListener("change", handler);
       return () => mq.removeEventListener("change", handler);
@@ -54,6 +54,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   return <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme }}>{children}</ThemeContext.Provider>;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTheme = () => {
   const ctx = useContext(ThemeContext);
   if (!ctx) throw new Error("useTheme must be used within ThemeProvider");

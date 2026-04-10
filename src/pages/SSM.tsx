@@ -39,9 +39,7 @@ export const SSM = () => {
     });
   };
 
-  const filteredParams = ssm.parameters.filter((p) =>
-    p.Name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredParams = ssm.parameters.filter((p) => p.Name?.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <div className="space-y-5">
@@ -50,12 +48,7 @@ export const SSM = () => {
         subtitle="Manage hierarchical configuration data and secrets"
         actions={
           <>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={ssm.fetchParameters}
-              title="Refresh"
-            >
+            <Button variant="ghost" size="sm" onClick={ssm.fetchParameters} title="Refresh">
               <RefreshCw className={`w-4 h-4 ${ssm.loading ? "animate-spin" : ""}`} />
             </Button>
             <Button
@@ -109,7 +102,8 @@ export const SSM = () => {
             {
               key: "modified",
               header: "Last Modified",
-              render: (p: ParameterMetadata) => p.LastModifiedDate ? new Date(p.LastModifiedDate).toLocaleString() : "-",
+              render: (p: ParameterMetadata) =>
+                p.LastModifiedDate ? new Date(p.LastModifiedDate).toLocaleString() : "-",
             },
             {
               key: "actions",

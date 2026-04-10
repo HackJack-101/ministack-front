@@ -63,9 +63,7 @@ export const BucketList = ({ buckets, loading, onSelect, onDelete, onSettings, o
                     <span className="text-sm font-medium text-text-primary">{bucket.Name}</span>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-sm text-text-muted">
-                  {bucket.CreationDate?.toLocaleDateString()}
-                </td>
+                <td className="px-4 py-3 text-sm text-text-muted">{bucket.CreationDate?.toLocaleDateString()}</td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex justify-end gap-1">
                     <button

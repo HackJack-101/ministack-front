@@ -20,7 +20,29 @@ export const S3 = () => {
   const { confirm, ConfirmModalComponent } = useConfirmModal();
   const [activeTab, setActiveTab] = useState<"objects" | "settings">("objects");
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadPath, setUploadPath] = useState("");
+  const [prevObjectPath, setPrevObjectPath] = useState(objectPath);
+  const [uploadPath, setUploadPath] = useState(() => {
+    if (!objectPath) return "";
+    if (objectPath.endsWith("/")) return objectPath;
+    const parts = objectPath.split("/");
+    return parts.length > 1 ? parts.slice(0, -1).join("/") + "/" : "";
+  });
+
+  if (objectPath !== prevObjectPath) {
+    setPrevObjectPath(objectPath);
+    if (!objectPath) {
+      setUploadPath("");
+    } else if (objectPath.endsWith("/")) {
+      setUploadPath(objectPath);
+    } else {
+      const parts = objectPath.split("/");
+      if (parts.length > 1) {
+        setUploadPath(parts.slice(0, -1).join("/") + "/");
+      } else {
+        setUploadPath("");
+      }
+    }
+  }
 
   const selectedObject = objectPath ? s3.objects.find((obj) => obj.Key === objectPath) : null;
   const isBrowsing = !selectedObject || (s3.objects.length > 1 && objectPath?.endsWith("/"));
@@ -30,27 +52,10 @@ export const S3 = () => {
     if (bucketName) {
       s3.setSelectedBucket(bucketName);
       s3.fetchObjects(bucketName, objectPath);
-
-      // Auto-set upload path to current directory if it's a folder or root
-      if (objectPath) {
-        if (objectPath.endsWith("/")) {
-          setUploadPath(objectPath);
-        } else {
-          // If viewing a file, set upload path to the file's parent directory
-          const parts = objectPath.split("/");
-          if (parts.length > 1) {
-            setUploadPath(parts.slice(0, -1).join("/") + "/");
-          } else {
-            setUploadPath("");
-          }
-        }
-      } else {
-        setUploadPath("");
-      }
     } else {
       s3.setSelectedBucket(null);
     }
-  }, [bucketName, objectPath, s3.setSelectedBucket, s3.fetchObjects]);
+  }, [bucketName, objectPath, s3]);
 
   const handleDeleteBucket = (e: React.MouseEvent, name: string) => {
     e.stopPropagation();
@@ -169,8 +174,7 @@ export const S3 = () => {
               <div className="flex items-center gap-1.5">
                 {objectPath.split("/").map((segment, index, array) => {
                   if (segment === "" && index === array.length - 1) return null;
-                  const isLast =
-                    index === array.length - 1 || (index === array.length - 2 && array[index + 1] === "");
+                  const isLast = index === array.length - 1 || (index === array.length - 2 && array[index + 1] === "");
                   const path = array.slice(0, index + 1).join("/") + (isLast ? "" : "/");
 
                   return (

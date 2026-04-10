@@ -144,7 +144,10 @@ export const useDashboard = (): DashboardCounts => {
         ecs: results[14].status === "fulfilled" ? (results[14].value.clusterArns?.length ?? 0) : 0,
         rds: results[15].status === "fulfilled" ? (results[15].value.DBInstances?.length ?? 0) : 0,
         cognito: results[16].status === "fulfilled" ? (results[16].value.UserPools?.length ?? 0) : 0,
-        ec2: results[17].status === "fulfilled" ? (results[17].value.Reservations?.reduce((acc, r) => acc + (r.Instances?.length ?? 0), 0) ?? 0) : 0,
+        ec2:
+          results[17].status === "fulfilled"
+            ? (results[17].value.Reservations?.reduce((acc, r) => acc + (r.Instances?.length ?? 0), 0) ?? 0)
+            : 0,
         acm: results[18].status === "fulfilled" ? (results[18].value.CertificateSummaryList?.length ?? 0) : 0,
         wafv2: results[19].status === "fulfilled" ? (results[19].value.WebACLs?.length ?? 0) : 0,
         kinesis: results[20].status === "fulfilled" ? (results[20].value.StreamNames?.length ?? 0) : 0,

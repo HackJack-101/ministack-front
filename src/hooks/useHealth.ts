@@ -46,7 +46,7 @@ export const useHealth = () => {
             });
             return;
           }
-        } catch (_jsonErr) {
+        } catch {
           // Response body is not JSON or doesn't have a version
         }
         setHealth((prev) => ({ ...prev, status: "error", loading: false }));
@@ -58,6 +58,7 @@ export const useHealth = () => {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchHealth();
     // Refresh every 30 seconds
     const interval = setInterval(fetchHealth, 30000);
@@ -69,6 +70,6 @@ export const useHealth = () => {
       ...health,
       refresh: fetchHealth,
     }),
-    [health, fetchHealth]
+    [health, fetchHealth],
   );
 };

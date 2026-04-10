@@ -19,7 +19,7 @@ const DEFAULT_POLICY_DOCUMENT = JSON.stringify(
     ],
   },
   null,
-  2
+  2,
 );
 
 export const IAMCreatePolicy = () => {
@@ -58,10 +58,7 @@ export const IAMCreatePolicy = () => {
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <PageHeader 
-          title="Create IAM Policy" 
-          subtitle="Define permissions using JSON policy documents" 
-        />
+        <PageHeader title="Create IAM Policy" subtitle="Define permissions using JSON policy documents" />
       </div>
 
       <div className="bg-surface-card border border-border-default rounded-card shadow-sm overflow-hidden flex flex-col">
@@ -90,7 +87,7 @@ export const IAMCreatePolicy = () => {
                 JSON Editor
               </div>
             </div>
-            
+
             <TextArea
               label=""
               value={policyDocument}
@@ -101,31 +98,22 @@ export const IAMCreatePolicy = () => {
               accentColor="purple"
               className="font-mono text-xs"
             />
-            
+
             <div className="flex items-start gap-3 p-4 bg-purple-500/5 border border-purple-500/10 rounded-xl">
               <Shield className="w-4 h-4 text-purple-500 shrink-0 mt-0.5" />
               <p className="text-xs text-text-secondary leading-relaxed">
-                Policies define permissions for an action regardless of the method that you use to perform the operation. 
-                AWS provides managed policies for common use cases.
+                Policies define permissions for an action regardless of the method that you use to perform the
+                operation. AWS provides managed policies for common use cases.
               </p>
             </div>
           </section>
         </div>
 
         <div className="p-6 border-t border-border-subtle bg-surface-elevated/30 flex justify-end gap-3">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate("/iam")}
-            disabled={loading}
-          >
+          <Button variant="ghost" onClick={() => navigate("/iam")} disabled={loading}>
             Cancel
           </Button>
-          <Button 
-            variant="purple" 
-            onClick={handleCreate} 
-            isLoading={loading}
-            disabled={!policyName || !policyDocument}
-          >
+          <Button variant="purple" onClick={handleCreate} isLoading={loading} disabled={!policyName || !policyDocument}>
             Create Policy
           </Button>
         </div>

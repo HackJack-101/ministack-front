@@ -1,8 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import {
-  DescribeDBInstancesCommand,
-  DeleteDBInstanceCommand,
-} from "@aws-sdk/client-rds";
+import { DescribeDBInstancesCommand, DeleteDBInstanceCommand } from "@aws-sdk/client-rds";
 import type { DBInstance } from "@aws-sdk/client-rds";
 import { rdsClient } from "../services/awsClients";
 import { useToast } from "./useToast";
@@ -25,19 +22,24 @@ export const useRDS = () => {
     }
   }, [toast]);
 
-  const deleteInstance = useCallback(async (instanceId: string) => {
-    try {
-      await rdsClient.send(new DeleteDBInstanceCommand({ 
-        DBInstanceIdentifier: instanceId,
-        SkipFinalSnapshot: true,
-      }));
-      toast.success(`DB Instance ${instanceId} deletion initiated`);
-      fetchInstances();
-    } catch (err) {
-      console.error("Failed to delete DB instance", err);
-      toast.error("Failed to delete DB instance");
-    }
-  }, [toast, fetchInstances]);
+  const deleteInstance = useCallback(
+    async (instanceId: string) => {
+      try {
+        await rdsClient.send(
+          new DeleteDBInstanceCommand({
+            DBInstanceIdentifier: instanceId,
+            SkipFinalSnapshot: true,
+          }),
+        );
+        toast.success(`DB Instance ${instanceId} deletion initiated`);
+        fetchInstances();
+      } catch (err) {
+        console.error("Failed to delete DB instance", err);
+        toast.error("Failed to delete DB instance");
+      }
+    },
+    [toast, fetchInstances],
+  );
 
   useEffect(() => {
     fetchInstances();
@@ -50,6 +52,6 @@ export const useRDS = () => {
       refresh: fetchInstances,
       deleteInstance,
     }),
-    [instances, loading, fetchInstances, deleteInstance]
+    [instances, loading, fetchInstances, deleteInstance],
   );
 };

@@ -5,7 +5,7 @@ import { MINISTACK_ENDPOINT } from "../../services/awsClients";
 
 export const TopBar = () => {
   const { version, status, edition } = useHealth();
-  
+
   // Clean up endpoint for display (remove protocol and trailing slashes)
   const displayEndpoint = MINISTACK_ENDPOINT.replace(/^https?:\/\//, "").replace(/\/+$/, "");
 
@@ -44,9 +44,7 @@ export const TopBar = () => {
 
           {version && (
             <div className="flex items-center gap-2 border-l border-border-subtle pl-4">
-              <span className="text-[10px] uppercase tracking-wider text-text-muted font-bold">
-                v{version}
-              </span>
+              <span className="text-[10px] uppercase tracking-wider text-text-muted font-bold">v{version}</span>
               {edition && (
                 <span className="text-[9px] px-1 py-0.5 rounded bg-surface-elevated text-text-muted uppercase font-bold border border-border-subtle">
                   {edition}

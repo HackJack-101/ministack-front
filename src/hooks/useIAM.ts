@@ -77,7 +77,7 @@ export const useIAM = () => {
         new CreateRoleCommand({
           RoleName: roleName,
           AssumeRolePolicyDocument: assumeRolePolicyDocument,
-        })
+        }),
       );
       toast.success(`Role "${roleName}" created successfully`);
       await fetchData();
@@ -93,7 +93,7 @@ export const useIAM = () => {
         new CreatePolicyCommand({
           PolicyName: policyName,
           PolicyDocument: policyDocument,
-        })
+        }),
       );
       toast.success(`Policy "${policyName}" created successfully`);
       await fetchData();

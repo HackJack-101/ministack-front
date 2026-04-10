@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   ListTablesCommand,
   CreateTableCommand,
@@ -80,67 +80,94 @@ export const useDynamoDB = () => {
     fetchTables();
   }, [fetchTables]);
 
-  const createTable = async (form: NewTableForm) => {
-    const attributeDefinitions = [{ AttributeName: form.partitionKey, AttributeType: form.partitionKeyType }];
-    const keySchema: { AttributeName: string; KeyType: "HASH" | "RANGE" }[] = [
-      { AttributeName: form.partitionKey, KeyType: "HASH" },
-    ];
-    if (form.sortKey) {
-      attributeDefinitions.push({ AttributeName: form.sortKey, AttributeType: form.sortKeyType });
-      keySchema.push({ AttributeName: form.sortKey, KeyType: "RANGE" });
-    }
-    await ddbDocClient.send(
-      new CreateTableCommand({
-        TableName: form.name,
-        AttributeDefinitions: attributeDefinitions,
-        KeySchema: keySchema,
-        ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 },
-      }),
-    );
-    toast.success(`Table "${form.name}" created successfully.`);
-    fetchTables();
-  };
-
-  const deleteTable = async (tableName: string) => {
-    try {
-      await ddbDocClient.send(new DeleteTableCommand({ TableName: tableName }));
-      if (selectedTable?.TableName === tableName) setSelectedTable(null);
+  const createTable = useCallback(
+    async (form: NewTableForm) => {
+      const attributeDefinitions = [{ AttributeName: form.partitionKey, AttributeType: form.partitionKeyType }];
+      const keySchema: { AttributeName: string; KeyType: "HASH" | "RANGE" }[] = [
+        { AttributeName: form.partitionKey, KeyType: "HASH" },
+      ];
+      if (form.sortKey) {
+        attributeDefinitions.push({ AttributeName: form.sortKey, AttributeType: form.sortKeyType });
+        keySchema.push({ AttributeName: form.sortKey, KeyType: "RANGE" });
+      }
+      await ddbDocClient.send(
+        new CreateTableCommand({
+          TableName: form.name,
+          AttributeDefinitions: attributeDefinitions,
+          KeySchema: keySchema,
+          ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 },
+        }),
+      );
+      toast.success(`Table "${form.name}" created successfully.`);
       fetchTables();
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete table");
-    }
-  };
+    },
+    [fetchTables, toast],
+  );
 
-  const addItem = async (tableName: string, json: string) => {
-    const item = JSON.parse(json);
-    await ddbDocClient.send(new PutCommand({ TableName: tableName, Item: item }));
-    toast.success("Item added successfully");
-    fetchTableDetails(tableName);
-  };
+  const deleteTable = useCallback(
+    async (tableName: string) => {
+      try {
+        await ddbDocClient.send(new DeleteTableCommand({ TableName: tableName }));
+        if (selectedTable?.TableName === tableName) setSelectedTable(null);
+        fetchTables();
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : "Failed to delete table");
+      }
+    },
+    [fetchTables, selectedTable, toast],
+  );
 
-  const deleteItem = async (table: TableInfo, item: Record<string, unknown>) => {
-    const key: Record<string, unknown> = { [table.PartitionKey]: item[table.PartitionKey] };
-    if (table.SortKey) key[table.SortKey] = item[table.SortKey];
-    try {
-      await ddbDocClient.send(new DeleteCommand({ TableName: table.TableName, Key: key }));
-      fetchTableDetails(table.TableName);
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete item");
-    }
-  };
+  const addItem = useCallback(
+    async (tableName: string, json: string) => {
+      const item = JSON.parse(json);
+      await ddbDocClient.send(new PutCommand({ TableName: tableName, Item: item }));
+      toast.success("Item added successfully");
+      fetchTableDetails(tableName);
+    },
+    [fetchTableDetails, toast],
+  );
 
-  return {
-    tables,
-    selectedTable,
-    setSelectedTable,
-    items,
-    loading,
-    itemsLoading,
-    fetchTables,
-    fetchTableDetails,
-    createTable,
-    deleteTable,
-    addItem,
-    deleteItem,
-  };
+  const deleteItem = useCallback(
+    async (table: TableInfo, item: Record<string, unknown>) => {
+      const key: Record<string, unknown> = { [table.PartitionKey]: item[table.PartitionKey] };
+      if (table.SortKey) key[table.SortKey] = item[table.SortKey];
+      try {
+        await ddbDocClient.send(new DeleteCommand({ TableName: table.TableName, Key: key }));
+        fetchTableDetails(table.TableName);
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : "Failed to delete item");
+      }
+    },
+    [fetchTableDetails, toast],
+  );
+
+  return useMemo(
+    () => ({
+      tables,
+      selectedTable,
+      setSelectedTable,
+      items,
+      loading,
+      itemsLoading,
+      fetchTables,
+      fetchTableDetails,
+      createTable,
+      deleteTable,
+      addItem,
+      deleteItem,
+    }),
+    [
+      tables,
+      selectedTable,
+      items,
+      loading,
+      itemsLoading,
+      fetchTables,
+      fetchTableDetails,
+      createTable,
+      deleteTable,
+      addItem,
+      deleteItem,
+    ],
+  );
 };

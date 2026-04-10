@@ -12,5 +12,5 @@ export const pluralize = (count: number, singular: string, plural?: string) => {
  */
 export const pluralizeWord = (count: number, singular: string, plural?: string) => {
   const isPlural = count > 1;
-  return isPlural ? (plural || `${singular}s`) : singular;
+  return isPlural ? plural || `${singular}s` : singular;
 };

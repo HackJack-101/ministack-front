@@ -10,13 +10,7 @@ interface ModalProps {
   maxWidth?: string;
 }
 
-export const Modal = ({
-  open,
-  onClose,
-  title,
-  children,
-  maxWidth = "max-w-md",
-}: ModalProps) => {
+export const Modal = ({ open, onClose, title, children, maxWidth = "max-w-md" }: ModalProps) => {
   useEffect(() => {
     if (!open) return;
     const handleKey = (e: KeyboardEvent) => {
@@ -46,9 +40,7 @@ export const Modal = ({
             <X className="w-4 h-4" />
           </button>
         </div>
-        <div className="p-6 overflow-y-auto max-h-[85vh]">
-          {children}
-        </div>
+        <div className="p-6 overflow-y-auto max-h-[85vh]">{children}</div>
       </div>
     </div>
   );

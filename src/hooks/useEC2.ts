@@ -28,38 +28,47 @@ export const useEC2 = () => {
     }
   }, [toast]);
 
-  const terminateInstance = useCallback(async (instanceId: string) => {
-    try {
-      await ec2Client.send(new TerminateInstancesCommand({ InstanceIds: [instanceId] }));
-      toast.success(`Instance ${instanceId} termination initiated`);
-      fetchInstances();
-    } catch (err) {
-      console.error("Failed to terminate instance", err);
-      toast.error("Failed to terminate instance");
-    }
-  }, [toast, fetchInstances]);
+  const terminateInstance = useCallback(
+    async (instanceId: string) => {
+      try {
+        await ec2Client.send(new TerminateInstancesCommand({ InstanceIds: [instanceId] }));
+        toast.success(`Instance ${instanceId} termination initiated`);
+        fetchInstances();
+      } catch (err) {
+        console.error("Failed to terminate instance", err);
+        toast.error("Failed to terminate instance");
+      }
+    },
+    [toast, fetchInstances],
+  );
 
-  const startInstance = useCallback(async (instanceId: string) => {
-    try {
-      await ec2Client.send(new StartInstancesCommand({ InstanceIds: [instanceId] }));
-      toast.success(`Instance ${instanceId} starting`);
-      fetchInstances();
-    } catch (err) {
-      console.error("Failed to start instance", err);
-      toast.error("Failed to start instance");
-    }
-  }, [toast, fetchInstances]);
+  const startInstance = useCallback(
+    async (instanceId: string) => {
+      try {
+        await ec2Client.send(new StartInstancesCommand({ InstanceIds: [instanceId] }));
+        toast.success(`Instance ${instanceId} starting`);
+        fetchInstances();
+      } catch (err) {
+        console.error("Failed to start instance", err);
+        toast.error("Failed to start instance");
+      }
+    },
+    [toast, fetchInstances],
+  );
 
-  const stopInstance = useCallback(async (instanceId: string) => {
-    try {
-      await ec2Client.send(new StopInstancesCommand({ InstanceIds: [instanceId] }));
-      toast.success(`Instance ${instanceId} stopping`);
-      fetchInstances();
-    } catch (err) {
-      console.error("Failed to stop instance", err);
-      toast.error("Failed to stop instance");
-    }
-  }, [toast, fetchInstances]);
+  const stopInstance = useCallback(
+    async (instanceId: string) => {
+      try {
+        await ec2Client.send(new StopInstancesCommand({ InstanceIds: [instanceId] }));
+        toast.success(`Instance ${instanceId} stopping`);
+        fetchInstances();
+      } catch (err) {
+        console.error("Failed to stop instance", err);
+        toast.error("Failed to stop instance");
+      }
+    },
+    [toast, fetchInstances],
+  );
 
   useEffect(() => {
     fetchInstances();
@@ -74,6 +83,6 @@ export const useEC2 = () => {
       startInstance,
       stopInstance,
     }),
-    [instances, loading, fetchInstances, terminateInstance, startInstance, stopInstance]
+    [instances, loading, fetchInstances, terminateInstance, startInstance, stopInstance],
   );
 };

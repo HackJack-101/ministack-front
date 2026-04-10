@@ -80,10 +80,7 @@ export const SQSCreateQueue = () => {
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <PageHeader 
-          title="Create SQS Queue" 
-          subtitle="Configure a new message queue with advanced settings" 
-        />
+        <PageHeader title="Create SQS Queue" subtitle="Configure a new message queue with advanced settings" />
       </div>
 
       <div className="bg-surface-card border border-border-default rounded-card shadow-sm overflow-hidden flex flex-col">
@@ -109,7 +106,7 @@ export const SQSCreateQueue = () => {
                 <Settings className="w-4 h-4 text-orange-500" />
                 <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Configuration</h3>
               </div>
-              
+
               <div className="space-y-6 bg-surface-elevated p-6 rounded-xl border border-border-subtle">
                 <div className="flex items-start gap-3">
                   <div className="pt-0.5">
@@ -123,7 +120,9 @@ export const SQSCreateQueue = () => {
                   </div>
                   <label htmlFor="fifo-toggle" className="flex flex-col cursor-pointer">
                     <span className="text-sm text-text-primary font-medium">FIFO Queue</span>
-                    <span className="text-[11px] text-text-muted mt-0.5">Ensure first-in-first-out delivery and exactly-once processing.</span>
+                    <span className="text-[11px] text-text-muted mt-0.5">
+                      Ensure first-in-first-out delivery and exactly-once processing.
+                    </span>
                   </label>
                 </div>
 
@@ -161,7 +160,9 @@ export const SQSCreateQueue = () => {
             <section className="space-y-4">
               <div className="flex items-center gap-2">
                 <Shield className="w-4 h-4 text-orange-500" />
-                <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Dead-Letter Queue</h3>
+                <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                  Dead-Letter Queue
+                </h3>
               </div>
               <div className="bg-surface-elevated p-6 rounded-xl border border-border-subtle space-y-6">
                 <div className="flex items-start gap-3">
@@ -176,7 +177,9 @@ export const SQSCreateQueue = () => {
                   </div>
                   <label htmlFor="dlq-toggle" className="flex flex-col cursor-pointer">
                     <span className="text-sm text-text-primary font-medium">Enable Redrive Policy</span>
-                    <span className="text-[11px] text-text-muted mt-0.5">Send undeliverable messages to a dead-letter queue.</span>
+                    <span className="text-[11px] text-text-muted mt-0.5">
+                      Send undeliverable messages to a dead-letter queue.
+                    </span>
                   </label>
                 </div>
 
@@ -211,11 +214,12 @@ export const SQSCreateQueue = () => {
                     />
                   </div>
                 )}
-                
+
                 <div className="flex items-start gap-2 text-text-faint p-3 bg-surface-card rounded-lg border border-border-subtle/50">
                   <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                   <p className="text-[10px] leading-relaxed">
-                    A dead-letter queue is where messages are sent if they cannot be processed successfully after a certain number of attempts.
+                    A dead-letter queue is where messages are sent if they cannot be processed successfully after a
+                    certain number of attempts.
                   </p>
                 </div>
               </div>
@@ -224,16 +228,12 @@ export const SQSCreateQueue = () => {
         </div>
 
         <div className="p-6 border-t border-border-subtle bg-surface-elevated/30 flex justify-end gap-3">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate("/sqs")}
-            disabled={loading}
-          >
+          <Button variant="ghost" onClick={() => navigate("/sqs")} disabled={loading}>
             Cancel
           </Button>
-          <Button 
-            variant="warning" 
-            onClick={handleCreate} 
+          <Button
+            variant="warning"
+            onClick={handleCreate}
             isLoading={loading}
             disabled={!name}
             leftIcon={<Zap className="w-3.5 h-3.5" />}

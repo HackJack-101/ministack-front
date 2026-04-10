@@ -1,16 +1,16 @@
 import { useState, useEffect } from "react";
-import { 
-  Shield, 
-  Lock, 
-  FileJson, 
-  RefreshCw, 
-  Trash2, 
+import {
+  Shield,
+  Lock,
+  FileJson,
+  RefreshCw,
+  Trash2,
   Plus,
   Activity,
   Bell,
   Layers,
   Repeat,
-  Tag as TagIcon
+  Tag as TagIcon,
 } from "lucide-react";
 import { Button } from "../ui/Button";
 import { Spinner } from "../ui/Spinner";
@@ -43,18 +43,10 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
   const [objectLock, setObjectLock] = useState<any>(null);
   const [tags, setTags] = useState<{ Key: string; Value: string }[]>([]);
 
-  useEffect(() => {
-    if (bucketName) {
-      loadSettings();
-    }
-  }, [bucketName]);
-
-  const loadSettings = async () => {
+  const loadSettings = useCallback(async () => {
     setLoading(true);
     try {
-      const [
-        v, enc, pol, c, l, log, n, r, ol, t
-      ] = await Promise.all([
+      const [v, enc, pol, c, l, log, n, r, ol, t] = await Promise.all([
         s3.getBucketVersioning(bucketName),
         s3.getBucketEncryption(bucketName),
         s3.getBucketPolicy(bucketName),
@@ -64,7 +56,7 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
         s3.getBucketNotification(bucketName),
         s3.getBucketReplication(bucketName),
         s3.getObjectLockConfiguration(bucketName),
-        s3.getBucketTagging(bucketName)
+        s3.getBucketTagging(bucketName),
       ]);
 
       setVersioning(v as any);
@@ -76,13 +68,20 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
       setNotifications(n);
       setReplication(r);
       setObjectLock(ol);
-      setTags((t || []).map(tag => ({ Key: tag.Key || "", Value: tag.Value || "" })));
+      setTags((t || []).map((tag) => ({ Key: tag.Key || "", Value: tag.Value || "" })));
     } catch (err) {
       console.error("Failed to load bucket settings", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [bucketName, s3]);
+
+  useEffect(() => {
+    if (bucketName) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      loadSettings();
+    }
+  }, [bucketName, loadSettings]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -102,7 +101,7 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
         } else {
           await s3.deleteBucketPolicy(bucketName);
         }
-        
+
         if (cors.trim() && cors !== "[]") {
           await s3.putBucketCors(bucketName, JSON.parse(cors));
         } else {
@@ -138,42 +137,37 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
       <div className="flex-1 flex overflow-hidden">
         {/* Tabs Sidebar */}
         <div className="w-48 border-r border-border-subtle bg-surface-elevated/50 p-3 space-y-1">
-          <TabButton 
-            active={activeTab === "general"} 
-            onClick={() => setActiveTab("general")} 
-            icon={Shield} 
-            label="General" 
+          <TabButton
+            active={activeTab === "general"}
+            onClick={() => setActiveTab("general")}
+            icon={Shield}
+            label="General"
           />
-          <TabButton 
-            active={activeTab === "permissions"} 
-            onClick={() => setActiveTab("permissions")} 
-            icon={Lock} 
-            label="Permissions" 
+          <TabButton
+            active={activeTab === "permissions"}
+            onClick={() => setActiveTab("permissions")}
+            icon={Lock}
+            label="Permissions"
           />
-          <TabButton 
-            active={activeTab === "management"} 
-            onClick={() => setActiveTab("management")} 
-            icon={Layers} 
-            label="Management" 
+          <TabButton
+            active={activeTab === "management"}
+            onClick={() => setActiveTab("management")}
+            icon={Layers}
+            label="Management"
           />
-          <TabButton 
-            active={activeTab === "notifications"} 
-            onClick={() => setActiveTab("notifications")} 
-            icon={Bell} 
-            label="Notifications" 
+          <TabButton
+            active={activeTab === "notifications"}
+            onClick={() => setActiveTab("notifications")}
+            icon={Bell}
+            label="Notifications"
           />
-          <TabButton 
-            active={activeTab === "logging"} 
-            onClick={() => setActiveTab("logging")} 
-            icon={Activity} 
-            label="Logging" 
+          <TabButton
+            active={activeTab === "logging"}
+            onClick={() => setActiveTab("logging")}
+            icon={Activity}
+            label="Logging"
           />
-          <TabButton 
-            active={activeTab === "tags"} 
-            onClick={() => setActiveTab("tags")} 
-            icon={TagIcon} 
-            label="Tags" 
-          />
+          <TabButton active={activeTab === "tags"} onClick={() => setActiveTab("tags")} icon={TagIcon} label="Tags" />
         </div>
 
         {/* Tab Content */}
@@ -189,7 +183,7 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
                   <section className="space-y-4">
                     <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Versioning</h3>
                     <div className="flex items-center gap-4 bg-surface-elevated p-4 rounded-xl border border-border-subtle">
-                      <select 
+                      <select
                         value={versioning}
                         onChange={(e) => setVersioning(e.target.value as any)}
                         className="bg-surface-input border border-border-default rounded px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:border-blue-500/60 transition-colors"
@@ -198,9 +192,7 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
                         <option value="Enabled">Enabled</option>
                         <option value="Suspended">Suspended</option>
                       </select>
-                      <p className="text-xs text-text-muted">
-                        Keep multiple variants of an object in the same bucket.
-                      </p>
+                      <p className="text-xs text-text-muted">Keep multiple variants of an object in the same bucket.</p>
                     </div>
                   </section>
 
@@ -208,11 +200,11 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
                     <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Encryption</h3>
                     <div className="flex items-center gap-4 bg-surface-elevated p-4 rounded-xl border border-border-subtle">
                       <label className="relative inline-flex items-center cursor-pointer">
-                        <input 
-                          type="checkbox" 
-                          checked={!!encryption} 
+                        <input
+                          type="checkbox"
+                          checked={!!encryption}
                           onChange={(e) => setEncryption(e.target.checked ? { SSEAlgorithm: "AES256" } : null)}
-                          className="sr-only peer" 
+                          className="sr-only peer"
                         />
                         <div className="w-10 h-5 bg-border-default peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
                         <span className="ml-3 text-sm text-text-primary font-medium">Default Encryption (AES256)</span>
@@ -224,7 +216,9 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
                     <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Object Lock</h3>
                     <div className="p-4 rounded-xl border border-border-subtle bg-surface-elevated flex items-center justify-between">
                       <span className="text-sm text-text-secondary">Object Lock status:</span>
-                      <span className={`text-xs font-mono px-2 py-1 rounded-md ${objectLock?.ObjectLockEnabled === "Enabled" ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" : "bg-text-faint/10 text-text-faint border border-border-subtle"}`}>
+                      <span
+                        className={`text-xs font-mono px-2 py-1 rounded-md ${objectLock?.ObjectLockEnabled === "Enabled" ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" : "bg-text-faint/10 text-text-faint border border-border-subtle"}`}
+                      >
                         {objectLock?.ObjectLockEnabled || "Disabled"}
                       </span>
                     </div>
@@ -239,7 +233,9 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
                 <>
                   <section className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Bucket Policy</h3>
+                      <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                        Bucket Policy
+                      </h3>
                       <FileJson className="w-4 h-4 text-text-faint" />
                     </div>
                     <textarea
@@ -252,7 +248,9 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
 
                   <section className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">CORS configuration</h3>
+                      <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                        CORS configuration
+                      </h3>
                       <Repeat className="w-4 h-4 text-text-faint" />
                     </div>
                     <textarea
@@ -269,7 +267,9 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
                 <>
                   <section className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Lifecycle rules</h3>
+                      <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                        Lifecycle rules
+                      </h3>
                       <Layers className="w-4 h-4 text-text-faint" />
                     </div>
                     <textarea
@@ -282,7 +282,9 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
 
                   <section className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Replication</h3>
+                      <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                        Replication
+                      </h3>
                       <Repeat className="w-4 h-4 text-text-faint" />
                     </div>
                     <div className="bg-surface-elevated border border-border-subtle p-4 rounded-xl">
@@ -295,10 +297,7 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
               )}
 
               {activeTab === "notifications" && (
-                <NotificationSettings 
-                  config={notifications}
-                  onChange={setNotifications}
-                />
+                <NotificationSettings config={notifications} onChange={setNotifications} />
               )}
 
               {activeTab === "logging" && (
@@ -326,7 +325,7 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
                   <div className="space-y-3">
                     {tags.map((tag, idx) => (
                       <div key={idx} className="flex gap-3 animate-in fade-in slide-in-from-top-2 duration-150">
-                        <input 
+                        <input
                           placeholder="Key"
                           value={tag.Key}
                           onChange={(e) => {
@@ -336,7 +335,7 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
                           }}
                           className="flex-1 bg-surface-input border border-border-default rounded-btn px-3 py-2 text-sm focus:outline-none focus:border-blue-500/60"
                         />
-                        <input 
+                        <input
                           placeholder="Value"
                           value={tag.Value}
                           onChange={(e) => {
@@ -346,7 +345,7 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
                           }}
                           className="flex-1 bg-surface-input border border-border-default rounded-btn px-3 py-2 text-sm focus:outline-none focus:border-blue-500/60"
                         />
-                        <button 
+                        <button
                           onClick={() => setTags(tags.filter((_, i) => i !== idx))}
                           className="p-2 text-red-500 hover:bg-red-500/10 rounded-btn transition-colors"
                         >
@@ -354,9 +353,9 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
                         </button>
                       </div>
                     ))}
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setTags([...tags, { Key: "", Value: "" }])}
                       className="w-full !justify-center gap-2 border border-dashed border-border-default hover:border-blue-500/50"
                     >
@@ -372,7 +371,12 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
       </div>
 
       <div className="px-6 py-4 border-t border-border-subtle flex justify-between items-center bg-surface-elevated/30">
-        <Button variant="ghost" size="sm" onClick={loadSettings} leftIcon={<RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={loadSettings}
+          leftIcon={<RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />}
+        >
           Reload Settings
         </Button>
         <div className="flex gap-3">
@@ -396,8 +400,8 @@ const TabButton = ({ active, onClick, icon: Icon, label }: TabButtonProps) => (
   <button
     onClick={onClick}
     className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-      active 
-        ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20" 
+      active
+        ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20"
         : "text-text-muted hover:text-text-primary hover:bg-surface-hover"
     }`}
   >

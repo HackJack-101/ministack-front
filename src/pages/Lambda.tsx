@@ -26,7 +26,7 @@ const Lambda: React.FC = () => {
     functionError?: string;
   } | null>(null);
 
-  const selectedFunction = functions.find(f => f.FunctionName === functionName);
+  const selectedFunction = functions.find((f) => f.FunctionName === functionName);
 
   const handleInvoke = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,13 +66,7 @@ const Lambda: React.FC = () => {
         subtitle="Manage and invoke your serverless functions in your local environment"
         actions={
           <>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={fetchFunctions}
-              title="Refresh"
-              aria-label="Refresh"
-            >
+            <Button variant="ghost" size="sm" onClick={fetchFunctions} title="Refresh" aria-label="Refresh">
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </Button>
             {!functionName && (
@@ -102,14 +96,22 @@ const Lambda: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-subtle">
-                {Array(3).fill(0).map((_, i) => (
-                  <tr key={i}>
-                    <td className="px-4 py-3"><div className="h-3 w-32 bg-surface-skeleton rounded animate-pulse" /></td>
-                    <td className="px-4 py-3"><div className="h-3 w-24 bg-surface-skeleton rounded animate-pulse" /></td>
-                    <td className="px-4 py-3"><div className="h-3 w-32 bg-surface-skeleton rounded animate-pulse" /></td>
-                    <td className="px-4 py-3" />
-                  </tr>
-                ))}
+                {Array(3)
+                  .fill(0)
+                  .map((_, i) => (
+                    <tr key={i}>
+                      <td className="px-4 py-3">
+                        <div className="h-3 w-32 bg-surface-skeleton rounded animate-pulse" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="h-3 w-24 bg-surface-skeleton rounded animate-pulse" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="h-3 w-32 bg-surface-skeleton rounded animate-pulse" />
+                      </td>
+                      <td className="px-4 py-3" />
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
@@ -135,8 +137,11 @@ const Lambda: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-border-subtle">
                 {functions.map((fn) => (
-                  <tr key={fn.FunctionArn} className="hover:bg-surface-hover cursor-pointer transition-colors group"
-                    onClick={() => navigate(`/lambda/${fn.FunctionName}`)}>
+                  <tr
+                    key={fn.FunctionArn}
+                    className="hover:bg-surface-hover cursor-pointer transition-colors group"
+                    onClick={() => navigate(`/lambda/${fn.FunctionName}`)}
+                  >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="p-1.5 bg-amber-500/10 rounded">
@@ -150,7 +155,9 @@ const Lambda: React.FC = () => {
                       {fn.LastModified ? new Date(fn.LastModified).toLocaleString() : "-"}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Button variant="ghost" size="xs" className="opacity-0 group-hover:opacity-100 transition-all">View Details</Button>
+                      <Button variant="ghost" size="xs" className="opacity-0 group-hover:opacity-100 transition-all">
+                        View Details
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -184,8 +191,10 @@ const Lambda: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate("/lambda")}
-              className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-primary transition-colors">
+            <button
+              onClick={() => navigate("/lambda")}
+              className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-primary transition-colors"
+            >
               <ArrowLeft className="w-3.5 h-3.5" />
               Functions
             </button>
@@ -210,10 +219,22 @@ const Lambda: React.FC = () => {
                     Invoke Function
                   </h2>
                   <form onSubmit={handleInvoke} className="space-y-3">
-                    <TextArea label="Payload (JSON)" rows={6} accentColor="amber"
-                      placeholder="{}" value={payload} onChange={(e) => setPayload(e.target.value)} />
-                    <Button type="submit" variant="warning" size="sm" className="w-full !justify-center"
-                      isLoading={invoking} leftIcon={<Play className="w-3.5 h-3.5" />}>
+                    <TextArea
+                      label="Payload (JSON)"
+                      rows={6}
+                      accentColor="amber"
+                      placeholder="{}"
+                      value={payload}
+                      onChange={(e) => setPayload(e.target.value)}
+                    />
+                    <Button
+                      type="submit"
+                      variant="warning"
+                      size="sm"
+                      className="w-full !justify-center"
+                      isLoading={invoking}
+                      leftIcon={<Play className="w-3.5 h-3.5" />}
+                    >
                       Invoke
                     </Button>
                   </form>
@@ -229,7 +250,9 @@ const Lambda: React.FC = () => {
                     </h2>
                     {invokeResult && (
                       <div className="flex gap-2">
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${invokeResult.functionError ? "bg-red-500/10 text-red-500" : "bg-green-500/10 text-green-500"}`}>
+                        <span
+                          className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${invokeResult.functionError ? "bg-red-500/10 text-red-500" : "bg-green-500/10 text-green-500"}`}
+                        >
                           Status: {invokeResult.statusCode}
                         </span>
                       </div>
@@ -253,7 +276,9 @@ const Lambda: React.FC = () => {
                         <div className="p-4 space-y-2">
                           <div className="flex items-center gap-2 mb-1">
                             <FileJson className="w-3.5 h-3.5 text-text-muted" />
-                            <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">Response Payload</span>
+                            <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">
+                              Response Payload
+                            </span>
                           </div>
                           <pre className="bg-surface-elevated border border-border-subtle p-3 rounded text-xs font-mono text-text-secondary overflow-x-auto whitespace-pre-wrap break-all">
                             {invokeResult?.payload || "No payload returned"}
@@ -262,7 +287,9 @@ const Lambda: React.FC = () => {
                         <div className="p-4 space-y-2">
                           <div className="flex items-center gap-2 mb-1">
                             <Terminal className="w-3.5 h-3.5 text-text-muted" />
-                            <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">Execution Logs</span>
+                            <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">
+                              Execution Logs
+                            </span>
                           </div>
                           <pre className="bg-surface-elevated border border-border-subtle p-3 rounded text-xs font-mono text-text-muted overflow-x-auto whitespace-pre-wrap break-all min-h-[150px]">
                             {invokeResult?.logs || "No logs available"}
@@ -284,54 +311,76 @@ const Lambda: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div>
-                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">Function Name</span>
+                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">
+                        Function Name
+                      </span>
                       <span className="text-sm text-text-primary font-medium">{selectedFunction?.FunctionName}</span>
                     </div>
                     <div>
-                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">ARN</span>
-                      <span className="text-xs text-text-muted font-mono break-all">{selectedFunction?.FunctionArn}</span>
+                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">
+                        ARN
+                      </span>
+                      <span className="text-xs text-text-muted font-mono break-all">
+                        {selectedFunction?.FunctionArn}
+                      </span>
                     </div>
                     <div>
-                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">Runtime</span>
+                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">
+                        Runtime
+                      </span>
                       <Badge variant="warning">{selectedFunction?.Runtime}</Badge>
                     </div>
                   </div>
                   <div className="space-y-4">
                     <div>
-                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">Memory Size</span>
+                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">
+                        Memory Size
+                      </span>
                       <span className="text-sm text-text-primary font-medium">{selectedFunction?.MemorySize} MB</span>
                     </div>
                     <div>
-                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">Timeout</span>
+                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">
+                        Timeout
+                      </span>
                       <span className="text-sm text-text-primary font-medium">{selectedFunction?.Timeout} seconds</span>
                     </div>
                     <div>
-                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">Handler</span>
+                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">
+                        Handler
+                      </span>
                       <span className="text-sm text-text-primary font-medium">{selectedFunction?.Handler}</span>
                     </div>
                     <div>
-                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">Code Size</span>
-                      <span className="text-sm text-text-primary font-medium">{formatSize(selectedFunction?.CodeSize)}</span>
+                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">
+                        Code Size
+                      </span>
+                      <span className="text-sm text-text-primary font-medium">
+                        {formatSize(selectedFunction?.CodeSize)}
+                      </span>
                     </div>
                   </div>
                 </div>
                 <div className="mt-8 pt-6 border-t border-border-subtle">
-                   <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">Environment Variables</h3>
-                      <Badge variant="default">{Object.keys(selectedFunction?.Environment?.Variables || {}).length}</Badge>
-                   </div>
-                   {Object.keys(selectedFunction?.Environment?.Variables || {}).length > 0 ? (
-                     <div className="bg-surface-elevated rounded-lg p-3 border border-border-subtle">
-                        {Object.entries(selectedFunction?.Environment?.Variables || {}).map(([key, value]) => (
-                          <div key={key} className="flex justify-between py-1 text-xs">
-                            <span className="font-mono text-text-secondary">{key}</span>
-                            <span className="font-mono text-text-muted">{value}</span>
-                          </div>
-                        ))}
-                     </div>
-                   ) : (
-                     <p className="text-xs text-text-faint italic">No environment variables configured.</p>
-                   )}
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+                      Environment Variables
+                    </h3>
+                    <Badge variant="default">
+                      {Object.keys(selectedFunction?.Environment?.Variables || {}).length}
+                    </Badge>
+                  </div>
+                  {Object.keys(selectedFunction?.Environment?.Variables || {}).length > 0 ? (
+                    <div className="bg-surface-elevated rounded-lg p-3 border border-border-subtle">
+                      {Object.entries(selectedFunction?.Environment?.Variables || {}).map(([key, value]) => (
+                        <div key={key} className="flex justify-between py-1 text-xs">
+                          <span className="font-mono text-text-secondary">{key}</span>
+                          <span className="font-mono text-text-muted">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-text-faint italic">No environment variables configured.</p>
+                  )}
                 </div>
               </div>
             </div>

@@ -23,7 +23,7 @@ export const EventBridge = () => {
 
   useEffect(() => {
     events.fetchEventBuses();
-  }, [events.fetchEventBuses]);
+  }, [events]);
 
   useEffect(() => {
     const loadRules = async () => {
@@ -35,7 +35,7 @@ export const EventBridge = () => {
       }
     };
     loadRules();
-  }, [selectedBus, events.fetchRules]);
+  }, [selectedBus, events]);
 
   const handleCreateBus = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,12 +67,7 @@ export const EventBridge = () => {
         subtitle="Manage event buses and rules for event-driven architecture"
         actions={
           <>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => events.fetchEventBuses()}
-              title="Refresh"
-            >
+            <Button variant="ghost" size="sm" onClick={() => events.fetchEventBuses()} title="Refresh">
               <RefreshCw className={`w-4 h-4 ${events.loading ? "animate-spin" : ""}`} />
             </Button>
             <Button
@@ -166,9 +161,25 @@ export const EventBridge = () => {
           <div className="bg-surface-card rounded-card border border-border-subtle overflow-hidden">
             <DataTable
               columns={[
-                { key: "name", header: "Rule Name", render: (rule: Rule) => <span className="text-text-primary font-medium">{rule.Name}</span> },
-                { key: "state", header: "State", render: (rule: Rule) => <span className="capitalize">{rule.State?.toLowerCase()}</span> },
-                { key: "pattern", header: "Pattern", render: (rule: Rule) => <code className="text-[10px] bg-surface-elevated px-1 py-0.5 rounded text-text-muted max-w-[300px] truncate block">{rule.EventPattern}</code> },
+                {
+                  key: "name",
+                  header: "Rule Name",
+                  render: (rule: Rule) => <span className="text-text-primary font-medium">{rule.Name}</span>,
+                },
+                {
+                  key: "state",
+                  header: "State",
+                  render: (rule: Rule) => <span className="capitalize">{rule.State?.toLowerCase()}</span>,
+                },
+                {
+                  key: "pattern",
+                  header: "Pattern",
+                  render: (rule: Rule) => (
+                    <code className="text-[10px] bg-surface-elevated px-1 py-0.5 rounded text-text-muted max-w-[300px] truncate block">
+                      {rule.EventPattern}
+                    </code>
+                  ),
+                },
               ]}
               rows={rules}
               rowKey={(rule: Rule) => rule.Name || ""}
@@ -203,7 +214,12 @@ export const EventBridge = () => {
         </form>
       </Modal>
 
-      <Modal open={isEventModalOpen} onClose={() => setIsEventModalOpen(false)} title={`Send Event to "${selectedBus}"`} maxWidth="max-w-lg">
+      <Modal
+        open={isEventModalOpen}
+        onClose={() => setIsEventModalOpen(false)}
+        title={`Send Event to "${selectedBus}"`}
+        maxWidth="max-w-lg"
+      >
         <form onSubmit={handleSendEvent} className="space-y-4 pt-2">
           <div className="grid grid-cols-2 gap-4">
             <Input

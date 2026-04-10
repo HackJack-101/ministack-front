@@ -43,10 +43,8 @@ const variantStyles: Record<ButtonVariant, string> = {
   amber: "bg-amber-600 hover:bg-amber-500 text-white border-amber-500/30",
   emerald: "bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500/30",
   sky: "bg-sky-600 hover:bg-sky-500 text-white border-sky-500/30",
-  ghost:
-    "bg-transparent hover:bg-surface-hover text-text-secondary hover:text-text-primary border-transparent",
-  outline:
-    "bg-transparent border-border-default hover:bg-surface-hover text-text-secondary hover:text-text-primary",
+  ghost: "bg-transparent hover:bg-surface-hover text-text-secondary hover:text-text-primary border-transparent",
+  outline: "bg-transparent border-border-default hover:bg-surface-hover text-text-secondary hover:text-text-primary",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {

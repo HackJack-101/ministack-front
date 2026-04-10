@@ -63,23 +63,26 @@ export const SecretsManager = () => {
     });
   };
 
-  const toggleSecretValue = async (name: string) => {
-    if (visibleSecrets[name]) {
-      const next = { ...visibleSecrets };
-      delete next[name];
-      setVisibleSecrets(next);
-      return;
-    }
-    setFetchingValue((prev) => ({ ...prev, [name]: true }));
-    try {
-      const response = await secretsManagerClient.send(new GetSecretValueCommand({ SecretId: name }));
-      setVisibleSecrets((prev) => ({ ...prev, [name]: response.SecretString || "" }));
-    } catch (err: unknown) {
-      toast.error(`Failed to fetch value for ${name}: ${err instanceof Error ? err.message : "Unknown error"}`);
-    } finally {
-      setFetchingValue((prev) => ({ ...prev, [name]: false }));
-    }
-  };
+  const toggleSecretValue = useCallback(
+    async (name: string) => {
+      if (visibleSecrets[name]) {
+        const next = { ...visibleSecrets };
+        delete next[name];
+        setVisibleSecrets(next);
+        return;
+      }
+      setFetchingValue((prev) => ({ ...prev, [name]: true }));
+      try {
+        const response = await secretsManagerClient.send(new GetSecretValueCommand({ SecretId: name }));
+        setVisibleSecrets((prev) => ({ ...prev, [name]: response.SecretString || "" }));
+      } catch (err: unknown) {
+        toast.error(`Failed to fetch value for ${name}: ${err instanceof Error ? err.message : "Unknown error"}`);
+      } finally {
+        setFetchingValue((prev) => ({ ...prev, [name]: false }));
+      }
+    },
+    [visibleSecrets, toast],
+  );
 
   const handleCopySecret = async (name: string, value: string) => {
     try {
@@ -107,9 +110,7 @@ export const SecretsManager = () => {
     {
       key: "arn",
       header: "ARN",
-      render: (s: SecretListEntry) => (
-        <code className="text-xs text-purple-500 font-mono">{s.ARN}</code>
-      ),
+      render: (s: SecretListEntry) => <code className="text-xs text-purple-500 font-mono">{s.ARN}</code>,
     },
     {
       key: "value",

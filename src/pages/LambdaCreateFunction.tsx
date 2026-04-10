@@ -66,10 +66,7 @@ export const LambdaCreateFunction = () => {
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <PageHeader 
-          title="Create Lambda Function" 
-          subtitle="Deploy new serverless code to your environment" 
-        />
+        <PageHeader title="Create Lambda Function" subtitle="Deploy new serverless code to your environment" />
       </div>
 
       <div className="bg-surface-card border border-border-default rounded-card shadow-sm overflow-hidden flex flex-col">
@@ -94,10 +91,12 @@ export const LambdaCreateFunction = () => {
                 <Settings className="w-4 h-4 text-amber-500" />
                 <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Runtime Settings</h3>
               </div>
-              
+
               <div className="space-y-4 bg-surface-elevated p-5 rounded-xl border border-border-subtle">
                 <div className="space-y-1.5">
-                  <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">Runtime</label>
+                  <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
+                    Runtime
+                  </label>
                   <select
                     className="w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-amber-500/60 transition-colors text-sm"
                     value={formData.Runtime}
@@ -151,7 +150,9 @@ export const LambdaCreateFunction = () => {
             </div>
             <div
               className={`border-2 border-dashed rounded-xl p-10 transition-colors flex flex-col items-center justify-center gap-3 cursor-pointer ${
-                file ? "border-amber-500/40 bg-amber-500/5" : "border-border-default hover:border-amber-500/40 hover:bg-amber-500/5"
+                file
+                  ? "border-amber-500/40 bg-amber-500/5"
+                  : "border-border-default hover:border-amber-500/40 hover:bg-amber-500/5"
               }`}
               onClick={() => document.getElementById("file-upload")?.click()}
             >
@@ -159,9 +160,7 @@ export const LambdaCreateFunction = () => {
                 <Upload className={`w-8 h-8 ${file ? "text-amber-500" : "text-text-muted"}`} />
               </div>
               <div className="text-center">
-                <p className="text-sm font-medium text-text-primary">
-                  {file ? file.name : "Click to upload ZIP file"}
-                </p>
+                <p className="text-sm font-medium text-text-primary">{file ? file.name : "Click to upload ZIP file"}</p>
                 <p className="text-xs text-text-muted mt-1">
                   {file ? `${(file.size / 1024).toFixed(2)} KB` : "Maximum size 50MB"}
                 </p>
@@ -180,16 +179,12 @@ export const LambdaCreateFunction = () => {
         </div>
 
         <div className="p-6 border-t border-border-subtle bg-surface-elevated/30 flex justify-end gap-3">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate("/lambda")}
-            disabled={loading}
-          >
+          <Button variant="ghost" onClick={() => navigate("/lambda")} disabled={loading}>
             Cancel
           </Button>
-          <Button 
-            variant="warning" 
-            onClick={handleCreate} 
+          <Button
+            variant="warning"
+            onClick={handleCreate}
             isLoading={loading}
             disabled={!formData.FunctionName || !file}
             leftIcon={!loading && <Zap className="w-3.5 h-3.5" />}

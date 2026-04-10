@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Trash2, Plus, Zap, MessageSquare, BellRing, Globe } from "lucide-react";
 import { Button } from "../ui/Button";
 import { useLambda } from "../../hooks/useLambda";
@@ -29,11 +29,13 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({ conf
   const { queues } = useSQS();
   const { topics } = useSNS();
 
+  const [prevConfig, setPrevConfig] = useState(config);
   const [localConfig, setLocalConfig] = useState<NotificationConfiguration>(config || {});
 
-  useEffect(() => {
+  if (config !== prevConfig) {
+    setPrevConfig(config);
     setLocalConfig(config || {});
-  }, [config]);
+  }
 
   const updateConfig = (newConfig: NotificationConfiguration) => {
     setLocalConfig(newConfig);
@@ -484,7 +486,9 @@ interface NotificationItemProps {
 const NotificationItem: React.FC<NotificationItemProps> = ({ icon: Icon, color, title, onRemove, children }) => {
   return (
     <div className="bg-surface-card border border-border-subtle rounded-lg overflow-hidden shadow-sm">
-      <div className={`px-3 py-2 border-b border-border-subtle flex items-center justify-between bg-surface-elevated/50`}>
+      <div
+        className={`px-3 py-2 border-b border-border-subtle flex items-center justify-between bg-surface-elevated/50`}
+      >
         <div className="flex items-center gap-2">
           <Icon className={`w-3.5 h-3.5 text-${color}-500`} />
           <span className="text-[11px] font-semibold text-text-primary">{title}</span>

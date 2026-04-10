@@ -62,7 +62,7 @@ export const SQS = () => {
   useEffect(() => {
     if (activeTab === "settings" && queueAttributes) {
       setVisibilityTimeout(parseInt(queueAttributes.VisibilityTimeout || "30"));
-      
+
       if (queueAttributes.RedrivePolicy) {
         try {
           const policy = JSON.parse(queueAttributes.RedrivePolicy);
@@ -228,9 +228,9 @@ export const SQS = () => {
     if (!selectedQueueUrl || !bulkBody) return;
     setSendingMessage(true);
     try {
-      const bodies = bulkBody.split("\n").filter(b => b.trim().length > 0);
+      const bodies = bulkBody.split("\n").filter((b) => b.trim().length > 0);
       const isFifo = selectedQueueUrl.endsWith(".fifo") || queueAttributes.FifoQueue === "true";
-      
+
       const entries = bodies.map((body, i) => ({
         Id: i.toString(),
         MessageBody: body,
@@ -240,10 +240,12 @@ export const SQS = () => {
 
       for (let i = 0; i < entries.length; i += 10) {
         const chunk = entries.slice(i, i + 10);
-        await sqsClient.send(new SendMessageBatchCommand({
-          QueueUrl: selectedQueueUrl,
-          Entries: chunk,
-        }));
+        await sqsClient.send(
+          new SendMessageBatchCommand({
+            QueueUrl: selectedQueueUrl,
+            Entries: chunk,
+          }),
+        );
       }
 
       setBulkBody("");
@@ -318,13 +320,15 @@ export const SQS = () => {
     if (!selectedQueueUrl) return;
     const timeout = prompt("Enter new visibility timeout (seconds):", "30");
     if (timeout === null) return;
-    
+
     try {
-      await sqsClient.send(new ChangeMessageVisibilityCommand({
-        QueueUrl: selectedQueueUrl,
-        ReceiptHandle: receiptHandle,
-        VisibilityTimeout: parseInt(timeout)
-      }));
+      await sqsClient.send(
+        new ChangeMessageVisibilityCommand({
+          QueueUrl: selectedQueueUrl,
+          ReceiptHandle: receiptHandle,
+          VisibilityTimeout: parseInt(timeout),
+        }),
+      );
       toast.success("Message visibility updated");
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Failed to update visibility");
@@ -333,29 +337,31 @@ export const SQS = () => {
 
   const handleBatchDelete = async () => {
     if (!selectedQueueUrl || selectedMessageIds.length === 0) return;
-    
+
     confirm({
       title: `Delete ${selectedMessageIds.length} messages?`,
       description: "This action cannot be undone.",
       action: async () => {
         setBatchActionLoading(true);
         try {
-          const selectedMessages = messages.filter(m => selectedMessageIds.includes(m.MessageId!));
+          const selectedMessages = messages.filter((m) => selectedMessageIds.includes(m.MessageId!));
           const entries = selectedMessages.map((m, i) => ({
             Id: i.toString(),
-            ReceiptHandle: m.ReceiptHandle!
+            ReceiptHandle: m.ReceiptHandle!,
           }));
 
           // SQS Batch allows up to 10 entries
           for (let i = 0; i < entries.length; i += 10) {
             const chunk = entries.slice(i, i + 10);
-            await sqsClient.send(new DeleteMessageBatchCommand({
-              QueueUrl: selectedQueueUrl,
-              Entries: chunk
-            }));
+            await sqsClient.send(
+              new DeleteMessageBatchCommand({
+                QueueUrl: selectedQueueUrl,
+                Entries: chunk,
+              }),
+            );
           }
 
-          setMessages(prev => prev.filter(m => !selectedMessageIds.includes(m.MessageId!)));
+          setMessages((prev) => prev.filter((m) => !selectedMessageIds.includes(m.MessageId!)));
           setSelectedMessageIds([]);
           toast.success(`Deleted ${selectedMessageIds.length} messages`);
         } catch (err: unknown) {
@@ -363,7 +369,7 @@ export const SQS = () => {
         } finally {
           setBatchActionLoading(false);
         }
-      }
+      },
     });
   };
 
@@ -375,19 +381,21 @@ export const SQS = () => {
 
     setBatchActionLoading(true);
     try {
-      const selectedMessages = messages.filter(m => selectedMessageIds.includes(m.MessageId!));
+      const selectedMessages = messages.filter((m) => selectedMessageIds.includes(m.MessageId!));
       const entries = selectedMessages.map((m, i) => ({
         Id: i.toString(),
         ReceiptHandle: m.ReceiptHandle!,
-        VisibilityTimeout: timeout
+        VisibilityTimeout: timeout,
       }));
 
       for (let i = 0; i < entries.length; i += 10) {
         const chunk = entries.slice(i, i + 10);
-        await sqsClient.send(new ChangeMessageVisibilityBatchCommand({
-          QueueUrl: selectedQueueUrl,
-          Entries: chunk
-        }));
+        await sqsClient.send(
+          new ChangeMessageVisibilityBatchCommand({
+            QueueUrl: selectedQueueUrl,
+            Entries: chunk,
+          }),
+        );
       }
 
       toast.success(`Updated visibility for ${selectedMessageIds.length} messages`);
@@ -399,8 +407,8 @@ export const SQS = () => {
   };
 
   const toggleMessageSelection = (messageId: string) => {
-    setSelectedMessageIds(prev => 
-      prev.includes(messageId) ? prev.filter(id => id !== messageId) : [...prev, messageId]
+    setSelectedMessageIds((prev) =>
+      prev.includes(messageId) ? prev.filter((id) => id !== messageId) : [...prev, messageId],
     );
   };
 
@@ -408,7 +416,7 @@ export const SQS = () => {
     if (selectedMessageIds.length === messages.length) {
       setSelectedMessageIds([]);
     } else {
-      setSelectedMessageIds(messages.map(m => m.MessageId!));
+      setSelectedMessageIds(messages.map((m) => m.MessageId!));
     }
   };
 
@@ -443,7 +451,6 @@ export const SQS = () => {
           </>
         }
       />
-
 
       {selectedQueueUrl ? (
         <div className="space-y-4">
@@ -500,7 +507,9 @@ export const SQS = () => {
                       <p className="text-xs text-text-muted mt-0.5 truncate font-mono">{selectedQueueUrl}</p>
                     </div>
                     {queueAttributes.FifoQueue === "true" && (
-                      <Badge variant="mono" className="ml-2 uppercase tracking-tighter text-[10px] shrink-0">FIFO</Badge>
+                      <Badge variant="mono" className="ml-2 uppercase tracking-tighter text-[10px] shrink-0">
+                        FIFO
+                      </Badge>
                     )}
                   </div>
                   <div className="p-3">
@@ -551,7 +560,7 @@ export const SQS = () => {
                         placeholder='{"action": "process_order", "id": 123}'
                       />
                     )}
-                    
+
                     {(selectedQueueUrl.endsWith(".fifo") || queueAttributes.FifoQueue === "true") && (
                       <div className="grid grid-cols-1 gap-3 animate-in fade-in slide-in-from-top-2">
                         <Input
@@ -567,7 +576,9 @@ export const SQS = () => {
                           <Input
                             label="Message Deduplication ID"
                             value={messageDeduplicationId}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMessageDeduplicationId(e.target.value)}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                              setMessageDeduplicationId(e.target.value)
+                            }
                             placeholder="unique-id"
                             accentColor="orange"
                             className="text-xs"
@@ -655,7 +666,10 @@ export const SQS = () => {
                     ) : (
                       <div className="divide-y divide-border-subtle">
                         {messages.map((msg) => (
-                          <div key={msg.MessageId} className="p-4 hover:bg-surface-hover transition-colors group flex gap-4">
+                          <div
+                            key={msg.MessageId}
+                            className="p-4 hover:bg-surface-hover transition-colors group flex gap-4"
+                          >
                             <div className="pt-1">
                               <input
                                 type="checkbox"
@@ -741,14 +755,18 @@ export const SQS = () => {
                         />
                         <div className="flex flex-col">
                           <span className="text-sm text-text-primary font-medium">Dead Letter Queue</span>
-                          <span className="text-[11px] text-text-muted">Redirect messages that cannot be processed to another queue.</span>
+                          <span className="text-[11px] text-text-muted">
+                            Redirect messages that cannot be processed to another queue.
+                          </span>
                         </div>
                       </div>
 
                       {useDlq && (
                         <div className="pl-6 space-y-4 border-l-2 border-orange-500/20 max-w-md animate-in fade-in slide-in-from-left-2 duration-200">
                           <div className="space-y-1.5">
-                            <label className="text-xs font-medium text-text-secondary uppercase tracking-wider">DLQ ARN</label>
+                            <label className="text-xs font-medium text-text-secondary uppercase tracking-wider">
+                              DLQ ARN
+                            </label>
                             <select
                               className="w-full bg-surface-input border border-border-default rounded-btn px-3 py-2 text-text-primary focus:outline-none focus:border-orange-500/60 text-sm transition-colors"
                               value={dlqArn}
@@ -777,7 +795,7 @@ export const SQS = () => {
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="pt-4 border-t border-border-subtle">
                       <Button type="submit" variant="warning" size="sm" isLoading={savingSettings}>
                         Save Changes
@@ -787,12 +805,7 @@ export const SQS = () => {
                 </div>
               </div>
               <div className="space-y-4">
-                <TagManager
-                  tags={tags}
-                  onAddTag={handleAddTag}
-                  onRemoveTag={handleRemoveTag}
-                  isLoading={tagLoading}
-                />
+                <TagManager tags={tags} onAddTag={handleAddTag} onRemoveTag={handleRemoveTag} isLoading={tagLoading} />
               </div>
             </div>
           )}
@@ -811,16 +824,28 @@ export const SQS = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle">
-              {Array(3).fill(0).map((_, i) => (
-                <tr key={i}>
-                  <td className="px-4 py-3"><div className="h-3 w-32 bg-surface-skeleton rounded animate-pulse" /></td>
-                  <td className="px-4 py-3"><div className="h-3 w-48 bg-surface-skeleton rounded animate-pulse" /></td>
-                  <td className="px-4 py-3"><div className="h-3 w-12 bg-surface-skeleton rounded animate-pulse mx-auto" /></td>
-                  <td className="px-4 py-3"><div className="h-3 w-12 bg-surface-skeleton rounded animate-pulse mx-auto" /></td>
-                  <td className="px-4 py-3"><div className="h-3 w-12 bg-surface-skeleton rounded animate-pulse mx-auto" /></td>
-                  <td className="px-4 py-3" />
-                </tr>
-              ))}
+              {Array(3)
+                .fill(0)
+                .map((_, i) => (
+                  <tr key={i}>
+                    <td className="px-4 py-3">
+                      <div className="h-3 w-32 bg-surface-skeleton rounded animate-pulse" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="h-3 w-48 bg-surface-skeleton rounded animate-pulse" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="h-3 w-12 bg-surface-skeleton rounded animate-pulse mx-auto" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="h-3 w-12 bg-surface-skeleton rounded animate-pulse mx-auto" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="h-3 w-12 bg-surface-skeleton rounded animate-pulse mx-auto" />
+                    </td>
+                    <td className="px-4 py-3" />
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
@@ -860,7 +885,9 @@ export const SQS = () => {
                       </div>
                       <span className="text-sm font-medium text-text-primary">{getQueueName(q.url)}</span>
                       {q.url.endsWith(".fifo") && (
-                        <Badge variant="mono" className="uppercase tracking-tighter text-[9px] px-1 py-0">FIFO</Badge>
+                        <Badge variant="mono" className="uppercase tracking-tighter text-[9px] px-1 py-0">
+                          FIFO
+                        </Badge>
                       )}
                     </div>
                   </td>
@@ -868,9 +895,7 @@ export const SQS = () => {
                     <span className="text-xs text-text-muted font-mono truncate max-w-[200px] block">{q.url}</span>
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <span className="text-xs text-text-secondary font-medium">
-                      {q.maxReceiveCount ?? "-"}
-                    </span>
+                    <span className="text-xs text-text-secondary font-medium">{q.maxReceiveCount ?? "-"}</span>
                   </td>
                   <td className="px-4 py-3 text-center">
                     <Badge variant="default" className="text-orange-500 bg-orange-500/5 border-orange-500/10">
@@ -878,13 +903,14 @@ export const SQS = () => {
                     </Badge>
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <span className="text-xs text-text-muted">
-                      {q.approximateNumberOfMessagesNotVisible}
-                    </span>
+                    <span className="text-xs text-text-muted">{q.approximateNumberOfMessagesNotVisible}</span>
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button
-                      onClick={(e) => { e.stopPropagation(); handleDeleteQueue(q.url); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteQueue(q.url);
+                      }}
                       className="p-1.5 text-text-faint hover:text-red-500 hover:bg-red-500/10 rounded transition-all opacity-0 group-hover:opacity-100"
                       title="Delete Queue"
                       aria-label="Delete Queue"

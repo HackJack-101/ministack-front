@@ -34,15 +34,21 @@ export const useSNS = () => {
     fetchTopics();
   }, [fetchTopics]);
 
-  const createTopic = useCallback(async (name: string) => {
-    await snsClient.send(new CreateTopicCommand({ Name: name }));
-    await fetchTopics();
-  }, [fetchTopics]);
+  const createTopic = useCallback(
+    async (name: string) => {
+      await snsClient.send(new CreateTopicCommand({ Name: name }));
+      await fetchTopics();
+    },
+    [fetchTopics],
+  );
 
-  const deleteTopic = useCallback(async (topicArn: string) => {
-    await snsClient.send(new DeleteTopicCommand({ TopicArn: topicArn }));
-    await fetchTopics();
-  }, [fetchTopics]);
+  const deleteTopic = useCallback(
+    async (topicArn: string) => {
+      await snsClient.send(new DeleteTopicCommand({ TopicArn: topicArn }));
+      await fetchTopics();
+    },
+    [fetchTopics],
+  );
 
   const listSubscriptions = useCallback(async (topicArn: string): Promise<Subscription[]> => {
     const response = await snsClient.send(new ListSubscriptionsByTopicCommand({ TopicArn: topicArn }));
@@ -73,16 +79,6 @@ export const useSNS = () => {
       unsubscribe,
       publish,
     }),
-    [
-      topics,
-      loading,
-      fetchTopics,
-      createTopic,
-      deleteTopic,
-      listSubscriptions,
-      subscribe,
-      unsubscribe,
-      publish,
-    ],
+    [topics, loading, fetchTopics, createTopic, deleteTopic, listSubscriptions, subscribe, unsubscribe, publish],
   );
 };

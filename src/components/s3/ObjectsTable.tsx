@@ -37,9 +37,7 @@ export const ObjectsTable = ({ objects, loading, onDelete, onDeleteBatch, onCopy
 
   const toggleSelect = (e: React.MouseEvent, key: string) => {
     e.stopPropagation();
-    setSelectedKeys((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
-    );
+    setSelectedKeys((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
   };
 
   const handleSort = (field: SortField) => {
@@ -94,12 +92,7 @@ export const ObjectsTable = ({ objects, loading, onDelete, onDeleteBatch, onCopy
             >
               Delete
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSelectedKeys([])}
-              className="h-7"
-            >
+            <Button variant="ghost" size="sm" onClick={() => setSelectedKeys([])} className="h-7">
               Deselect All
             </Button>
           </div>

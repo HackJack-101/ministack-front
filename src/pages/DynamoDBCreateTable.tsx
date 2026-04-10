@@ -39,7 +39,8 @@ export const DynamoDBCreateTable = () => {
     }
   };
 
-  const selectClass = "w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-emerald-500/60 transition-colors text-sm disabled:opacity-40";
+  const selectClass =
+    "w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-emerald-500/60 transition-colors text-sm disabled:opacity-40";
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -50,10 +51,7 @@ export const DynamoDBCreateTable = () => {
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <PageHeader 
-          title="Create DynamoDB Table" 
-          subtitle="Define your table schema and primary key" 
-        />
+        <PageHeader title="Create DynamoDB Table" subtitle="Define your table schema and primary key" />
       </div>
 
       <div className="bg-surface-card border border-border-default rounded-card shadow-sm overflow-hidden flex flex-col">
@@ -77,7 +75,7 @@ export const DynamoDBCreateTable = () => {
               <Shield className="w-4 h-4 text-emerald-500" />
               <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Primary Key</h3>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-surface-elevated p-6 rounded-xl border border-border-subtle">
               <div className="space-y-4">
                 <Input
@@ -89,7 +87,9 @@ export const DynamoDBCreateTable = () => {
                   accentColor="emerald"
                 />
                 <div className="space-y-1.5">
-                  <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">Key Type</label>
+                  <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
+                    Key Type
+                  </label>
                   <select
                     className={selectClass}
                     value={form.partitionKeyType}
@@ -97,7 +97,9 @@ export const DynamoDBCreateTable = () => {
                   >
                     <option value="S">String</option>
                     <option value="N">Number</option>
-                    <option value="B" disabled>Binary (Not supported)</option>
+                    <option value="B" disabled>
+                      Binary (Not supported)
+                    </option>
                   </select>
                 </div>
               </div>
@@ -111,7 +113,9 @@ export const DynamoDBCreateTable = () => {
                   accentColor="emerald"
                 />
                 <div className="space-y-1.5">
-                  <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">Key Type</label>
+                  <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
+                    Key Type
+                  </label>
                   <select
                     className={selectClass}
                     disabled={!form.sortKey}
@@ -126,7 +130,8 @@ export const DynamoDBCreateTable = () => {
             </div>
             <p className="text-[11px] text-text-muted flex items-center gap-1.5 px-1">
               <Database className="w-3 h-3" />
-              The partition key is used to distribute data across shards. The sort key is optional and used for data organization.
+              The partition key is used to distribute data across shards. The sort key is optional and used for data
+              organization.
             </p>
           </section>
 
@@ -139,7 +144,9 @@ export const DynamoDBCreateTable = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="text-sm font-medium text-text-primary">Provisioned Capacity</h4>
-                  <p className="text-xs text-text-muted mt-1">Default: 5 RCU / 5 WCU. Ministack ignores these values in local mode.</p>
+                  <p className="text-xs text-text-muted mt-1">
+                    Default: 5 RCU / 5 WCU. Ministack ignores these values in local mode.
+                  </p>
                 </div>
                 <div className="px-3 py-1 bg-surface-card border border-border-default rounded-md text-xs text-text-faint">
                   Local Mode
@@ -150,16 +157,12 @@ export const DynamoDBCreateTable = () => {
         </div>
 
         <div className="p-6 border-t border-border-subtle bg-surface-elevated/30 flex justify-end gap-3">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate("/dynamodb")}
-            disabled={loading}
-          >
+          <Button variant="ghost" onClick={() => navigate("/dynamodb")} disabled={loading}>
             Cancel
           </Button>
-          <Button 
-            variant="success" 
-            onClick={handleCreate} 
+          <Button
+            variant="success"
+            onClick={handleCreate}
             isLoading={loading}
             disabled={!form.name || !form.partitionKey}
           >

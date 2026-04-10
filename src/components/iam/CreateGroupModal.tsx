@@ -39,7 +39,7 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ open, onClos
     try {
       await onConfirm(groupName);
       onClose();
-    } catch (err) {
+    } catch {
       // Error handled by hook
     } finally {
       setLoading(false);
@@ -62,7 +62,10 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ open, onClos
             </div>
             <h3 className="text-sm font-semibold text-text-primary">Create IAM Group</h3>
           </div>
-          <button onClick={onClose} className="p-1 hover:bg-surface-hover rounded-btn transition-colors text-text-muted hover:text-text-primary">
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-surface-hover rounded-btn transition-colors text-text-muted hover:text-text-primary"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -83,13 +86,7 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ open, onClos
           <Button variant="ghost" size="sm" onClick={onClose} disabled={loading}>
             Cancel
           </Button>
-          <Button
-            variant="purple"
-            size="sm"
-            onClick={handleSubmit}
-            isLoading={loading}
-            disabled={!groupName}
-          >
+          <Button variant="purple" size="sm" onClick={handleSubmit} isLoading={loading} disabled={!groupName}>
             Create Group
           </Button>
         </div>

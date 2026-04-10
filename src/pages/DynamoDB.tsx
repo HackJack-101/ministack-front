@@ -28,7 +28,7 @@ export const DynamoDB = () => {
     } else {
       db.setSelectedTable(null);
     }
-  }, [tableName, db.fetchTableDetails, db.setSelectedTable, db.selectedTable?.TableName]);
+  }, [tableName, db]);
 
   const handleDeleteTable = (e: React.MouseEvent, name: string) => {
     e.stopPropagation();
@@ -87,7 +87,6 @@ export const DynamoDB = () => {
           </>
         }
       />
-
 
       {db.selectedTable && (
         <AddItemModal
@@ -164,41 +163,53 @@ export const DynamoDB = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="bg-surface-card rounded-card border border-border-subtle p-6 space-y-6">
-                 <h2 className="text-xs font-semibold text-text-secondary flex items-center gap-2 uppercase tracking-wider">
-                   Table Configuration
-                 </h2>
-                 <div className="space-y-4">
+                <h2 className="text-xs font-semibold text-text-secondary flex items-center gap-2 uppercase tracking-wider">
+                  Table Configuration
+                </h2>
+                <div className="space-y-4">
+                  <div>
+                    <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">
+                      Partition Key
+                    </span>
+                    <span className="text-sm text-text-primary font-medium">{db.selectedTable.PartitionKey}</span>
+                  </div>
+                  {db.selectedTable.SortKey && (
                     <div>
-                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">Partition Key</span>
-                      <span className="text-sm text-text-primary font-medium">{db.selectedTable.PartitionKey}</span>
+                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">
+                        Sort Key
+                      </span>
+                      <span className="text-sm text-text-primary font-medium">{db.selectedTable.SortKey}</span>
                     </div>
-                    {db.selectedTable.SortKey && (
-                      <div>
-                        <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">Sort Key</span>
-                        <span className="text-sm text-text-primary font-medium">{db.selectedTable.SortKey}</span>
-                      </div>
-                    )}
-                    <div>
-                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">Table ARN</span>
-                      <span className="text-xs text-text-muted font-mono break-all">{db.selectedTable.TableArn}</span>
-                    </div>
-                 </div>
+                  )}
+                  <div>
+                    <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">
+                      Table ARN
+                    </span>
+                    <span className="text-xs text-text-muted font-mono break-all">{db.selectedTable.TableArn}</span>
+                  </div>
+                </div>
               </div>
 
               <div className="bg-surface-card rounded-card border border-border-subtle p-6 space-y-6">
-                 <h2 className="text-xs font-semibold text-text-secondary flex items-center gap-2 uppercase tracking-wider">
-                   Capacity & Metrics
-                 </h2>
-                 <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-surface-elevated p-3 rounded-lg border border-border-subtle">
-                       <span className="block text-[10px] text-text-muted uppercase font-bold tracking-tighter mb-1">Item Count</span>
-                       <span className="text-xl font-semibold text-text-primary">{db.selectedTable.ItemCount}</span>
-                    </div>
-                    <div className="bg-surface-elevated p-3 rounded-lg border border-border-subtle">
-                       <span className="block text-[10px] text-text-muted uppercase font-bold tracking-tighter mb-1">Table Size</span>
-                       <span className="text-xl font-semibold text-text-primary">{pluralize(db.selectedTable.TableSizeBytes || 0, "byte")}</span>
-                    </div>
-                 </div>
+                <h2 className="text-xs font-semibold text-text-secondary flex items-center gap-2 uppercase tracking-wider">
+                  Capacity & Metrics
+                </h2>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-surface-elevated p-3 rounded-lg border border-border-subtle">
+                    <span className="block text-[10px] text-text-muted uppercase font-bold tracking-tighter mb-1">
+                      Item Count
+                    </span>
+                    <span className="text-xl font-semibold text-text-primary">{db.selectedTable.ItemCount}</span>
+                  </div>
+                  <div className="bg-surface-elevated p-3 rounded-lg border border-border-subtle">
+                    <span className="block text-[10px] text-text-muted uppercase font-bold tracking-tighter mb-1">
+                      Table Size
+                    </span>
+                    <span className="text-xl font-semibold text-text-primary">
+                      {pluralize(db.selectedTable.TableSizeBytes || 0, "byte")}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           )}

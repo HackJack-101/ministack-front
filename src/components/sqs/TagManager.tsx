@@ -42,7 +42,10 @@ export const TagManager = ({ tags, onAddTag, onRemoveTag, isLoading }: TagManage
       </div>
 
       {isAdding && (
-        <form onSubmit={handleAdd} className="mb-4 p-3 bg-surface-elevated rounded border border-border-subtle space-y-3 animate-in fade-in slide-in-from-top-2">
+        <form
+          onSubmit={handleAdd}
+          className="mb-4 p-3 bg-surface-elevated rounded border border-border-subtle space-y-3 animate-in fade-in slide-in-from-top-2"
+        >
           <Input
             label="Key"
             value={newKey}

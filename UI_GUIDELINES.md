@@ -9,15 +9,15 @@ It is automatically loaded via `CLAUDE.md` and must be updated whenever a new pa
 
 Each AWS service has a designated color used consistently for icons, badges, button variants, focus rings, and tab accents.
 
-| Service         | Color   | Tailwind token     | Button variant | Focus ring class          |
-|-----------------|---------|--------------------|----------------|---------------------------|
-| IAM             | Purple  | `purple-500/600`   | custom purple  | `focus:border-purple-500/60` |
-| S3              | Blue    | `blue-500`         | `success` (blue context) | `focus:border-blue-500/60` |
-| Lambda          | Amber   | `amber-500`        | `warning`      | `focus:border-amber-500/60` |
-| DynamoDB        | Emerald | `emerald-500`      | `success`      | `focus:border-emerald-500/60` |
-| SQS             | Orange  | `orange-500`       | `warning`      | `focus:border-orange-500/60` |
-| SNS             | Rose    | `rose-500`         | custom rose    | `focus:border-rose-500/60` |
-| Secrets Manager | Purple  | `purple-500`       | custom purple  | `focus:border-purple-500/60` |
+| Service         | Color   | Tailwind token   | Button variant           | Focus ring class              |
+| --------------- | ------- | ---------------- | ------------------------ | ----------------------------- |
+| IAM             | Purple  | `purple-500/600` | custom purple            | `focus:border-purple-500/60`  |
+| S3              | Blue    | `blue-500`       | `success` (blue context) | `focus:border-blue-500/60`    |
+| Lambda          | Amber   | `amber-500`      | `warning`                | `focus:border-amber-500/60`   |
+| DynamoDB        | Emerald | `emerald-500`    | `success`                | `focus:border-emerald-500/60` |
+| SQS             | Orange  | `orange-500`     | `warning`                | `focus:border-orange-500/60`  |
+| SNS             | Rose    | `rose-500`       | custom rose              | `focus:border-rose-500/60`    |
+| Secrets Manager | Purple  | `purple-500`     | custom purple            | `focus:border-purple-500/60`  |
 
 Icon backgrounds always use the `bg-{color}/10` form (e.g. `bg-amber-500/10`).
 
@@ -44,8 +44,12 @@ Icon backgrounds always use the `bg-{color}/10` form (e.g. `bg-amber-500/10`).
   subtitle="Manage your Lambda functions"
   actions={
     <div className="flex items-center gap-2">
-      <Button variant="ghost" size="sm" onClick={refresh}><RefreshCw /></Button>
-      <Button size="sm" leftIcon={<Plus />}>Create Function</Button>
+      <Button variant="ghost" size="sm" onClick={refresh}>
+        <RefreshCw />
+      </Button>
+      <Button size="sm" leftIcon={<Plus />}>
+        Create Function
+      </Button>
     </div>
   }
 />
@@ -61,51 +65,60 @@ Icon backgrounds always use the `bg-{color}/10` form (e.g. `bg-amber-500/10`).
 
 ### Placement rules
 
-| Context         | Alignment     | Notes                                              |
-|-----------------|---------------|----------------------------------------------------|
-| Page header     | Right side     | Refresh icon-only (ghost) + Create (colored)       |
-| Modal footer    | Right side     | Cancel (ghost) then Confirm, `flex justify-end gap-2` |
-| Card footer     | Right side     | `flex justify-end gap-3 border-t pt-3`            |
-| Table row       | Right cell     | Hidden by default, `opacity-0 group-hover:opacity-100` |
-| Inline form     | Right, last row | `flex justify-end gap-2 pt-2`                    |
+| Context      | Alignment       | Notes                                                  |
+| ------------ | --------------- | ------------------------------------------------------ |
+| Page header  | Right side      | Refresh icon-only (ghost) + Create (colored)           |
+| Modal footer | Right side      | Cancel (ghost) then Confirm, `flex justify-end gap-2`  |
+| Card footer  | Right side      | `flex justify-end gap-3 border-t pt-3`                 |
+| Table row    | Right cell      | Hidden by default, `opacity-0 group-hover:opacity-100` |
+| Inline form  | Right, last row | `flex justify-end gap-2 pt-2`                          |
 
 ### Size
+
 Always `size="sm"` for page-level and table-level actions.
 
 ### Action-specific patterns
 
 **Create**
+
 - Label: `"Create [Resource]"` (singular, capitalized)
 - Icon: `<Plus className="w-3.5 h-3.5" />` via `leftIcon` prop
 - Variant: service color (see table above)
 
 **Refresh**
+
 - Icon-only, `variant="ghost"`, `size="sm"`
 - Icon: `<RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />`
 
 **Delete (table row)**
+
 - Icon: `<Trash2 className="w-3.5 h-3.5 text-red-500" />`
 - Classes: `p-1.5 text-text-faint hover:text-red-500 hover:bg-red-500/10 rounded transition-colors`
 - Visibility: `opacity-0 group-hover:opacity-100 transition-all`
 - Always opens `ConfirmModal` before executing
 
 **Delete (modal / card)**
+
 - `variant="danger"` → `bg-red-600 hover:bg-red-500`
 
 **Purge / Batch delete**
+
 - Icon: `<Trash />` (filled variant)
 - Classes: `ghost` + `hover:!text-red-500 hover:!bg-red-500/10`
 
 **Copy**
+
 - Icon: `<Copy className="w-3 h-3" />`
 - Visibility: `opacity-0 group-hover:opacity-100`
 - On click: `toast.success("Copied to clipboard")`
 
 **Download**
+
 - Icon: `<Download className="w-3.5 h-3.5" />`
 - `variant="secondary"` or custom, in card footer
 
 **Send / Invoke**
+
 - Icon: `<Send />` or `<Play className="w-3.5 h-3.5" />`
 - Full-width in form contexts: `w-full !justify-center`
 - Use `isLoading` prop for async feedback
@@ -123,13 +136,15 @@ const handleDelete = (name: string) => {
   confirm({
     title: `Delete "${name}"?`,
     description: "This action cannot be undone.",
-    confirmVariant: "danger",   // "danger" | "warning"
+    confirmVariant: "danger", // "danger" | "warning"
     action: () => deleteResource(name),
   });
 };
 
 // In JSX:
-{ConfirmModalComponent}
+{
+  ConfirmModalComponent;
+}
 ```
 
 - **danger** (default for deletes): red
@@ -137,14 +152,14 @@ const handleDelete = (name: string) => {
 
 ### Standard confirmation messages by resource type
 
-| Resource        | Title                              | Description                                                     |
-|-----------------|------------------------------------|-----------------------------------------------------------------|
-| S3 Bucket       | `Delete bucket '{name}'?`          | The bucket must be empty before deletion.                       |
-| S3 Object       | `Delete '{key}'?`                  | This object will be permanently removed.                        |
-| DynamoDB Table  | `Delete table '{name}'?`           | All items will be permanently deleted.                          |
-| DynamoDB Item   | `Delete this item?`                | Permanently remove the item with {pk}='{value}'.                |
-| SQS Queue       | `Delete queue '{name}'?`           | All messages will be lost.                                      |
-| SQS Purge       | `Purge queue '{name}'?`            | All messages in this queue will be permanently deleted.         |
+| Resource       | Title                     | Description                                             |
+| -------------- | ------------------------- | ------------------------------------------------------- |
+| S3 Bucket      | `Delete bucket '{name}'?` | The bucket must be empty before deletion.               |
+| S3 Object      | `Delete '{key}'?`         | This object will be permanently removed.                |
+| DynamoDB Table | `Delete table '{name}'?`  | All items will be permanently deleted.                  |
+| DynamoDB Item  | `Delete this item?`       | Permanently remove the item with {pk}='{value}'.        |
+| SQS Queue      | `Delete queue '{name}'?`  | All messages will be lost.                              |
+| SQS Purge      | `Purge queue '{name}'?`   | All messages in this queue will be permanently deleted. |
 
 ---
 
@@ -221,16 +236,17 @@ toast.info("No messages available");
 toast.warning("Bucket is not empty");
 ```
 
-| Type    | Duration    | Auto-dismiss |
-|---------|-------------|--------------|
-| success | 4000 ms     | Yes          |
-| info    | 4000 ms     | Yes          |
-| warning | 6000 ms     | Yes          |
-| error   | —           | No           |
+| Type    | Duration | Auto-dismiss |
+| ------- | -------- | ------------ |
+| success | 4000 ms  | Yes          |
+| info    | 4000 ms  | Yes          |
+| warning | 6000 ms  | Yes          |
+| error   | —        | No           |
 
 Position: `fixed bottom-4 left-4`, stacked vertically with `gap-2`.
 
 ### Standard messages
+
 - Copy: `"Copied to clipboard"` (success)
 - Create: `"[Resource] created successfully"` (success)
 - Delete: `"[Resource] deleted"` (success)
@@ -244,7 +260,7 @@ Position: `fixed bottom-4 left-4`, stacked vertically with `gap-2`.
 <Input
   label="Function Name"
   placeholder="my-function"
-  accentColor="amber"   // maps to focus:border-amber-500/60
+  accentColor="amber" // maps to focus:border-amber-500/60
   value={name}
   onChange={(e) => setName(e.target.value)}
 />
@@ -259,16 +275,16 @@ Position: `fixed bottom-4 left-4`, stacked vertically with `gap-2`.
 
 ## 10. Typography Scale
 
-| Element          | Classes                                                   |
-|------------------|-----------------------------------------------------------|
-| Page title       | `text-base font-semibold text-text-primary`               |
-| Page subtitle    | `text-xs text-text-muted`                                 |
-| Section header   | `text-xs font-semibold text-text-secondary uppercase tracking-wider` |
+| Element          | Classes                                                               |
+| ---------------- | --------------------------------------------------------------------- |
+| Page title       | `text-base font-semibold text-text-primary`                           |
+| Page subtitle    | `text-xs text-text-muted`                                             |
+| Section header   | `text-xs font-semibold text-text-secondary uppercase tracking-wider`  |
 | Form label       | `text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium` |
-| Table header     | `text-[11px] uppercase tracking-wider font-medium text-text-muted` |
-| Body             | `text-sm text-text-secondary`                             |
-| Caption / hint   | `text-xs text-text-muted`                                 |
-| Monospace ID/ARN | `font-mono text-xs`                                       |
+| Table header     | `text-[11px] uppercase tracking-wider font-medium text-text-muted`    |
+| Body             | `text-sm text-text-secondary`                                         |
+| Caption / hint   | `text-xs text-text-muted`                                             |
+| Monospace ID/ARN | `font-mono text-xs`                                                   |
 
 ---
 
@@ -276,14 +292,14 @@ Position: `fixed bottom-4 left-4`, stacked vertically with `gap-2`.
 
 Use the shared `<Badge />` component.
 
-| Variant   | Colors                                                       |
-|-----------|--------------------------------------------------------------|
-| success   | `bg-emerald-500/10 text-emerald-600 border-emerald-500/30`   |
-| warning   | `bg-yellow-500/10 text-yellow-600 border-yellow-500/30`      |
-| error     | `bg-red-500/10 text-red-600 border-red-500/30`               |
-| info      | `bg-blue-500/10 text-blue-600 border-blue-500/30`            |
-| default   | `bg-surface-elevated text-text-secondary border-border-default` |
-| mono      | monospace font, default colors                               |
+| Variant | Colors                                                          |
+| ------- | --------------------------------------------------------------- |
+| success | `bg-emerald-500/10 text-emerald-600 border-emerald-500/30`      |
+| warning | `bg-yellow-500/10 text-yellow-600 border-yellow-500/30`         |
+| error   | `bg-red-500/10 text-red-600 border-red-500/30`                  |
+| info    | `bg-blue-500/10 text-blue-600 border-blue-500/30`               |
+| default | `bg-surface-elevated text-text-secondary border-border-default` |
+| mono    | monospace font, default colors                                  |
 
 ---
 
@@ -298,34 +314,34 @@ Use the shared `<Badge />` component.
 
 ## 13. Spacing & Sizing Cheat Sheet
 
-| Purpose              | Value        |
-|----------------------|--------------|
-| Between page sections | `space-y-5` |
-| Between form fields  | `space-y-4`  |
-| Between buttons      | `gap-2`      |
-| Icon + label gap     | `gap-3`      |
-| Card padding compact | `p-4`        |
-| Card padding default | `p-5`        |
-| Card padding spacious | `p-6`       |
-| Icon inline          | `w-3.5 h-3.5` |
-| Icon standard        | `w-4 h-4`    |
-| Card border radius   | `rounded-card` |
-| Button border radius | `rounded-btn`  |
+| Purpose               | Value          |
+| --------------------- | -------------- |
+| Between page sections | `space-y-5`    |
+| Between form fields   | `space-y-4`    |
+| Between buttons       | `gap-2`        |
+| Icon + label gap      | `gap-3`        |
+| Card padding compact  | `p-4`          |
+| Card padding default  | `p-5`          |
+| Card padding spacious | `p-6`          |
+| Icon inline           | `w-3.5 h-3.5`  |
+| Icon standard         | `w-4 h-4`      |
+| Card border radius    | `rounded-card` |
+| Button border radius  | `rounded-btn`  |
 
 ---
 
 ## 14. Animation & Transition Classes
 
-| Effect                    | Class                                          |
-|---------------------------|------------------------------------------------|
-| Hover color change        | `transition-colors`                            |
-| Opacity + position change | `transition-all`                               |
-| Loading spinner           | `animate-spin`                                 |
-| Skeleton loader           | `animate-pulse`                                |
-| Modal entry               | `animate-in fade-in zoom-in-95 duration-150`   |
-| Toast entry               | `animate-in fade-in slide-in-from-bottom-2`    |
-| Inline form entry         | `animate-in fade-in slide-in-from-top-2`       |
-| Row hover                 | `hover:bg-surface-hover transition-colors`     |
+| Effect                    | Class                                              |
+| ------------------------- | -------------------------------------------------- |
+| Hover color change        | `transition-colors`                                |
+| Opacity + position change | `transition-all`                                   |
+| Loading spinner           | `animate-spin`                                     |
+| Skeleton loader           | `animate-pulse`                                    |
+| Modal entry               | `animate-in fade-in zoom-in-95 duration-150`       |
+| Toast entry               | `animate-in fade-in slide-in-from-bottom-2`        |
+| Inline form entry         | `animate-in fade-in slide-in-from-top-2`           |
+| Row hover                 | `hover:bg-surface-hover transition-colors`         |
 | Hidden → hover visible    | `opacity-0 group-hover:opacity-100 transition-all` |
 
 ---
@@ -348,16 +364,18 @@ Use the shared `<Badge />` component.
 
 The choice of UI pattern for creating resources depends on the complexity and number of configuration settings.
 
-| Complexity | Criteria                                  | UI Pattern       |
-|------------|-------------------------------------------|------------------|
-| Simple     | Name, Description, and few basic fields  | **Modal**        |
+| Complexity | Criteria                                       | UI Pattern         |
+| ---------- | ---------------------------------------------- | ------------------ |
+| Simple     | Name, Description, and few basic fields        | **Modal**          |
 | Complex    | Advanced settings, multiple tabs, JSON editors | **Dedicated View** |
 
 **Modal Pattern (Simple)**
+
 - Fast interaction without leaving the current context.
 - Used for: SNS Topics, IAM Users, IAM Groups, Simple Secrets.
 
 **Dedicated View Pattern (Complex)**
+
 - Provides space for detailed configuration, validation, and multi-step workflows.
 - Uses `<PageHeader>` with a back button to return to the list view.
 - Used for: S3 Buckets, DynamoDB Tables, Lambda Functions, IAM Policies, IAM Roles.
@@ -369,6 +387,7 @@ The choice of UI pattern for creating resources depends on the complexity and nu
 For resources that have multiple management areas (e.g. S3 objects vs settings), use top-level tabbed navigation within the service page.
 
 ### Tab Row Layout
+
 - Position: Directly below `<PageHeader />` and above main content.
 - Style: `flex items-center gap-1 border-b border-border-subtle mb-5`
 - Active Tab: Bottom border in service color, `text-text-primary`, font-medium.
@@ -376,21 +395,21 @@ For resources that have multiple management areas (e.g. S3 objects vs settings),
 
 ```tsx
 <div className="flex items-center gap-1 border-b border-border-subtle mb-5">
-  <button 
+  <button
     onClick={() => setActiveTab("objects")}
     className={`px-4 py-2 text-sm font-medium border-b-2 transition-all ${
-      activeTab === "objects" 
-        ? "border-blue-500 text-text-primary" 
+      activeTab === "objects"
+        ? "border-blue-500 text-text-primary"
         : "border-transparent text-text-muted hover:text-text-primary"
     }`}
   >
     Objects
   </button>
-  <button 
+  <button
     onClick={() => setActiveTab("settings")}
     className={`px-4 py-2 text-sm font-medium border-b-2 transition-all ${
-      activeTab === "settings" 
-        ? "border-blue-500 text-text-primary" 
+      activeTab === "settings"
+        ? "border-blue-500 text-text-primary"
         : "border-transparent text-text-muted hover:text-text-primary"
     }`}
   >
@@ -402,7 +421,7 @@ For resources that have multiple management areas (e.g. S3 objects vs settings),
 ### Standard Tab Names by Service
 
 | Service  | Tab 1 (Data/Action) | Tab 2 (Management) |
-|----------|---------------------|--------------------|
+| -------- | ------------------- | ------------------ |
 | S3       | Objects             | Settings           |
 | Lambda   | Invoke              | Settings           |
 | SQS      | Messages            | Settings           |

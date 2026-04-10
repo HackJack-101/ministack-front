@@ -18,7 +18,7 @@ export const KMS = () => {
 
   useEffect(() => {
     kms.fetchKeys();
-  }, [kms.fetchKeys]);
+  }, [kms]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,12 +50,7 @@ export const KMS = () => {
         subtitle="Manage cryptographic keys for your applications"
         actions={
           <>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => kms.fetchKeys()}
-              title="Refresh"
-            >
+            <Button variant="ghost" size="sm" onClick={() => kms.fetchKeys()} title="Refresh">
               <RefreshCw className={`w-4 h-4 ${kms.loading ? "animate-spin" : ""}`} />
             </Button>
             <Button
@@ -87,20 +82,20 @@ export const KMS = () => {
               key: "description",
               header: "Description",
               render: (k: KeyMetadata) => (
-                <span className="text-sm text-text-secondary italic">
-                  {k.Description || "No description"}
-                </span>
+                <span className="text-sm text-text-secondary italic">{k.Description || "No description"}</span>
               ),
             },
             {
               key: "status",
               header: "Status",
               render: (k: KeyMetadata) => (
-                <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border ${
-                  k.Enabled 
-                    ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" 
-                    : "bg-red-500/10 text-red-500 border-red-500/20"
-                }`}>
+                <span
+                  className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border ${
+                    k.Enabled
+                      ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                      : "bg-red-500/10 text-red-500 border-red-500/20"
+                  }`}
+                >
                   {k.Enabled ? "Enabled" : "Disabled"}
                 </span>
               ),

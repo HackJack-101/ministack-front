@@ -39,7 +39,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ open, onClose,
     try {
       await onConfirm(userName);
       onClose();
-    } catch (err) {
+    } catch {
       // Error handled by hook
     } finally {
       setLoading(false);
@@ -62,7 +62,10 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ open, onClose,
             </div>
             <h3 className="text-sm font-semibold text-text-primary">Create IAM User</h3>
           </div>
-          <button onClick={onClose} className="p-1 hover:bg-surface-hover rounded-btn transition-colors text-text-muted hover:text-text-primary">
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-surface-hover rounded-btn transition-colors text-text-muted hover:text-text-primary"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -83,13 +86,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ open, onClose,
           <Button variant="ghost" size="sm" onClick={onClose} disabled={loading}>
             Cancel
           </Button>
-          <Button
-            variant="purple"
-            size="sm"
-            onClick={handleSubmit}
-            isLoading={loading}
-            disabled={!userName}
-          >
+          <Button variant="purple" size="sm" onClick={handleSubmit} isLoading={loading} disabled={!userName}>
             Create User
           </Button>
         </div>

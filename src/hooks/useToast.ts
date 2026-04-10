@@ -20,7 +20,9 @@ export const ToastActionsContext = createContext<ToastActions | null>(null);
 
 export const useToast = () => {
   const actions = useContext(ToastActionsContext);
-  if (!actions) throw new Error("useToast must be used within ToastProvider");
+  if (!actions) {
+    throw new Error("useToast must be used within ToastProvider");
+  }
 
   return useMemo(
     () => ({

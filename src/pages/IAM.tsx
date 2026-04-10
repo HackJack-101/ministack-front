@@ -12,10 +12,7 @@ import { pluralizeWord } from "../utils/format";
 type Tab = "users" | "roles" | "groups" | "policies";
 
 export const IAM: React.FC = () => {
-  const { 
-    users, roles, groups, policies, loading, refresh,
-    createUser, createGroup 
-  } = useIAM();
+  const { users, roles, groups, policies, loading, refresh, createUser, createGroup } = useIAM();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>("users");
 
@@ -26,7 +23,14 @@ export const IAM: React.FC = () => {
     { id: "users", label: "Users", singular: "User", icon: User, count: users.length },
     { id: "roles", label: "Roles", singular: "Role", icon: Shield, count: roles.length },
     { id: "groups", label: "Groups", singular: "Group", icon: Users, count: groups.length },
-    { id: "policies", label: "Policies", singular: "Policy", plural: "Policies", icon: FileKey, count: policies.length },
+    {
+      id: "policies",
+      label: "Policies",
+      singular: "Policy",
+      plural: "Policies",
+      icon: FileKey,
+      count: policies.length,
+    },
   ];
 
   const renderContent = () => {
@@ -35,10 +39,27 @@ export const IAM: React.FC = () => {
         return (
           <DataTable
             columns={[
-              { key: "UserName", header: "User Name", render: (u: any) => u.UserName, className: "font-medium text-text-primary" },
+              {
+                key: "UserName",
+                header: "User Name",
+                render: (u: any) => u.UserName,
+                className: "font-medium text-text-primary",
+              },
               { key: "UserId", header: "User ID", render: (u: any) => u.UserId, className: "font-mono text-[13px]" },
-              { key: "CreateDate", header: "Created Date", render: (u: any) => u.CreateDate ? new Date(u.CreateDate).toLocaleDateString() : "-" },
-              { key: "Arn", header: "ARN", render: (u: any) => <span className="truncate max-w-xs block" title={u.Arn}>{u.Arn}</span> },
+              {
+                key: "CreateDate",
+                header: "Created Date",
+                render: (u: any) => (u.CreateDate ? new Date(u.CreateDate).toLocaleDateString() : "-"),
+              },
+              {
+                key: "Arn",
+                header: "ARN",
+                render: (u: any) => (
+                  <span className="truncate max-w-xs block" title={u.Arn}>
+                    {u.Arn}
+                  </span>
+                ),
+              },
             ]}
             rows={users}
             rowKey={(u: any) => u.UserId}
@@ -53,10 +74,27 @@ export const IAM: React.FC = () => {
         return (
           <DataTable
             columns={[
-              { key: "RoleName", header: "Role Name", render: (r: any) => r.RoleName, className: "font-medium text-text-primary" },
+              {
+                key: "RoleName",
+                header: "Role Name",
+                render: (r: any) => r.RoleName,
+                className: "font-medium text-text-primary",
+              },
               { key: "RoleId", header: "Role ID", render: (r: any) => r.RoleId, className: "font-mono text-[13px]" },
-              { key: "CreateDate", header: "Created Date", render: (r: any) => r.CreateDate ? new Date(r.CreateDate).toLocaleDateString() : "-" },
-              { key: "Arn", header: "ARN", render: (r: any) => <span className="truncate max-w-xs block" title={r.Arn}>{r.Arn}</span> },
+              {
+                key: "CreateDate",
+                header: "Created Date",
+                render: (r: any) => (r.CreateDate ? new Date(r.CreateDate).toLocaleDateString() : "-"),
+              },
+              {
+                key: "Arn",
+                header: "ARN",
+                render: (r: any) => (
+                  <span className="truncate max-w-xs block" title={r.Arn}>
+                    {r.Arn}
+                  </span>
+                ),
+              },
             ]}
             rows={roles}
             rowKey={(r: any) => r.RoleId}
@@ -71,10 +109,27 @@ export const IAM: React.FC = () => {
         return (
           <DataTable
             columns={[
-              { key: "GroupName", header: "Group Name", render: (g: any) => g.GroupName, className: "font-medium text-text-primary" },
+              {
+                key: "GroupName",
+                header: "Group Name",
+                render: (g: any) => g.GroupName,
+                className: "font-medium text-text-primary",
+              },
               { key: "GroupId", header: "Group ID", render: (g: any) => g.GroupId, className: "font-mono text-[13px]" },
-              { key: "CreateDate", header: "Created Date", render: (g: any) => g.CreateDate ? new Date(g.CreateDate).toLocaleDateString() : "-" },
-              { key: "Arn", header: "ARN", render: (g: any) => <span className="truncate max-w-xs block" title={g.Arn}>{g.Arn}</span> },
+              {
+                key: "CreateDate",
+                header: "Created Date",
+                render: (g: any) => (g.CreateDate ? new Date(g.CreateDate).toLocaleDateString() : "-"),
+              },
+              {
+                key: "Arn",
+                header: "ARN",
+                render: (g: any) => (
+                  <span className="truncate max-w-xs block" title={g.Arn}>
+                    {g.Arn}
+                  </span>
+                ),
+              },
             ]}
             rows={groups}
             rowKey={(g: any) => g.GroupId}
@@ -89,10 +144,28 @@ export const IAM: React.FC = () => {
         return (
           <DataTable
             columns={[
-              { key: "PolicyName", header: "Policy Name", render: (p: any) => p.PolicyName, className: "font-medium text-text-primary" },
-              { key: "PolicyId", header: "Policy ID", render: (p: any) => p.PolicyId, className: "font-mono text-[13px]" },
+              {
+                key: "PolicyName",
+                header: "Policy Name",
+                render: (p: any) => p.PolicyName,
+                className: "font-medium text-text-primary",
+              },
+              {
+                key: "PolicyId",
+                header: "Policy ID",
+                render: (p: any) => p.PolicyId,
+                className: "font-mono text-[13px]",
+              },
               { key: "DefaultVersionId", header: "Default Version", render: (p: any) => p.DefaultVersionId },
-              { key: "Arn", header: "ARN", render: (p: any) => <span className="truncate max-w-xs block" title={p.Arn}>{p.Arn}</span> },
+              {
+                key: "Arn",
+                header: "ARN",
+                render: (p: any) => (
+                  <span className="truncate max-w-xs block" title={p.Arn}>
+                    {p.Arn}
+                  </span>
+                ),
+              },
             ]}
             rows={policies}
             rowKey={(p: any) => p.PolicyId}
@@ -155,9 +228,11 @@ export const IAM: React.FC = () => {
           >
             <Icon className="w-4 h-4" />
             <span className="text-sm font-medium">{pluralizeWord(count, singular, plural)}</span>
-            <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+            <span
+              className={`text-xs px-1.5 py-0.5 rounded-full ${
                 activeTab === id ? "bg-purple-500/20" : "bg-surface-hover"
-            }`}>
+              }`}
+            >
               {count}
             </span>
           </button>
@@ -166,16 +241,8 @@ export const IAM: React.FC = () => {
 
       {renderContent()}
 
-      <CreateUserModal
-        open={isUserModalOpen}
-        onClose={() => setIsUserModalOpen(false)}
-        onConfirm={createUser}
-      />
-      <CreateGroupModal
-        open={isGroupModalOpen}
-        onClose={() => setIsGroupModalOpen(false)}
-        onConfirm={createGroup}
-      />
+      <CreateUserModal open={isUserModalOpen} onClose={() => setIsUserModalOpen(false)} onConfirm={createUser} />
+      <CreateGroupModal open={isGroupModalOpen} onClose={() => setIsGroupModalOpen(false)} onConfirm={createGroup} />
     </div>
   );
 };

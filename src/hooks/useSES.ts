@@ -55,51 +55,65 @@ export const useSES = () => {
     }
   }, []);
 
-  const verifyIdentity = useCallback(async (email: string) => {
-    try {
-      await sesClient.send(new VerifyEmailIdentityCommand({ EmailAddress: email }));
-      toast.success("Identity verification requested");
-      await fetchIdentities();
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Failed to verify identity");
-    }
-  }, [fetchIdentities, toast]);
+  const verifyIdentity = useCallback(
+    async (email: string) => {
+      try {
+        await sesClient.send(new VerifyEmailIdentityCommand({ EmailAddress: email }));
+        toast.success("Identity verification requested");
+        await fetchIdentities();
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : "Failed to verify identity");
+      }
+    },
+    [fetchIdentities, toast],
+  );
 
-  const deleteIdentity = useCallback(async (identity: string) => {
-    try {
-      await sesClient.send(new DeleteIdentityCommand({ Identity: identity }));
-      toast.success("Identity deleted");
-      await fetchIdentities();
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete identity");
-    }
-  }, [fetchIdentities, toast]);
+  const deleteIdentity = useCallback(
+    async (identity: string) => {
+      try {
+        await sesClient.send(new DeleteIdentityCommand({ Identity: identity }));
+        toast.success("Identity deleted");
+        await fetchIdentities();
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : "Failed to delete identity");
+      }
+    },
+    [fetchIdentities, toast],
+  );
 
-  const sendEmail = useCallback(async (source: string, to: string[], subject: string, body: string) => {
-    try {
-      await sesClient.send(new SendEmailCommand({
-        Source: source,
-        Destination: { ToAddresses: to },
-        Message: {
-          Subject: { Data: subject },
-          Body: { Text: { Data: body } },
-        },
-      }));
-      toast.success("Email sent successfully");
-      await fetchSentEmails();
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Failed to send email");
-    }
-  }, [fetchSentEmails, toast]);
+  const sendEmail = useCallback(
+    async (source: string, to: string[], subject: string, body: string) => {
+      try {
+        await sesClient.send(
+          new SendEmailCommand({
+            Source: source,
+            Destination: { ToAddresses: to },
+            Message: {
+              Subject: { Data: subject },
+              Body: { Text: { Data: body } },
+            },
+          }),
+        );
+        toast.success("Email sent successfully");
+        await fetchSentEmails();
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : "Failed to send email");
+      }
+    },
+    [fetchSentEmails, toast],
+  );
 
-  return useMemo(() => ({
-    identities,
-    sentEmails,
-    loading,
-    fetchIdentities,
-    fetchSentEmails,
-    verifyIdentity,
-    deleteIdentity,
-    sendEmail,
-  }), [identities, sentEmails, loading, fetchIdentities, fetchSentEmails, verifyIdentity, deleteIdentity, sendEmail]);
+  return useMemo(
+    () => ({
+      identities,
+      sentEmails,
+      loading,
+      fetchIdentities,
+      fetchSentEmails,
+      verifyIdentity,
+      deleteIdentity,
+      sendEmail,
+    }),
+    [identities, sentEmails, loading, fetchIdentities, fetchSentEmails, verifyIdentity, deleteIdentity, sendEmail],
+  );
 };

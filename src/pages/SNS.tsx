@@ -35,17 +35,20 @@ const SNS: React.FC = () => {
   const [newSubProtocol, setNewSubProtocol] = useState("sqs");
   const [newSubEndpoint, setNewSubEndpoint] = useState("");
 
-  const fetchSubscriptions = useCallback(async (arn: string) => {
-    setLoadingSubscriptions(true);
-    try {
-      const subs = await listSubscriptions(arn);
-      setSubscriptions(subs);
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Failed to fetch subscriptions");
-    } finally {
-      setLoadingSubscriptions(false);
-    }
-  }, [listSubscriptions, toast]);
+  const fetchSubscriptions = useCallback(
+    async (arn: string) => {
+      setLoadingSubscriptions(true);
+      try {
+        const subs = await listSubscriptions(arn);
+        setSubscriptions(subs);
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : "Failed to fetch subscriptions");
+      } finally {
+        setLoadingSubscriptions(false);
+      }
+    },
+    [listSubscriptions, toast],
+  );
 
   useEffect(() => {
     if (topicArn && topics.length > 0) {
@@ -127,7 +130,8 @@ const SNS: React.FC = () => {
 
   const getTopicName = (arn: string) => arn.split(":").pop() || arn;
 
-  const selectClass = "w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-rose-500/60 transition-colors text-sm";
+  const selectClass =
+    "w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-rose-500/60 transition-colors text-sm";
 
   return (
     <div className="space-y-5">
@@ -140,7 +144,12 @@ const SNS: React.FC = () => {
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </Button>
             {!selectedTopicArn && (
-              <Button variant="rose" size="sm" onClick={() => setShowCreateTopic(true)} leftIcon={<Plus className="w-3.5 h-3.5" />}>
+              <Button
+                variant="rose"
+                size="sm"
+                onClick={() => setShowCreateTopic(true)}
+                leftIcon={<Plus className="w-3.5 h-3.5" />}
+              >
                 Create Topic
               </Button>
             )}
@@ -170,20 +179,30 @@ const SNS: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-subtle">
-                {Array(3).fill(0).map((_, i) => (
-                  <tr key={i}>
-                    <td className="px-4 py-3"><div className="h-3 w-32 bg-surface-skeleton rounded animate-pulse" /></td>
-                    <td className="px-4 py-3"><div className="h-3 w-64 bg-surface-skeleton rounded animate-pulse" /></td>
-                    <td className="px-4 py-3" />
-                  </tr>
-                ))}
+                {Array(3)
+                  .fill(0)
+                  .map((_, i) => (
+                    <tr key={i}>
+                      <td className="px-4 py-3">
+                        <div className="h-3 w-32 bg-surface-skeleton rounded animate-pulse" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="h-3 w-64 bg-surface-skeleton rounded animate-pulse" />
+                      </td>
+                      <td className="px-4 py-3" />
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
         ) : topics.length === 0 ? (
           <div className="bg-surface-card rounded-card border border-border-subtle">
-            <EmptyState icon={Bell} title="No topics found" description="Create your first SNS topic to get started."
-              action={{ label: "Create Topic", onClick: () => setShowCreateTopic(true) }} />
+            <EmptyState
+              icon={Bell}
+              title="No topics found"
+              description="Create your first SNS topic to get started."
+              action={{ label: "Create Topic", onClick: () => setShowCreateTopic(true) }}
+            />
           </div>
         ) : (
           <div className="bg-surface-card rounded-card border border-border-subtle overflow-hidden">
@@ -197,8 +216,11 @@ const SNS: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-border-subtle">
                 {topics.map((topic) => (
-                  <tr key={topic.TopicArn} className="hover:bg-surface-hover cursor-pointer transition-colors group"
-                    onClick={() => navigate(`/sns/${getTopicName(topic.TopicArn!)}`)}>
+                  <tr
+                    key={topic.TopicArn}
+                    className="hover:bg-surface-hover cursor-pointer transition-colors group"
+                    onClick={() => navigate(`/sns/${getTopicName(topic.TopicArn!)}`)}
+                  >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="p-1.5 bg-rose-500/10 rounded">
@@ -208,12 +230,20 @@ const SNS: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-xs text-text-muted font-mono truncate max-w-xs block">{topic.TopicArn}</span>
+                      <span className="text-xs text-text-muted font-mono truncate max-w-xs block">
+                        {topic.TopicArn}
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <button onClick={(e) => { e.stopPropagation(); handleDeleteTopic(topic.TopicArn!); }}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteTopic(topic.TopicArn!);
+                        }}
                         className="p-1.5 text-text-faint hover:text-red-500 hover:bg-red-500/10 rounded transition-all opacity-0 group-hover:opacity-100"
-                        title="Delete Topic" aria-label="Delete Topic">
+                        title="Delete Topic"
+                        aria-label="Delete Topic"
+                      >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </td>
@@ -249,8 +279,10 @@ const SNS: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate("/sns")}
-              className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-primary transition-colors">
+            <button
+              onClick={() => navigate("/sns")}
+              className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-primary transition-colors"
+            >
               <ArrowLeft className="w-3.5 h-3.5" />
               Topics
             </button>
@@ -276,11 +308,17 @@ const SNS: React.FC = () => {
                   </h2>
                   <div className="space-y-3">
                     <div>
-                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">Name</span>
-                      <span className="text-sm text-text-primary font-medium break-all">{getTopicName(selectedTopicArn)}</span>
+                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">
+                        Name
+                      </span>
+                      <span className="text-sm text-text-primary font-medium break-all">
+                        {getTopicName(selectedTopicArn)}
+                      </span>
                     </div>
                     <div>
-                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">ARN</span>
+                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">
+                        ARN
+                      </span>
                       <span className="text-xs text-text-muted font-mono break-all">{selectedTopicArn}</span>
                     </div>
                   </div>
@@ -294,13 +332,30 @@ const SNS: React.FC = () => {
                     Publish Message
                   </h2>
                   <form onSubmit={handlePublish} className="space-y-4 max-w-xl">
-                    <Input label="Subject (optional)" type="text" accentColor="rose"
-                      placeholder="Message Subject" value={publishSubject} onChange={(e) => setPublishSubject(e.target.value)} />
-                    <TextArea label="Message" required rows={8} accentColor="rose"
-                      placeholder='{"key": "value"} or just text' value={publishMessage}
-                      onChange={(e) => setPublishMessage(e.target.value)} />
-                    <Button type="submit" variant="rose" size="sm" className="w-40 !justify-center"
-                      leftIcon={<Send className="w-3.5 h-3.5" />}>
+                    <Input
+                      label="Subject (optional)"
+                      type="text"
+                      accentColor="rose"
+                      placeholder="Message Subject"
+                      value={publishSubject}
+                      onChange={(e) => setPublishSubject(e.target.value)}
+                    />
+                    <TextArea
+                      label="Message"
+                      required
+                      rows={8}
+                      accentColor="rose"
+                      placeholder='{"key": "value"} or just text'
+                      value={publishMessage}
+                      onChange={(e) => setPublishMessage(e.target.value)}
+                    />
+                    <Button
+                      type="submit"
+                      variant="rose"
+                      size="sm"
+                      className="w-40 !justify-center"
+                      leftIcon={<Send className="w-3.5 h-3.5" />}
+                    >
                       Publish
                     </Button>
                   </form>
@@ -314,8 +369,12 @@ const SNS: React.FC = () => {
                   <Users className="w-3.5 h-3.5 text-rose-500" />
                   Subscriptions
                 </h2>
-                <Button variant="ghost" size="xs" onClick={() => setShowSubscribe(true)}
-                  leftIcon={<Plus className="w-3 h-3" />}>
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  onClick={() => setShowSubscribe(true)}
+                  leftIcon={<Plus className="w-3 h-3" />}
+                >
                   Add Subscription
                 </Button>
               </div>
@@ -324,8 +383,17 @@ const SNS: React.FC = () => {
                 <div className="p-4 bg-rose-500/[0.03] border-b border-rose-500/10">
                   <form onSubmit={handleSubscribe} className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium">Protocol</label>
-                      <select className={selectClass} value={newSubProtocol} onChange={(e) => { setNewSubProtocol(e.target.value); setNewSubEndpoint(""); }}>
+                      <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium">
+                        Protocol
+                      </label>
+                      <select
+                        className={selectClass}
+                        value={newSubProtocol}
+                        onChange={(e) => {
+                          setNewSubProtocol(e.target.value);
+                          setNewSubEndpoint("");
+                        }}
+                      >
                         <option value="sqs">SQS</option>
                         <option value="lambda">Lambda</option>
                         <option value="sns">SNS</option>
@@ -336,7 +404,9 @@ const SNS: React.FC = () => {
                       </select>
                     </div>
                     <div className="md:col-span-2 space-y-1.5">
-                      <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium">Endpoint</label>
+                      <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium">
+                        Endpoint
+                      </label>
                       <div className="flex gap-2">
                         {newSubProtocol === "sqs" ? (
                           <select
@@ -391,8 +461,8 @@ const SNS: React.FC = () => {
                               newSubProtocol === "email"
                                 ? "example@email.com"
                                 : newSubProtocol === "sms"
-                                ? "+1234567890"
-                                : "https://example.com/webhook"
+                                  ? "+1234567890"
+                                  : "https://example.com/webhook"
                             }
                             value={newSubEndpoint}
                             onChange={(e) => setNewSubEndpoint(e.target.value)}
@@ -441,14 +511,20 @@ const SNS: React.FC = () => {
                             </span>
                           </td>
                           <td className="px-4 py-3">
-                            <div className="text-sm text-text-secondary truncate max-w-xs xl:max-w-md font-mono" title={sub.Endpoint}>
+                            <div
+                              className="text-sm text-text-secondary truncate max-w-xs xl:max-w-md font-mono"
+                              title={sub.Endpoint}
+                            >
                               {sub.Endpoint}
                             </div>
                           </td>
                           <td className="px-4 py-3 text-right">
-                            <button onClick={() => handleUnsubscribe(sub.SubscriptionArn!)}
+                            <button
+                              onClick={() => handleUnsubscribe(sub.SubscriptionArn!)}
                               className="p-1.5 text-text-faint hover:text-red-500 hover:bg-red-500/10 rounded transition-all opacity-0 group-hover:opacity-100"
-                              title="Unsubscribe" aria-label="Unsubscribe">
+                              title="Unsubscribe"
+                              aria-label="Unsubscribe"
+                            >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </td>

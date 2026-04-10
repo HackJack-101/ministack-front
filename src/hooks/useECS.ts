@@ -1,8 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import {
-  ListClustersCommand,
-  DeleteClusterCommand,
-} from "@aws-sdk/client-ecs";
+import { ListClustersCommand, DeleteClusterCommand } from "@aws-sdk/client-ecs";
 import { ecsClient } from "../services/awsClients";
 import { useToast } from "./useToast";
 
@@ -24,16 +21,19 @@ export const useECS = () => {
     }
   }, [toast]);
 
-  const deleteCluster = useCallback(async (clusterArn: string) => {
-    try {
-      await ecsClient.send(new DeleteClusterCommand({ cluster: clusterArn }));
-      toast.success("Cluster deletion initiated");
-      fetchClusters();
-    } catch (err) {
-      console.error("Failed to delete cluster", err);
-      toast.error("Failed to delete cluster");
-    }
-  }, [toast, fetchClusters]);
+  const deleteCluster = useCallback(
+    async (clusterArn: string) => {
+      try {
+        await ecsClient.send(new DeleteClusterCommand({ cluster: clusterArn }));
+        toast.success("Cluster deletion initiated");
+        fetchClusters();
+      } catch (err) {
+        console.error("Failed to delete cluster", err);
+        toast.error("Failed to delete cluster");
+      }
+    },
+    [toast, fetchClusters],
+  );
 
   useEffect(() => {
     fetchClusters();
@@ -46,6 +46,6 @@ export const useECS = () => {
       refresh: fetchClusters,
       deleteCluster,
     }),
-    [clusters, loading, fetchClusters, deleteCluster]
+    [clusters, loading, fetchClusters, deleteCluster],
   );
 };

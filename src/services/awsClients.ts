@@ -29,7 +29,7 @@ const getMinistackEndpoint = () => {
   if (typeof import.meta !== "undefined" && import.meta.env?.VITE_MINISTACK_ENDPOINT) {
     return import.meta.env.VITE_MINISTACK_ENDPOINT;
   }
-  
+
   // If we are in a browser, use the current hostname to handle remote access
   if (typeof window !== "undefined") {
     const hostname = window.location.hostname;
@@ -37,7 +37,7 @@ const getMinistackEndpoint = () => {
     // while keeping the port 4566 for the MiniStack backend.
     return `http://${hostname}:4566`;
   }
-  
+
   return "http://localhost:4566";
 };
 

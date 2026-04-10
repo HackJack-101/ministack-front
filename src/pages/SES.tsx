@@ -33,7 +33,10 @@ export const SES = () => {
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    const to = sendForm.to.split(",").map((s) => s.trim()).filter(Boolean);
+    const to = sendForm.to
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
     if (!sendForm.source || to.length === 0 || !sendForm.subject || !sendForm.body) return;
     await ses.sendEmail(sendForm.source, to, sendForm.subject, sendForm.body);
     setIsSendModalOpen(false);
@@ -163,9 +166,7 @@ export const SES = () => {
                 key: "timestamp",
                 header: "Timestamp",
                 render: (email: SentEmail) => (
-                  <span className="text-xs text-text-muted">
-                    {new Date(email.timestamp).toLocaleString()}
-                  </span>
+                  <span className="text-xs text-text-muted">{new Date(email.timestamp).toLocaleString()}</span>
                 ),
                 className: "w-44",
               },
@@ -182,7 +183,10 @@ export const SES = () => {
                 key: "to",
                 header: "To",
                 render: (email: SentEmail) => (
-                  <span className="text-xs text-text-secondary truncate max-w-[150px]" title={email.destination.toAddresses.join(", ")}>
+                  <span
+                    className="text-xs text-text-secondary truncate max-w-[150px]"
+                    title={email.destination.toAddresses.join(", ")}
+                  >
                     {email.destination.toAddresses.join(", ")}
                   </span>
                 ),
@@ -207,11 +211,7 @@ export const SES = () => {
         )}
       </div>
 
-      <Modal
-        open={isVerifyModalOpen}
-        onClose={() => setIsVerifyModalOpen(false)}
-        title="Verify Identity"
-      >
+      <Modal open={isVerifyModalOpen} onClose={() => setIsVerifyModalOpen(false)} title="Verify Identity">
         <form onSubmit={handleVerify} className="space-y-4 pt-2">
           <Input
             label="Email Address"

@@ -1,8 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import {
-  DescribeStacksCommand,
-  DeleteStackCommand,
-} from "@aws-sdk/client-cloudformation";
+import { DescribeStacksCommand, DeleteStackCommand } from "@aws-sdk/client-cloudformation";
 import type { Stack } from "@aws-sdk/client-cloudformation";
 import { cloudFormationClient } from "../services/awsClients";
 import { useToast } from "./useToast";
@@ -25,16 +22,19 @@ export const useCloudFormation = () => {
     }
   }, [toast]);
 
-  const deleteStack = useCallback(async (stackName: string) => {
-    try {
-      await cloudFormationClient.send(new DeleteStackCommand({ StackName: stackName }));
-      toast.success(`Stack ${stackName} deletion initiated`);
-      fetchStacks();
-    } catch (err) {
-      console.error("Failed to delete stack", err);
-      toast.error("Failed to delete stack");
-    }
-  }, [toast, fetchStacks]);
+  const deleteStack = useCallback(
+    async (stackName: string) => {
+      try {
+        await cloudFormationClient.send(new DeleteStackCommand({ StackName: stackName }));
+        toast.success(`Stack ${stackName} deletion initiated`);
+        fetchStacks();
+      } catch (err) {
+        console.error("Failed to delete stack", err);
+        toast.error("Failed to delete stack");
+      }
+    },
+    [toast, fetchStacks],
+  );
 
   useEffect(() => {
     fetchStacks();
@@ -47,6 +47,6 @@ export const useCloudFormation = () => {
       refresh: fetchStacks,
       deleteStack,
     }),
-    [stacks, loading, fetchStacks, deleteStack]
+    [stacks, loading, fetchStacks, deleteStack],
   );
 };

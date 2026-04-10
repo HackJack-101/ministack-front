@@ -21,7 +21,7 @@ export const Route53 = () => {
 
   useEffect(() => {
     r53.fetchHostedZones();
-  }, [r53.fetchHostedZones]);
+  }, [r53]);
 
   useEffect(() => {
     const loadRecords = async () => {
@@ -33,7 +33,7 @@ export const Route53 = () => {
       }
     };
     loadRecords();
-  }, [selectedZone, r53.fetchRecordSets]);
+  }, [selectedZone, r53]);
 
   const handleCreateZone = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,12 +58,7 @@ export const Route53 = () => {
         subtitle="Manage DNS records and health checks"
         actions={
           <>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => r53.fetchHostedZones()}
-              title="Refresh"
-            >
+            <Button variant="ghost" size="sm" onClick={() => r53.fetchHostedZones()} title="Refresh">
               <RefreshCw className={`w-4 h-4 ${r53.loading ? "animate-spin" : ""}`} />
             </Button>
             <Button
@@ -95,7 +90,11 @@ export const Route53 = () => {
                 </button>
               ),
             },
-            { key: "id", header: "ID", render: (zone: HostedZone) => <span className="font-mono text-[10px] text-text-faint">{zone.Id}</span> },
+            {
+              key: "id",
+              header: "ID",
+              render: (zone: HostedZone) => <span className="font-mono text-[10px] text-text-faint">{zone.Id}</span>,
+            },
             { key: "records", header: "Records", render: (zone: HostedZone) => zone.ResourceRecordSetCount || "-" },
             {
               key: "actions",
@@ -137,10 +136,30 @@ export const Route53 = () => {
           <div className="bg-surface-card rounded-card border border-border-subtle overflow-hidden">
             <DataTable
               columns={[
-                { key: "name", header: "Record Name", render: (r: ResourceRecordSet) => <span className="text-text-primary font-medium">{r.Name}</span> },
-                { key: "type", header: "Type", render: (r: ResourceRecordSet) => <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface-elevated border border-border-subtle font-bold text-text-muted">{r.Type}</span> },
+                {
+                  key: "name",
+                  header: "Record Name",
+                  render: (r: ResourceRecordSet) => <span className="text-text-primary font-medium">{r.Name}</span>,
+                },
+                {
+                  key: "type",
+                  header: "Type",
+                  render: (r: ResourceRecordSet) => (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface-elevated border border-border-subtle font-bold text-text-muted">
+                      {r.Type}
+                    </span>
+                  ),
+                },
                 { key: "ttl", header: "TTL", render: (r: ResourceRecordSet) => r.TTL || "-" },
-                { key: "value", header: "Value", render: (r: ResourceRecordSet) => <span className="text-xs text-text-secondary truncate block max-w-[300px]">{r.ResourceRecords?.map(v => v.Value).join(", ") || r.AliasTarget?.DNSName || "-"}</span> },
+                {
+                  key: "value",
+                  header: "Value",
+                  render: (r: ResourceRecordSet) => (
+                    <span className="text-xs text-text-secondary truncate block max-w-[300px]">
+                      {r.ResourceRecords?.map((v) => v.Value).join(", ") || r.AliasTarget?.DNSName || "-"}
+                    </span>
+                  ),
+                },
               ]}
               rows={records}
               rowKey={(r: ResourceRecordSet) => `${r.Name}-${r.Type}`}

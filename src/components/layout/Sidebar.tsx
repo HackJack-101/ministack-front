@@ -1,3 +1,5 @@
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -33,7 +35,13 @@ const navItems = [
   { name: "RDS", path: "/rds", icon: Database, accent: "text-blue-600", activeBg: "bg-blue-600/10" },
   { name: "Lambda", path: "/lambda", icon: Zap, accent: "text-amber-500", activeBg: "bg-amber-500/10" },
   { name: "ECS", path: "/ecs", icon: Box, accent: "text-orange-500", activeBg: "bg-orange-500/10" },
-  { name: "CloudFormation", path: "/cloudformation", icon: Layers2, accent: "text-pink-600", activeBg: "bg-pink-600/10" },
+  {
+    name: "CloudFormation",
+    path: "/cloudformation",
+    icon: Layers2,
+    accent: "text-pink-600",
+    activeBg: "bg-pink-600/10",
+  },
   { name: "Step Functions", path: "/states", icon: GitMerge, accent: "text-rose-600", activeBg: "bg-rose-600/10" },
   { name: "Kinesis", path: "/kinesis", icon: Waves, accent: "text-blue-400", activeBg: "bg-blue-400/10" },
   { name: "ACM", path: "/acm", icon: BadgeCheck, accent: "text-emerald-600", activeBg: "bg-emerald-600/10" },
@@ -48,19 +56,48 @@ const navItems = [
   { name: "DynamoDB", path: "/dynamodb", icon: Table, accent: "text-emerald-500", activeBg: "bg-emerald-500/10" },
   { name: "SQS", path: "/sqs", icon: MessageSquare, accent: "text-orange-500", activeBg: "bg-orange-500/10" },
   { name: "SNS", path: "/sns", icon: Bell, accent: "text-rose-500", activeBg: "bg-rose-500/10" },
-  { name: "Secrets Manager", path: "/secrets-manager", icon: Lock, accent: "text-purple-500", activeBg: "bg-purple-500/10" },
+  {
+    name: "Secrets Manager",
+    path: "/secrets-manager",
+    icon: Lock,
+    accent: "text-purple-500",
+    activeBg: "bg-purple-500/10",
+  },
 ];
 
 export const Sidebar = () => {
   const location = useLocation();
+  const [hoveredItem, setHoveredItem] = useState<{ name: string; top: number } | null>(null);
+  const navRef = useRef<HTMLDivElement>(null);
+
+  // Close tooltip on scroll
+  useEffect(() => {
+    const handleScroll = () => setHoveredItem(null);
+    const nav = navRef.current;
+    if (nav) {
+      nav.addEventListener("scroll", handleScroll);
+      return () => nav.removeEventListener("scroll", handleScroll);
+    }
+  }, []);
 
   return (
-    <nav className="fixed top-12 left-0 bottom-0 w-12 z-30 bg-surface-card border-r border-border-subtle flex flex-col py-2">
-      <ul className="flex flex-col gap-0.5 px-1.5">
+    <nav
+      ref={navRef}
+      className="fixed top-12 left-0 bottom-0 w-12 z-30 bg-surface-card border-r border-border-subtle flex flex-col py-2 overflow-y-auto scrollbar-hide"
+    >
+      <ul className="flex flex-col gap-0.5 px-1.5 pb-20">
         {navItems.map(({ name, path, icon: Icon, accent, activeBg }) => {
           const isActive = location.pathname === path;
           return (
-            <li key={path} className="relative group">
+            <li
+              key={path}
+              className="relative group"
+              onMouseEnter={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                setHoveredItem({ name, top: rect.top + rect.height / 2 });
+              }}
+              onMouseLeave={() => setHoveredItem(null)}
+            >
               <Link
                 to={path}
                 className={`flex items-center justify-center w-9 h-9 rounded transition-colors duration-150 ${
@@ -71,18 +108,29 @@ export const Sidebar = () => {
                 aria-label={name}
               >
                 {isActive && (
-                  <span className={`absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full ${accent.replace("text-", "bg-")}`} />
+                  <span
+                    className={`absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full ${accent.replace("text-", "bg-")}`}
+                  />
                 )}
                 <Icon className="w-4 h-4" />
               </Link>
-              {/* Tooltip */}
-              <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-surface-elevated border border-border-default rounded text-xs text-text-primary whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 z-50 shadow-sm">
-                {name}
-              </div>
             </li>
           );
         })}
       </ul>
+      {hoveredItem &&
+        createPortal(
+          <div
+            style={{
+              top: hoveredItem.top,
+              left: "48px",
+            }}
+            className="fixed -translate-y-1/2 ml-2 px-2 py-1 bg-surface-elevated border border-border-default rounded text-xs text-text-primary whitespace-nowrap pointer-events-none z-[100] shadow-md transition-opacity duration-150"
+          >
+            {hoveredItem.name}
+          </div>,
+          document.body,
+        )}
     </nav>
   );
 };

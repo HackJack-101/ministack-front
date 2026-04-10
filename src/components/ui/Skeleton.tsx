@@ -33,10 +33,7 @@ export const TableRowSkeleton = ({ cols = 3 }: { cols?: number }) => (
       .fill(0)
       .map((_, i) => (
         <td key={i} className="px-4 py-3">
-          <div
-            className="h-3 bg-surface-skeleton animate-pulse rounded"
-            style={{ width: `${60 + (i % 3) * 15}%` }}
-          />
+          <div className="h-3 bg-surface-skeleton animate-pulse rounded" style={{ width: `${60 + (i % 3) * 15}%` }} />
         </td>
       ))}
   </tr>

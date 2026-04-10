@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from "react";
 import type { _Object, ObjectVersion } from "@aws-sdk/client-s3";
-import { 
-  FileText, 
-  Copy, 
-  Download, 
-  Trash2, 
-  Clock, 
-  HardDrive, 
-  Shield, 
-  Hash, 
+import {
+  FileText,
+  Copy,
+  Download,
+  Trash2,
+  Clock,
+  HardDrive,
+  Shield,
+  Hash,
   Database,
   ExternalLink,
   History,
   Lock,
   LockOpen,
   Info,
-  RefreshCw
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "../ui/Button";
 import { useToast } from "../../hooks/useToast";
@@ -30,12 +30,7 @@ interface ObjectDetailProps {
   onDownload: (key: string) => void;
 }
 
-export const ObjectDetail: React.FC<ObjectDetailProps> = ({ 
-  bucketName, 
-  object, 
-  onDelete, 
-  onDownload 
-}) => {
+export const ObjectDetail: React.FC<ObjectDetailProps> = ({ bucketName, object, onDelete, onDownload }) => {
   const toast = useToast();
   const s3 = useS3();
   const s3Uri = `s3://${bucketName}/${object.Key}`;
@@ -44,17 +39,13 @@ export const ObjectDetail: React.FC<ObjectDetailProps> = ({
   const [versions, setVersions] = useState<ObjectVersion[]>([]);
   const [legalHold, setLegalHold] = useState<any>(null);
 
-  useEffect(() => {
-    loadObjectDetails();
-  }, [bucketName, object.Key]);
-
-  const loadObjectDetails = async () => {
+  const loadObjectDetails = useCallback(async () => {
     setLoading(true);
     try {
       const [h, v, lh] = await Promise.all([
         s3.headObject(object.Key!),
         s3.listObjectVersions(object.Key!),
-        s3.getObjectLegalHold(object.Key!)
+        s3.getObjectLegalHold(object.Key!),
       ]);
       setHeadInfo(h);
       setVersions(v);
@@ -64,7 +55,12 @@ export const ObjectDetail: React.FC<ObjectDetailProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [object.Key, s3]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadObjectDetails();
+  }, [loadObjectDetails]);
 
   const handleToggleLegalHold = async () => {
     try {
@@ -114,10 +110,10 @@ export const ObjectDetail: React.FC<ObjectDetailProps> = ({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => onDelete(object.Key!)} 
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDelete(object.Key!)}
             className="text-red-500 hover:text-red-600 hover:bg-red-500/10"
           >
             <Trash2 className="w-4 h-4 mr-1.5" />
@@ -125,85 +121,83 @@ export const ObjectDetail: React.FC<ObjectDetailProps> = ({
           </Button>
         </div>
       </div>
-      
+
       <div className="p-6 space-y-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
           <div className="space-y-8">
-             <DetailItem 
-               icon={<Hash className="w-3.5 h-3.5" />} 
-               label="Object Key" 
-               value={object.Key || ""} 
-               copyable 
-               onCopy={() => copyToClipboard(object.Key || "")}
-               valueClassName="font-mono text-xs"
-             />
-             <DetailItem 
-               icon={<Shield className="w-3.5 h-3.5" />} 
-               label="Full S3 URI" 
-               value={s3Uri} 
-               copyable 
-               onCopy={() => copyToClipboard(s3Uri)}
-               valueClassName="font-mono text-xs text-blue-500"
-             />
-             <div className="grid grid-cols-2 gap-4">
-               <DetailItem 
-                 icon={<HardDrive className="w-3.5 h-3.5" />} 
-                 label="File Size" 
-                 value={formatSize(object.Size)} 
-               />
-               <DetailItem 
-                 icon={<Info className="w-3.5 h-3.5" />} 
-                 label="Content Type" 
-                 value={headInfo?.ContentType || "application/octet-stream"} 
-               />
-             </div>
+            <DetailItem
+              icon={<Hash className="w-3.5 h-3.5" />}
+              label="Object Key"
+              value={object.Key || ""}
+              copyable
+              onCopy={() => copyToClipboard(object.Key || "")}
+              valueClassName="font-mono text-xs"
+            />
+            <DetailItem
+              icon={<Shield className="w-3.5 h-3.5" />}
+              label="Full S3 URI"
+              value={s3Uri}
+              copyable
+              onCopy={() => copyToClipboard(s3Uri)}
+              valueClassName="font-mono text-xs text-blue-500"
+            />
+            <div className="grid grid-cols-2 gap-4">
+              <DetailItem
+                icon={<HardDrive className="w-3.5 h-3.5" />}
+                label="File Size"
+                value={formatSize(object.Size)}
+              />
+              <DetailItem
+                icon={<Info className="w-3.5 h-3.5" />}
+                label="Content Type"
+                value={headInfo?.ContentType || "application/octet-stream"}
+              />
+            </div>
           </div>
           <div className="space-y-8">
-             <div className="grid grid-cols-2 gap-4">
-                <DetailItem 
-                  icon={<Clock className="w-3.5 h-3.5" />} 
-                  label="Last Modified" 
-                  value={object.LastModified?.toLocaleString() || "Unknown"} 
-                />
-                <DetailItem 
-                  icon={<Database className="w-3.5 h-3.5" />} 
-                  label="Storage Class" 
-                  value={object.StorageClass || headInfo?.StorageClass || "Standard"} 
-                />
-             </div>
-             <DetailItem 
-               icon={<Hash className="w-3.5 h-3.5" />} 
-               label="ETag" 
-               value={object.ETag?.replace(/"/g, "") || headInfo?.ETag?.replace(/"/g, "") || "None"} 
-               valueClassName="font-mono text-xs"
-             />
-             <div className="flex gap-4">
-                <div className="flex-1 p-3 bg-surface-elevated rounded-lg border border-border-subtle flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <History className="w-3.5 h-3.5 text-text-muted" />
-                    <span className="text-[10px] uppercase font-bold text-text-muted">Versions</span>
-                  </div>
-                  <span className="text-xs font-mono bg-blue-500/10 text-blue-500 px-1.5 py-0.5 rounded">
-                    {versions.length}
-                  </span>
+            <div className="grid grid-cols-2 gap-4">
+              <DetailItem
+                icon={<Clock className="w-3.5 h-3.5" />}
+                label="Last Modified"
+                value={object.LastModified?.toLocaleString() || "Unknown"}
+              />
+              <DetailItem
+                icon={<Database className="w-3.5 h-3.5" />}
+                label="Storage Class"
+                value={object.StorageClass || headInfo?.StorageClass || "Standard"}
+              />
+            </div>
+            <DetailItem
+              icon={<Hash className="w-3.5 h-3.5" />}
+              label="ETag"
+              value={object.ETag?.replace(/"/g, "") || headInfo?.ETag?.replace(/"/g, "") || "None"}
+              valueClassName="font-mono text-xs"
+            />
+            <div className="flex gap-4">
+              <div className="flex-1 p-3 bg-surface-elevated rounded-lg border border-border-subtle flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <History className="w-3.5 h-3.5 text-text-muted" />
+                  <span className="text-[10px] uppercase font-bold text-text-muted">Versions</span>
                 </div>
-                <button 
-                  onClick={handleToggleLegalHold}
-                  className={`flex-1 p-3 rounded-lg border flex items-center justify-between transition-colors ${
-                    legalHold?.Status === "ON" 
-                    ? "bg-amber-500/10 border-amber-500/30 text-amber-600" 
+                <span className="text-xs font-mono bg-blue-500/10 text-blue-500 px-1.5 py-0.5 rounded">
+                  {versions.length}
+                </span>
+              </div>
+              <button
+                onClick={handleToggleLegalHold}
+                className={`flex-1 p-3 rounded-lg border flex items-center justify-between transition-colors ${
+                  legalHold?.Status === "ON"
+                    ? "bg-amber-500/10 border-amber-500/30 text-amber-600"
                     : "bg-surface-elevated border-border-subtle text-text-muted hover:bg-surface-hover"
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    {legalHold?.Status === "ON" ? <Lock className="w-3.5 h-3.5" /> : <LockOpen className="w-3.5 h-3.5" />}
-                    <span className="text-[10px] uppercase font-bold">Legal Hold</span>
-                  </div>
-                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded">
-                    {legalHold?.Status || "OFF"}
-                  </span>
-                </button>
-             </div>
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  {legalHold?.Status === "ON" ? <Lock className="w-3.5 h-3.5" /> : <LockOpen className="w-3.5 h-3.5" />}
+                  <span className="text-[10px] uppercase font-bold">Legal Hold</span>
+                </div>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded">{legalHold?.Status || "OFF"}</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -215,9 +209,14 @@ export const ObjectDetail: React.FC<ObjectDetailProps> = ({
             </h3>
             <div className="bg-surface-elevated rounded-lg border border-border-subtle divide-y divide-border-subtle overflow-hidden">
               {versions.slice(0, 5).map((v) => (
-                <div key={v.VersionId} className="px-4 py-2.5 flex items-center justify-between hover:bg-surface-hover transition-colors group">
+                <div
+                  key={v.VersionId}
+                  className="px-4 py-2.5 flex items-center justify-between hover:bg-surface-hover transition-colors group"
+                >
                   <div className="flex items-center gap-3">
-                    <span className={`text-[9px] font-mono px-1 py-0.5 rounded ${v.IsLatest ? "bg-emerald-500/10 text-emerald-500" : "bg-text-faint/10 text-text-faint"}`}>
+                    <span
+                      className={`text-[9px] font-mono px-1 py-0.5 rounded ${v.IsLatest ? "bg-emerald-500/10 text-emerald-500" : "bg-text-faint/10 text-text-faint"}`}
+                    >
                       {v.IsLatest ? "LATEST" : "PREVIOUS"}
                     </span>
                     <span className="text-xs font-mono text-text-primary truncate max-w-[150px]">{v.VersionId}</span>
@@ -233,35 +232,35 @@ export const ObjectDetail: React.FC<ObjectDetailProps> = ({
         )}
 
         <div className="pt-8 flex justify-between items-center border-t border-border-subtle">
-           <div className="flex gap-2">
-             <Button 
-               variant="ghost" 
-               size="sm" 
-               onClick={loadObjectDetails}
-               leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
-             >
-               Reload
-             </Button>
-           </div>
-           <div className="flex gap-3">
-              <Button 
-                variant="secondary" 
-                size="sm" 
-                onClick={() => onDownload(object.Key!)}
-                leftIcon={<Download className="w-3.5 h-3.5" />}
-              >
-                Download Object
-              </Button>
-              <a
-                href={`${MINISTACK_ENDPOINT}/${bucketName}/${object.Key}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center px-4 py-1.5 text-xs font-medium text-blue-500 hover:text-white hover:bg-blue-500 border border-blue-500/30 rounded-md transition-all"
-              >
-                <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-                Open in Browser
-              </a>
-           </div>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={loadObjectDetails}
+              leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
+            >
+              Reload
+            </Button>
+          </div>
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => onDownload(object.Key!)}
+              leftIcon={<Download className="w-3.5 h-3.5" />}
+            >
+              Download Object
+            </Button>
+            <a
+              href={`${MINISTACK_ENDPOINT}/${bucketName}/${object.Key}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-4 py-1.5 text-xs font-medium text-blue-500 hover:text-white hover:bg-blue-500 border border-blue-500/30 rounded-md transition-all"
+            >
+              <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+              Open in Browser
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -284,11 +283,9 @@ const DetailItem: React.FC<DetailItemProps> = ({ icon, label, value, copyable, o
       <span>{label}</span>
     </div>
     <div className="flex items-center gap-2 group min-h-[1.5rem]">
-      <span className={`text-sm text-text-primary break-all leading-relaxed ${valueClassName || ""}`}>
-        {value}
-      </span>
+      <span className={`text-sm text-text-primary break-all leading-relaxed ${valueClassName || ""}`}>{value}</span>
       {copyable && (
-        <button 
+        <button
           onClick={onCopy}
           className="p-1 text-text-faint hover:text-text-primary opacity-0 group-hover:opacity-100 transition-all"
           title={`Copy ${label}`}

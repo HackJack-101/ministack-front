@@ -56,6 +56,7 @@ export const CloudWatchLogs = () => {
   }, [logGroupName, logStreamName, fetchLogStreams, fetchLogEvents]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadInitialData();
   }, [loadInitialData]);
 
@@ -104,8 +105,16 @@ export const CloudWatchLogs = () => {
             </button>
           ),
         },
-        { key: "retention", header: "Retention", render: (group: LogGroup) => group.retentionInDays ? `${group.retentionInDays} days` : "Never Expire" },
-        { key: "size", header: "Stored Size", render: (group: LogGroup) => group.storedBytes ? `${(group.storedBytes / 1024).toFixed(2)} KB` : "0 B" },
+        {
+          key: "retention",
+          header: "Retention",
+          render: (group: LogGroup) => (group.retentionInDays ? `${group.retentionInDays} days` : "Never Expire"),
+        },
+        {
+          key: "size",
+          header: "Stored Size",
+          render: (group: LogGroup) => (group.storedBytes ? `${(group.storedBytes / 1024).toFixed(2)} KB` : "0 B"),
+        },
         {
           key: "actions",
           header: "Actions",
@@ -145,15 +154,28 @@ export const CloudWatchLogs = () => {
           header: "Log Stream Name",
           render: (stream: LogStream) => (
             <button
-              onClick={() => navigate(`/logs/${encodeURIComponent(logGroupName || "")}/${encodeURIComponent(stream.logStreamName || "")}`)}
+              onClick={() =>
+                navigate(
+                  `/logs/${encodeURIComponent(logGroupName || "")}/${encodeURIComponent(stream.logStreamName || "")}`,
+                )
+              }
               className="font-medium text-cyan-500 hover:text-cyan-600 text-left transition-colors"
             >
               {stream.logStreamName}
             </button>
           ),
         },
-        { key: "lastEvent", header: "Last Event", render: (stream: LogStream) => stream.lastEventTimestamp ? new Date(stream.lastEventTimestamp).toLocaleString() : "No events" },
-        { key: "creation", header: "Creation Time", render: (stream: LogStream) => stream.creationTime ? new Date(stream.creationTime).toLocaleString() : "-" },
+        {
+          key: "lastEvent",
+          header: "Last Event",
+          render: (stream: LogStream) =>
+            stream.lastEventTimestamp ? new Date(stream.lastEventTimestamp).toLocaleString() : "No events",
+        },
+        {
+          key: "creation",
+          header: "Creation Time",
+          render: (stream: LogStream) => (stream.creationTime ? new Date(stream.creationTime).toLocaleString() : "-"),
+        },
       ]}
       rows={logStreams}
       rowKey={(stream: LogStream) => stream.logStreamName || ""}
@@ -184,19 +206,22 @@ export const CloudWatchLogs = () => {
 
       <div className="bg-surface-elevated rounded border border-border-subtle overflow-hidden font-mono text-[11px] leading-relaxed">
         {eventsLoading ? (
-          <div className="p-8 flex justify-center"><Spinner /></div>
+          <div className="p-8 flex justify-center">
+            <Spinner />
+          </div>
         ) : logEvents.length === 0 ? (
           <div className="p-8 text-center text-text-muted">No log events found.</div>
         ) : (
           <div className="divide-y divide-border-subtle overflow-x-auto">
             {logEvents.map((event, idx) => (
-              <div key={idx} className="flex py-1.5 px-3 hover:bg-surface-active/50 group whitespace-pre-wrap transition-colors">
+              <div
+                key={idx}
+                className="flex py-1.5 px-3 hover:bg-surface-active/50 group whitespace-pre-wrap transition-colors"
+              >
                 <span className="text-text-faint shrink-0 w-44 border-r border-border-subtle mr-3">
                   {event.timestamp ? new Date(event.timestamp).toISOString() : "-"}
                 </span>
-                <span className="text-text-primary flex-1 break-words">
-                  {event.message}
-                </span>
+                <span className="text-text-primary flex-1 break-words">{event.message}</span>
               </div>
             ))}
           </div>
@@ -213,7 +238,7 @@ export const CloudWatchLogs = () => {
         actions={
           <>
             <Button variant="ghost" size="sm" onClick={handleRefresh} title="Refresh">
-              <RefreshCw className={`w-4 h-4 ${(loading || streamsLoading || eventsLoading) ? "animate-spin" : ""}`} />
+              <RefreshCw className={`w-4 h-4 ${loading || streamsLoading || eventsLoading ? "animate-spin" : ""}`} />
             </Button>
             {!logGroupName && (
               <Button
@@ -251,9 +276,7 @@ export const CloudWatchLogs = () => {
         {logStreamName && (
           <>
             <ChevronRight className="w-3 h-3" />
-            <span className="font-semibold text-cyan-500 truncate max-w-xs">
-              {logStreamName}
-            </span>
+            <span className="font-semibold text-cyan-500 truncate max-w-xs">{logStreamName}</span>
           </>
         )}
       </div>

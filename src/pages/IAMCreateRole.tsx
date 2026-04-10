@@ -21,7 +21,7 @@ const DEFAULT_ASSUME_ROLE_POLICY = JSON.stringify(
     ],
   },
   null,
-  2
+  2,
 );
 
 export const IAMCreateRole = () => {
@@ -60,10 +60,7 @@ export const IAMCreateRole = () => {
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <PageHeader 
-          title="Create IAM Role" 
-          subtitle="Define a role and its trust relationship" 
-        />
+        <PageHeader title="Create IAM Role" subtitle="Define a role and its trust relationship" />
       </div>
 
       <div className="bg-surface-card border border-border-default rounded-card shadow-sm overflow-hidden flex flex-col">
@@ -86,13 +83,15 @@ export const IAMCreateRole = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FileJson className="w-4 h-4 text-purple-500" />
-                <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Trust Relationship</h3>
+                <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                  Trust Relationship
+                </h3>
               </div>
               <div className="text-[10px] text-text-muted font-mono bg-surface-elevated px-2 py-0.5 rounded border border-border-subtle">
                 JSON Editor
               </div>
             </div>
-            
+
             <TextArea
               label=""
               value={policyDocument}
@@ -103,14 +102,15 @@ export const IAMCreateRole = () => {
               accentColor="purple"
               className="font-mono text-xs"
             />
-            
+
             <div className="flex items-start gap-3 p-4 bg-surface-elevated border border-border-subtle rounded-xl">
               <Info className="w-4 h-4 text-text-muted shrink-0 mt-0.5" />
               <div className="space-y-1">
                 <p className="text-xs text-text-secondary font-medium">What is a trust relationship?</p>
                 <p className="text-[11px] text-text-muted leading-relaxed">
-                  The trust relationship policy specifies which principals (users, roles, services, or SAML providers) can assume this role. 
-                  By default, we've provided a policy that allows the Lambda service to assume this role.
+                  The trust relationship policy specifies which principals (users, roles, services, or SAML providers)
+                  can assume this role. By default, we've provided a policy that allows the Lambda service to assume
+                  this role.
                 </p>
               </div>
             </div>
@@ -118,19 +118,10 @@ export const IAMCreateRole = () => {
         </div>
 
         <div className="p-6 border-t border-border-subtle bg-surface-elevated/30 flex justify-end gap-3">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate("/iam")}
-            disabled={loading}
-          >
+          <Button variant="ghost" onClick={() => navigate("/iam")} disabled={loading}>
             Cancel
           </Button>
-          <Button 
-            variant="purple" 
-            onClick={handleCreate} 
-            isLoading={loading}
-            disabled={!roleName || !policyDocument}
-          >
+          <Button variant="purple" onClick={handleCreate} isLoading={loading} disabled={!roleName || !policyDocument}>
             Create Role
           </Button>
         </div>

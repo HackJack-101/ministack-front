@@ -23,7 +23,7 @@ export const useSQS = () => {
     try {
       const listResponse = await sqsClient.send(new ListQueuesCommand({}));
       const urls = listResponse.QueueUrls || [];
-      
+
       const queueInfos = await Promise.all(
         urls.map(async (url) => {
           const attrResponse = await sqsClient.send(
@@ -34,14 +34,14 @@ export const useSQS = () => {
                 "ApproximateNumberOfMessages",
                 "ApproximateNumberOfMessagesNotVisible",
                 "ApproximateNumberOfMessagesDelayed",
-                "RedrivePolicy"
+                "RedrivePolicy",
               ],
-            })
+            }),
           );
 
           const attributes = attrResponse.Attributes || {};
           let maxReceiveCount: number | undefined;
-          
+
           if (attributes.RedrivePolicy) {
             try {
               const policy = JSON.parse(attributes.RedrivePolicy);
@@ -59,9 +59,9 @@ export const useSQS = () => {
             approximateNumberOfMessagesDelayed: parseInt(attributes.ApproximateNumberOfMessagesDelayed || "0"),
             maxReceiveCount,
           };
-        })
+        }),
       );
-      
+
       setQueues(queueInfos);
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Failed to fetch queues");
@@ -74,28 +74,34 @@ export const useSQS = () => {
     fetchQueues();
   }, [fetchQueues]);
 
-  const createQueue = useCallback(async (name: string, attributes?: Record<string, string>) => {
-    try {
-      await sqsClient.send(
-        new CreateQueueCommand({
-          QueueName: name,
-          Attributes: attributes,
-        })
-      );
-      await fetchQueues();
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to create queue";
-      toast.error(message);
-      throw err;
-    }
-  }, [toast, fetchQueues]);
+  const createQueue = useCallback(
+    async (name: string, attributes?: Record<string, string>) => {
+      try {
+        await sqsClient.send(
+          new CreateQueueCommand({
+            QueueName: name,
+            Attributes: attributes,
+          }),
+        );
+        await fetchQueues();
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Failed to create queue";
+        toast.error(message);
+        throw err;
+      }
+    },
+    [toast, fetchQueues],
+  );
 
-  const value = useMemo(() => ({
-    queues,
-    loading,
-    fetchQueues,
-    createQueue,
-  }), [queues, loading, fetchQueues, createQueue]);
+  const value = useMemo(
+    () => ({
+      queues,
+      loading,
+      fetchQueues,
+      createQueue,
+    }),
+    [queues, loading, fetchQueues, createQueue],
+  );
 
   return value;
 };

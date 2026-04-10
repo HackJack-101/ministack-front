@@ -53,13 +53,11 @@ export const UploadZone = ({
           className="hidden"
         />
         <div className="bg-surface-elevated w-12 h-12 rounded-card flex items-center justify-center mx-auto mb-4">
-          {isLoading ? (
-            <Spinner size="md" color="text-blue-500" />
-          ) : (
-            <Upload className="w-6 h-6 text-blue-500" />
-          )}
+          {isLoading ? <Spinner size="md" color="text-blue-500" /> : <Upload className="w-6 h-6 text-blue-500" />}
         </div>
-        <p className="text-sm font-medium text-text-primary mb-1">{isLoading ? "Uploading..." : "Click to select files"}</p>
+        <p className="text-sm font-medium text-text-primary mb-1">
+          {isLoading ? "Uploading..." : "Click to select files"}
+        </p>
         <p className="text-xs text-text-muted">or drag and drop · multiple files supported</p>
       </div>
 
