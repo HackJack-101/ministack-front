@@ -43,7 +43,7 @@ Follow these steps to set up the MiniStack UI project locally for development or
 
 ### 📋 Prerequisites
 
-- **Node.js**: v20 or higher recommended.
+- **Node.js**: v24 or higher recommended.
 - **MiniStack**: Ensure you have [MiniStack](https://github.com/Nahuel990/ministack) running locally (default: `http://localhost:4566`).
 
 ### 🚀 Getting Started
