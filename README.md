@@ -83,10 +83,10 @@ docker-compose up -d
 #### Using Docker Run
 
 ```bash
-docker run -d -p 8089:80 --name ministack-ui ghcr.io/hackjack-101/ministack-front:latest
+docker run -d -p 5173:80 --name ministack-ui ghcr.io/hackjack-101/ministack-front:latest
 ```
 
-The UI will be available at `http://localhost:8089`.
+The UI will be available at `http://localhost:5173`.
 
 ### 📜 Available Scripts
 
