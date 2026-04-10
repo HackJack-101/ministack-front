@@ -10,7 +10,7 @@ import { useConfirmModal } from "../hooks/useConfirmModal";
 import type { HostedZone, ResourceRecordSet } from "@aws-sdk/client-route-53";
 
 export const Route53 = () => {
-  const r53 = useRoute53();
+  const { hostedZones, loading, fetchHostedZones, fetchRecordSets, createHostedZone, deleteHostedZone } = useRoute53();
   const { confirm, ConfirmModalComponent } = useConfirmModal();
 
   const [selectedZone, setSelectedBus] = useState<HostedZone | null>(null);
@@ -20,25 +20,25 @@ export const Route53 = () => {
   const [newZoneName, setNewZoneName] = useState("");
 
   useEffect(() => {
-    r53.fetchHostedZones();
-  }, [r53]);
+    fetchHostedZones();
+  }, [fetchHostedZones]);
 
   useEffect(() => {
     const loadRecords = async () => {
       if (selectedZone?.Id) {
         setRecordsLoading(true);
-        const fetchedRecords = await r53.fetchRecordSets(selectedZone.Id);
+        const fetchedRecords = await fetchRecordSets(selectedZone.Id);
         setRecords(fetchedRecords);
         setRecordsLoading(false);
       }
     };
     loadRecords();
-  }, [selectedZone, r53]);
+  }, [selectedZone, fetchRecordSets]);
 
   const handleCreateZone = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newZoneName) return;
-    await r53.createHostedZone(newZoneName);
+    await createHostedZone(newZoneName);
     setIsZoneModalOpen(false);
     setNewZoneName("");
   };
@@ -47,7 +47,7 @@ export const Route53 = () => {
     confirm({
       title: "Delete Hosted Zone?",
       description: `Are you sure you want to delete "${zone.Name}"? All record sets will be removed.`,
-      action: () => r53.deleteHostedZone(zone.Id!),
+      action: () => deleteHostedZone(zone.Id!),
     });
   };
 
@@ -58,8 +58,8 @@ export const Route53 = () => {
         subtitle="Manage DNS records and health checks"
         actions={
           <>
-            <Button variant="ghost" size="sm" onClick={() => r53.fetchHostedZones()} title="Refresh">
-              <RefreshCw className={`w-4 h-4 ${r53.loading ? "animate-spin" : ""}`} />
+            <Button variant="ghost" size="sm" onClick={() => fetchHostedZones()} title="Refresh">
+              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </Button>
             <Button
               variant="sky"
@@ -114,9 +114,9 @@ export const Route53 = () => {
               className: "w-20",
             },
           ]}
-          rows={r53.hostedZones}
+          rows={hostedZones}
           rowKey={(zone: HostedZone) => zone.Id || ""}
-          loading={r53.loading}
+          loading={loading}
           emptyIcon={Globe}
           emptyTitle="No hosted zones"
           emptyDescription="Create a hosted zone to manage DNS records for a domain."

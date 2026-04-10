@@ -24,6 +24,11 @@ import { CloudFormation } from "./pages/CloudFormation";
 import { EC2 } from "./pages/EC2";
 import { RDS } from "./pages/RDS";
 import { ECS } from "./pages/ECS";
+import Cognito from "./pages/Cognito";
+import WAFv2 from "./pages/WAFv2";
+import ACM from "./pages/ACM";
+import Kinesis from "./pages/Kinesis";
+import StepFunctions from "./pages/StepFunctions";
 import { ToastProvider } from "./hooks/useToast";
 import { ToastContainer } from "./components/ui/ToastContainer";
 
@@ -64,6 +69,11 @@ function App() {
             <Route path="/ec2" element={<EC2 />} />
             <Route path="/rds" element={<RDS />} />
             <Route path="/ecs" element={<ECS />} />
+            <Route path="/cognito" element={<Cognito />} />
+            <Route path="/wafv2" element={<WAFv2 />} />
+            <Route path="/acm" element={<ACM />} />
+            <Route path="/kinesis" element={<Kinesis />} />
+            <Route path="/states" element={<StepFunctions />} />
           </Routes>
         </AppLayout>
       </Router>

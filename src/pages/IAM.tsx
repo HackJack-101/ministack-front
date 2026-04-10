@@ -1,23 +1,58 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, Shield, Users, FileKey, RefreshCw, Plus } from "lucide-react";
+import { User, Shield, Users, FileKey, RefreshCw, Plus, Edit2, Trash2 } from "lucide-react";
 import { useIAM } from "../hooks/useIAM";
+import { useConfirmModal } from "../hooks/useConfirmModal";
 import { PageHeader } from "../components/ui/PageHeader";
 import { Button } from "../components/ui/Button";
 import { DataTable } from "../components/ui/DataTable";
 import { CreateUserModal } from "../components/iam/CreateUserModal";
 import { CreateGroupModal } from "../components/iam/CreateGroupModal";
+import { EditUserModal } from "../components/iam/EditUserModal";
+import { EditGroupModal } from "../components/iam/EditGroupModal";
+import { EditRoleModal } from "../components/iam/EditRoleModal";
+import { EditPolicyModal } from "../components/iam/EditPolicyModal";
 import { pluralizeWord } from "../utils/format";
 
 type Tab = "users" | "roles" | "groups" | "policies";
 
 export const IAM: React.FC = () => {
-  const { users, roles, groups, policies, loading, refresh, createUser, createGroup } = useIAM();
+  const {
+    users,
+    roles,
+    groups,
+    policies,
+    loading,
+    refresh,
+    createUser,
+    createGroup,
+    deleteUser,
+    deleteRole,
+    deleteGroup,
+    deletePolicy,
+    updateUser,
+    updateGroup,
+    updateRoleTrustPolicy,
+    updatePolicyDocument,
+  } = useIAM();
   const navigate = useNavigate();
+  const { confirm, ConfirmModalComponent } = useConfirmModal();
   const [activeTab, setActiveTab] = useState<Tab>("users");
 
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+
+  const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+
+  const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState<any>(null);
+
+  const [isEditRoleModalOpen, setIsEditRoleModalOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<any>(null);
+
+  const [isEditPolicyModalOpen, setIsEditPolicyModalOpen] = useState(false);
+  const [selectedPolicy, setSelectedPolicy] = useState<any>(null);
 
   const tabs: { id: Tab; label: string; singular: string; plural?: string; icon: any; count: number }[] = [
     { id: "users", label: "Users", singular: "User", icon: User, count: users.length },
@@ -60,6 +95,42 @@ export const IAM: React.FC = () => {
                   </span>
                 ),
               },
+              {
+                key: "actions",
+                header: "",
+                className: "w-20",
+                render: (u: any) => (
+                  <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => {
+                        setSelectedUser(u);
+                        setIsEditUserModalOpen(true);
+                      }}
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 hover:!bg-red-500/10 hover:!text-red-500"
+                      onClick={() =>
+                        confirm({
+                          title: "Delete User",
+                          description: `Are you sure you want to delete user "${u.UserName}"? This action cannot be undone.`,
+                          action: () => deleteUser(u.UserName),
+                          confirmLabel: "Delete",
+                          confirmVariant: "danger",
+                        })
+                      }
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                ),
+              },
             ]}
             rows={users}
             rowKey={(u: any) => u.UserId}
@@ -93,6 +164,42 @@ export const IAM: React.FC = () => {
                   <span className="truncate max-w-xs block" title={r.Arn}>
                     {r.Arn}
                   </span>
+                ),
+              },
+              {
+                key: "actions",
+                header: "",
+                className: "w-20",
+                render: (r: any) => (
+                  <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => {
+                        setSelectedRole(r);
+                        setIsEditRoleModalOpen(true);
+                      }}
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 hover:!bg-red-500/10 hover:!text-red-500"
+                      onClick={() =>
+                        confirm({
+                          title: "Delete Role",
+                          description: `Are you sure you want to delete role "${r.RoleName}"? This action cannot be undone.`,
+                          action: () => deleteRole(r.RoleName),
+                          confirmLabel: "Delete",
+                          confirmVariant: "danger",
+                        })
+                      }
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
                 ),
               },
             ]}
@@ -130,6 +237,42 @@ export const IAM: React.FC = () => {
                   </span>
                 ),
               },
+              {
+                key: "actions",
+                header: "",
+                className: "w-20",
+                render: (g: any) => (
+                  <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => {
+                        setSelectedGroup(g);
+                        setIsEditGroupModalOpen(true);
+                      }}
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 hover:!bg-red-500/10 hover:!text-red-500"
+                      onClick={() =>
+                        confirm({
+                          title: "Delete Group",
+                          description: `Are you sure you want to delete group "${g.GroupName}"? This action cannot be undone.`,
+                          action: () => deleteGroup(g.GroupName),
+                          confirmLabel: "Delete",
+                          confirmVariant: "danger",
+                        })
+                      }
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                ),
+              },
             ]}
             rows={groups}
             rowKey={(g: any) => g.GroupId}
@@ -164,6 +307,42 @@ export const IAM: React.FC = () => {
                   <span className="truncate max-w-xs block" title={p.Arn}>
                     {p.Arn}
                   </span>
+                ),
+              },
+              {
+                key: "actions",
+                header: "",
+                className: "w-20",
+                render: (p: any) => (
+                  <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => {
+                        setSelectedPolicy(p);
+                        setIsEditPolicyModalOpen(true);
+                      }}
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 hover:!bg-red-500/10 hover:!text-red-500"
+                      onClick={() =>
+                        confirm({
+                          title: "Delete Policy",
+                          description: `Are you sure you want to delete policy "${p.PolicyName}"? This action cannot be undone.`,
+                          action: () => deletePolicy(p.Arn),
+                          confirmLabel: "Delete",
+                          confirmVariant: "danger",
+                        })
+                      }
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
                 ),
               },
             ]}
@@ -243,6 +422,50 @@ export const IAM: React.FC = () => {
 
       <CreateUserModal open={isUserModalOpen} onClose={() => setIsUserModalOpen(false)} onConfirm={createUser} />
       <CreateGroupModal open={isGroupModalOpen} onClose={() => setIsGroupModalOpen(false)} onConfirm={createGroup} />
+
+      <EditUserModal
+        open={isEditUserModalOpen}
+        onClose={() => {
+          setIsEditUserModalOpen(false);
+          setSelectedUser(null);
+        }}
+        initialUserName={selectedUser?.UserName || ""}
+        onConfirm={(newName) => updateUser(selectedUser?.UserName, newName)}
+      />
+
+      <EditGroupModal
+        open={isEditGroupModalOpen}
+        onClose={() => {
+          setIsEditGroupModalOpen(false);
+          setSelectedGroup(null);
+        }}
+        initialGroupName={selectedGroup?.GroupName || ""}
+        onConfirm={(newName) => updateGroup(selectedGroup?.GroupName, newName)}
+      />
+
+      <EditRoleModal
+        open={isEditRoleModalOpen}
+        onClose={() => {
+          setIsEditRoleModalOpen(false);
+          setSelectedRole(null);
+        }}
+        roleName={selectedRole?.RoleName || ""}
+        onConfirm={(doc) => updateRoleTrustPolicy(selectedRole?.RoleName, doc)}
+      />
+
+      <EditPolicyModal
+        open={isEditPolicyModalOpen}
+        onClose={() => {
+          setIsEditPolicyModalOpen(false);
+          setSelectedPolicy(null);
+        }}
+        policyArn={selectedPolicy?.Arn || ""}
+        policyName={selectedPolicy?.PolicyName || ""}
+        defaultVersionId={selectedPolicy?.DefaultVersionId || ""}
+        onConfirm={(doc) => updatePolicyDocument(selectedPolicy?.Arn, doc)}
+      />
+
+      {ConfirmModalComponent}
     </div>
   );
 };

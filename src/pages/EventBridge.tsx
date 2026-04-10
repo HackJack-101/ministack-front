@@ -10,7 +10,8 @@ import { useConfirmModal } from "../hooks/useConfirmModal";
 import type { EventBus, Rule } from "@aws-sdk/client-eventbridge";
 
 export const EventBridge = () => {
-  const events = useEventBridge();
+  const { eventBuses, loading, fetchEventBuses, fetchRules, createEventBus, deleteEventBus, putEvents } =
+    useEventBridge();
   const { confirm, ConfirmModalComponent } = useConfirmModal();
 
   const [selectedBus, setSelectedBus] = useState<string | null>(null);
@@ -22,25 +23,25 @@ export const EventBridge = () => {
   const [eventForm, setEventForm] = useState({ source: "my.app", detailType: "UserCreated", detail: "{}" });
 
   useEffect(() => {
-    events.fetchEventBuses();
-  }, [events]);
+    fetchEventBuses();
+  }, [fetchEventBuses]);
 
   useEffect(() => {
     const loadRules = async () => {
       if (selectedBus) {
         setRulesLoading(true);
-        const fetchedRules = await events.fetchRules(selectedBus);
+        const fetchedRules = await fetchRules(selectedBus);
         setRules(fetchedRules);
         setRulesLoading(false);
       }
     };
     loadRules();
-  }, [selectedBus, events]);
+  }, [selectedBus, fetchRules]);
 
   const handleCreateBus = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newBusName) return;
-    await events.createEventBus(newBusName);
+    await createEventBus(newBusName);
     setIsBusModalOpen(false);
     setNewBusName("");
   };
@@ -48,7 +49,7 @@ export const EventBridge = () => {
   const handleSendEvent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedBus) return;
-    await events.putEvents(selectedBus, eventForm.source, eventForm.detailType, eventForm.detail);
+    await putEvents(selectedBus, eventForm.source, eventForm.detailType, eventForm.detail);
     setIsEventModalOpen(false);
   };
 
@@ -56,7 +57,7 @@ export const EventBridge = () => {
     confirm({
       title: "Delete Event Bus?",
       description: `Are you sure you want to delete "${name}"?`,
-      action: () => events.deleteEventBus(name),
+      action: () => deleteEventBus(name),
     });
   };
 
@@ -67,8 +68,8 @@ export const EventBridge = () => {
         subtitle="Manage event buses and rules for event-driven architecture"
         actions={
           <>
-            <Button variant="ghost" size="sm" onClick={() => events.fetchEventBuses()} title="Refresh">
-              <RefreshCw className={`w-4 h-4 ${events.loading ? "animate-spin" : ""}`} />
+            <Button variant="ghost" size="sm" onClick={() => fetchEventBuses()} title="Refresh">
+              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </Button>
             <Button
               variant="teal"
@@ -131,9 +132,9 @@ export const EventBridge = () => {
               className: "w-24",
             },
           ]}
-          rows={events.eventBuses}
+          rows={eventBuses}
           rowKey={(bus: EventBus) => bus.Name || ""}
-          loading={events.loading}
+          loading={loading}
           emptyIcon={Zap}
           emptyTitle="No event buses"
           emptyDescription="Create an event bus to start sending and routing events."

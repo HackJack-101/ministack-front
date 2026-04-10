@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, FileJson, Shield } from "lucide-react";
+import { ArrowLeft, FileJson, Shield, Sparkles } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Input, TextArea } from "../components/ui/Input";
 import { PageHeader } from "../components/ui/PageHeader";
 import { useIAM } from "../hooks/useIAM";
 import { useToast } from "../hooks/useToast";
+import { formatJson } from "../utils/format";
 
 const DEFAULT_POLICY_DOCUMENT = JSON.stringify(
   {
@@ -83,8 +84,19 @@ export const IAMCreatePolicy = () => {
                 <FileJson className="w-4 h-4 text-purple-500" />
                 <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Policy Document</h3>
               </div>
-              <div className="text-[10px] text-text-muted font-mono bg-surface-elevated px-2 py-0.5 rounded border border-border-subtle">
-                JSON Editor
+              <div className="flex items-center gap-2">
+                <div className="text-[10px] text-text-muted font-mono bg-surface-elevated px-2 py-0.5 rounded border border-border-subtle">
+                  JSON Editor
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPolicyDocument(formatJson(policyDocument))}
+                  className="flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-medium text-purple-600 hover:text-purple-700 bg-purple-500/5 hover:bg-purple-500/10 border border-purple-500/10 rounded transition-colors group"
+                  title="Format JSON (Prettier)"
+                >
+                  <Sparkles className="w-3 h-3 group-hover:scale-110 transition-transform" />
+                  Format
+                </button>
               </div>
             </div>
 

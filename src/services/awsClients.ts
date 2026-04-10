@@ -17,6 +17,7 @@ import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import { ECSClient } from "@aws-sdk/client-ecs";
 import { RDSClient } from "@aws-sdk/client-rds";
 import { CognitoIdentityProviderClient } from "@aws-sdk/client-cognito-identity-provider";
+import { CognitoIdentityClient } from "@aws-sdk/client-cognito-identity";
 import { EC2Client } from "@aws-sdk/client-ec2";
 import { ACMClient } from "@aws-sdk/client-acm";
 import { WAFV2Client } from "@aws-sdk/client-wafv2";
@@ -163,6 +164,12 @@ export const rdsClient = new RDSClient({
 });
 
 export const cognitoClient = new CognitoIdentityProviderClient({
+  region: REGION,
+  endpoint: MINISTACK_ENDPOINT,
+  credentials,
+});
+
+export const cognitoIdentityClient = new CognitoIdentityClient({
   region: REGION,
   endpoint: MINISTACK_ENDPOINT,
   credentials,

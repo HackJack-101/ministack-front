@@ -14,3 +14,15 @@ export const pluralizeWord = (count: number, singular: string, plural?: string) 
   const isPlural = count > 1;
   return isPlural ? plural || `${singular}s` : singular;
 };
+
+/**
+ * Formats a JSON string with 2 spaces indentation.
+ * Returns the original string if parsing fails.
+ */
+export const formatJson = (json: string): string => {
+  try {
+    return JSON.stringify(JSON.parse(json), null, 2);
+  } catch {
+    return json;
+  }
+};

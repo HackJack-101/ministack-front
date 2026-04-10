@@ -1,28 +1,85 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, FileJson, Info } from "lucide-react";
+import { ArrowLeft, Box, FileJson, Globe, Info, Layers, Sparkles, Zap } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Input, TextArea } from "../components/ui/Input";
 import { PageHeader } from "../components/ui/PageHeader";
 import { useIAM } from "../hooks/useIAM";
 import { useToast } from "../hooks/useToast";
+import { formatJson } from "../utils/format";
 
-const DEFAULT_ASSUME_ROLE_POLICY = JSON.stringify(
+const TRUST_POLICY_TEMPLATES = [
   {
-    Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Allow",
-        Principal: {
-          Service: "lambda.amazonaws.com",
+    id: "lambda",
+    name: "Lambda",
+    icon: Zap,
+    policy: {
+      Version: "2012-10-17",
+      Statement: [
+        {
+          Effect: "Allow",
+          Principal: {
+            Service: "lambda.amazonaws.com",
+          },
+          Action: "sts:AssumeRole",
         },
-        Action: "sts:AssumeRole",
-      },
-    ],
+      ],
+    },
   },
-  null,
-  2,
-);
+  {
+    id: "ec2",
+    name: "EC2",
+    icon: Box,
+    policy: {
+      Version: "2012-10-17",
+      Statement: [
+        {
+          Effect: "Allow",
+          Principal: {
+            Service: "ec2.amazonaws.com",
+          },
+          Action: "sts:AssumeRole",
+        },
+      ],
+    },
+  },
+  {
+    id: "ecs",
+    name: "ECS Tasks",
+    icon: Layers,
+    policy: {
+      Version: "2012-10-17",
+      Statement: [
+        {
+          Effect: "Allow",
+          Principal: {
+            Service: "ecs-tasks.amazonaws.com",
+          },
+          Action: "sts:AssumeRole",
+        },
+      ],
+    },
+  },
+  {
+    id: "full-access",
+    name: "Full Access",
+    icon: Globe,
+    policy: {
+      Version: "2012-10-17",
+      Statement: [
+        {
+          Effect: "Allow",
+          Principal: {
+            AWS: "*",
+          },
+          Action: "sts:AssumeRole",
+        },
+      ],
+    },
+  },
+];
+
+const DEFAULT_ASSUME_ROLE_POLICY = JSON.stringify(TRUST_POLICY_TEMPLATES[0].policy, null, 2);
 
 export const IAMCreateRole = () => {
   const navigate = useNavigate();
@@ -87,9 +144,35 @@ export const IAMCreateRole = () => {
                   Trust Relationship
                 </h3>
               </div>
-              <div className="text-[10px] text-text-muted font-mono bg-surface-elevated px-2 py-0.5 rounded border border-border-subtle">
-                JSON Editor
+              <div className="flex items-center gap-2">
+                <div className="text-[10px] text-text-muted font-mono bg-surface-elevated px-2 py-0.5 rounded border border-border-subtle">
+                  JSON Editor
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPolicyDocument(formatJson(policyDocument))}
+                  className="flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-medium text-purple-600 hover:text-purple-700 bg-purple-500/5 hover:bg-purple-500/10 border border-purple-500/10 rounded transition-colors group"
+                  title="Format JSON (Prettier)"
+                >
+                  <Sparkles className="w-3 h-3 group-hover:scale-110 transition-transform" />
+                  Format
+                </button>
               </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {TRUST_POLICY_TEMPLATES.map((template) => (
+                <Button
+                  key={template.id}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPolicyDocument(JSON.stringify(template.policy, null, 2))}
+                  leftIcon={<template.icon className="w-3.5 h-3.5 text-purple-500" />}
+                  className="bg-surface-elevated/50 text-[11px] font-medium"
+                >
+                  {template.name}
+                </Button>
+              ))}
             </div>
 
             <TextArea

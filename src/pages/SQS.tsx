@@ -18,7 +18,7 @@ import {
   type Message,
 } from "@aws-sdk/client-sqs";
 import { sqsClient } from "../services/awsClients";
-import { Plus, RefreshCw, MessageSquare, Send, Inbox, ArrowLeft, Trash2, Trash, Timer } from "lucide-react";
+import { Plus, RefreshCw, MessageSquare, Send, Inbox, ArrowLeft, Trash2, Trash, Timer, RotateCcw } from "lucide-react";
 import { useToast } from "../hooks/useToast";
 import { useConfirmModal } from "../hooks/useConfirmModal";
 import { useSQS } from "../hooks/useSQS";
@@ -29,6 +29,7 @@ import { Input, TextArea } from "../components/ui/Input";
 import { Spinner } from "../components/ui/Spinner";
 import { Badge } from "../components/ui/Badge";
 import { TagManager } from "../components/sqs/TagManager";
+import { RedriveModal } from "../components/sqs/RedriveModal";
 
 export const SQS = () => {
   const { queueName } = useParams();
@@ -51,6 +52,7 @@ export const SQS = () => {
   const [batchActionLoading, setBatchActionLoading] = useState(false);
   const [isBulkSend, setIsBulkSend] = useState(false);
   const [bulkBody, setBulkBody] = useState("");
+  const [isRedriveModalOpen, setIsRedriveModalOpen] = useState(false);
 
   // Settings states
   const [visibilityTimeout, setVisibilityTimeout] = useState(30);
@@ -438,6 +440,18 @@ export const SQS = () => {
             >
               <RefreshCw className={`w-4 h-4 ${loading || messagesLoading ? "animate-spin" : ""}`} />
             </Button>
+            {selectedQueueUrl && activeTab === "messages" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsRedriveModalOpen(true)}
+                title="Redrive Messages"
+                aria-label="Redrive Messages"
+                leftIcon={<RotateCcw className="w-4 h-4" />}
+              >
+                Redrive
+              </Button>
+            )}
             {!selectedQueueUrl && (
               <Button
                 variant="warning"
@@ -926,6 +940,19 @@ export const SQS = () => {
       )}
 
       {ConfirmModalComponent}
+
+      {selectedQueueUrl && (
+        <RedriveModal
+          isOpen={isRedriveModalOpen}
+          onClose={() => {
+            setIsRedriveModalOpen(false);
+            fetchQueueAttributes(selectedQueueUrl);
+          }}
+          sourceQueueUrl={selectedQueueUrl}
+          sourceQueueName={getQueueName(selectedQueueUrl)}
+          messageCount={parseInt(queueAttributes.ApproximateNumberOfMessages || "0")}
+        />
+      )}
     </div>
   );
 };

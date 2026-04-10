@@ -10,19 +10,19 @@ import { useConfirmModal } from "../hooks/useConfirmModal";
 import type { KeyMetadata } from "@aws-sdk/client-kms";
 
 export const KMS = () => {
-  const kms = useKMS();
+  const { keys, loading, fetchKeys, createKey, toggleKeyStatus, deleteKey } = useKMS();
   const { confirm, ConfirmModalComponent } = useConfirmModal();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newKeyDescription, setNewKeyDescription] = useState("");
 
   useEffect(() => {
-    kms.fetchKeys();
-  }, [kms]);
+    fetchKeys();
+  }, [fetchKeys]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    await kms.createKey(newKeyDescription);
+    await createKey(newKeyDescription);
     setIsModalOpen(false);
     setNewKeyDescription("");
   };
@@ -31,7 +31,7 @@ export const KMS = () => {
     confirm({
       title: enabled ? "Disable Key?" : "Enable Key?",
       description: `Are you sure you want to ${enabled ? "disable" : "enable"} this KMS key?`,
-      action: () => kms.toggleKeyStatus(keyId, enabled),
+      action: () => toggleKeyStatus(keyId, enabled),
     });
   };
 
@@ -39,7 +39,7 @@ export const KMS = () => {
     confirm({
       title: "Schedule Key Deletion?",
       description: "This will schedule the key for deletion. This action is irreversible after the pending period.",
-      action: () => kms.deleteKey(keyId),
+      action: () => deleteKey(keyId),
     });
   };
 
@@ -50,8 +50,8 @@ export const KMS = () => {
         subtitle="Manage cryptographic keys for your applications"
         actions={
           <>
-            <Button variant="ghost" size="sm" onClick={() => kms.fetchKeys()} title="Refresh">
-              <RefreshCw className={`w-4 h-4 ${kms.loading ? "animate-spin" : ""}`} />
+            <Button variant="ghost" size="sm" onClick={() => fetchKeys()} title="Refresh">
+              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </Button>
             <Button
               variant="amber"
@@ -127,9 +127,9 @@ export const KMS = () => {
               className: "w-24",
             },
           ]}
-          rows={kms.keys}
+          rows={keys}
           rowKey={(k: KeyMetadata) => k.KeyId || ""}
-          loading={kms.loading}
+          loading={loading}
           emptyIcon={Key}
           emptyTitle="No KMS keys"
           emptyDescription="Create a key to start encrypting and decrypting data."

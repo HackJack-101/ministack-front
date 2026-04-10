@@ -17,6 +17,7 @@ export interface TableInfo {
   ItemCount?: number;
   TableSizeBytes?: number;
   TableArn?: string;
+  StreamArn?: string;
 }
 
 export interface NewTableForm {
@@ -29,7 +30,7 @@ export interface NewTableForm {
 
 export const useDynamoDB = () => {
   const toast = useToast();
-  const [tables, setTables] = useState<string[]>([]);
+  const [tables, setTables] = useState<TableInfo[]>([]);
   const [selectedTable, setSelectedTable] = useState<TableInfo | null>(null);
   const [items, setItems] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,13 +40,36 @@ export const useDynamoDB = () => {
     setLoading(true);
     try {
       const response = await ddbDocClient.send(new ListTablesCommand({}));
-      setTables(response.TableNames || []);
+      const tableNames = response.TableNames || [];
+
+      const tableDetails = await Promise.all(
+        tableNames.map(async (name) => {
+          try {
+            const desc = await ddbDocClient.send(new DescribeTableCommand({ TableName: name }));
+            const table = desc.Table;
+            return {
+              TableName: name,
+              PartitionKey: table?.KeySchema?.find((k) => k.KeyType === "HASH")?.AttributeName ?? "",
+              SortKey: table?.KeySchema?.find((k) => k.KeyType === "RANGE")?.AttributeName,
+              Status: table?.TableStatus,
+              ItemCount: table?.ItemCount,
+              TableSizeBytes: table?.TableSizeBytes,
+              TableArn: table?.TableArn,
+              StreamArn: table?.LatestStreamArn,
+            } as TableInfo;
+          } catch {
+            return { TableName: name, PartitionKey: "" } as TableInfo;
+          }
+        }),
+      );
+
+      setTables(tableDetails);
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Failed to fetch tables");
     } finally {
       setLoading(false);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [toast]);
 
   const fetchTableDetails = useCallback(async (tableName: string) => {
     setItemsLoading(true);
@@ -65,6 +89,7 @@ export const useDynamoDB = () => {
         ItemCount: table.ItemCount,
         TableSizeBytes: table.TableSizeBytes,
         TableArn: table.TableArn,
+        StreamArn: table.LatestStreamArn,
       });
 
       const scanResponse = await ddbDocClient.send(new ScanCommand({ TableName: tableName }));
