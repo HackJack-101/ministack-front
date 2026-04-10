@@ -48,4 +48,4 @@ Ministack is an open-source alternative to LocalStack. This project provides a w
 1. Start Ministack: `docker run -p 4566:4566 nahuelnucera/ministack`
 2. Run front-end: `npm run dev`
 3. Verify changes against the local Ministack endpoint.
-4. Run lint/format/tests before submitting: `npm run lint`, `npm run format`, `npm run test:run`.
+4. Pre-commit hooks automatically run lint/format/tests: `npx lint-staged` and `npm run test`.

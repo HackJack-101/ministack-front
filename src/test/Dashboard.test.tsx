@@ -1,15 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "./utils";
 import { Dashboard } from "../pages/Dashboard";
-import { MemoryRouter } from "react-router-dom";
 
 describe("Dashboard", () => {
-  it("renders the dashboard title", () => {
-    render(
-      <MemoryRouter>
-        <Dashboard />
-      </MemoryRouter>,
-    );
-    expect(screen.getByText(/Overview/i)).toBeInTheDocument();
+  it("renders the dashboard title", async () => {
+    render(<Dashboard />);
+    await waitFor(() => {
+      expect(screen.getByText(/Overview/i)).toBeInTheDocument();
+    });
   });
 });

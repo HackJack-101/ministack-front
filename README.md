@@ -96,6 +96,17 @@ The UI will be available at `http://localhost:5173`.
 - `npm run lint`: Runs ESLint for code quality checks.
 - `npm run format`: Formats code using Prettier.
 - `npm run test`: Starts the Vitest test runner.
+- `npm run test:run`: Runs Vitest tests once and exits.
+
+### 🧪 Automated Quality Checks
+
+This project uses [Husky](https://typicode.github.io/husky/) and [lint-staged](https://github.com/lint-staged/lint-staged) to ensure high code quality. On every commit, the following checks are performed automatically:
+
+1. **Linting**: Runs `eslint --fix` on staged files.
+2. **Formatting**: Runs `prettier --write` on staged files.
+3. **Tests**: Runs `npm run test:run` to ensure no regressions.
+
+Any failures in these steps will prevent the commit, ensuring that only clean, tested code reaches the repository.
 
 ---
 
