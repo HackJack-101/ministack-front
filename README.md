@@ -51,7 +51,7 @@ Follow these steps to set up the MiniStack UI project locally for development or
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/your-username/ministack-front.git
+   git clone https://github.com/HackJack-101/ministack-front.git
    cd ministack-front
    ```
 
