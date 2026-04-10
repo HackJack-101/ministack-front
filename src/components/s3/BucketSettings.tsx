@@ -113,7 +113,6 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
 
   useEffect(() => {
     if (bucketName) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       loadSettings();
     }
   }, [bucketName, loadSettings]);

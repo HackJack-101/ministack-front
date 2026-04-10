@@ -58,7 +58,6 @@ export const ObjectDetail: React.FC<ObjectDetailProps> = ({ bucketName, object, 
   }, [object.Key, headObject, listObjectVersions, getObjectLegalHold]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadObjectDetails();
   }, [loadObjectDetails]);
 
