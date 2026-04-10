@@ -45,7 +45,11 @@ import {
   DeleteBucketReplicationCommand,
   type Bucket,
   type _Object,
+  type NotificationConfiguration,
 } from "@aws-sdk/client-s3";
+
+export type { NotificationConfiguration };
+export { type Bucket, type _Object };
 import { s3Client } from "../services/awsClients";
 import { useToast } from "./useToast";
 
@@ -343,15 +347,16 @@ export const useS3 = () => {
     await s3Client.send(new PutBucketLoggingCommand({ Bucket: name, BucketLoggingStatus: logging }));
   };
 
-  const getBucketNotification = async (name: string) => {
+  const getBucketNotification = async (name: string): Promise<NotificationConfiguration | null> => {
     try {
-      return await s3Client.send(new GetBucketNotificationConfigurationCommand({ Bucket: name }));
+      const response = await s3Client.send(new GetBucketNotificationConfigurationCommand({ Bucket: name }));
+      return response;
     } catch {
       return null;
     }
   };
 
-  const putBucketNotification = async (name: string, config: any) => {
+  const putBucketNotification = async (name: string, config: NotificationConfiguration) => {
     await s3Client.send(
       new PutBucketNotificationConfigurationCommand({
         Bucket: name,

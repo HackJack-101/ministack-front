@@ -182,16 +182,28 @@ export const SQSCreateQueue = () => {
 
                 {useDlq && (
                   <div className="space-y-4 animate-in fade-in slide-in-from-top-1">
-                    <Input
-                      label="DLQ ARN"
-                      placeholder="arn:aws:sqs:us-east-1:000000000000:my-dlq"
-                      value={dlqArn}
-                      onChange={(e) => setDlqArn(e.target.value)}
-                      accentColor="orange"
-                    />
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-text-primary">DLQ ARN</label>
+                      <select
+                        className="w-full bg-surface-input border border-border-default rounded-btn px-3 py-2 text-text-primary focus:outline-none focus:border-orange-500/60 text-sm transition-colors"
+                        value={dlqArn}
+                        onChange={(e) => setDlqArn(e.target.value)}
+                        required={useDlq}
+                      >
+                        <option value="">Select a queue...</option>
+                        {sqs.queues.map((q) => (
+                          <option key={q.arn} value={q.arn}>
+                            {q.url.split("/").pop()} ({q.arn})
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-[10px] text-text-muted mt-1">
+                        Choose an existing queue to serve as the dead-letter queue.
+                      </p>
+                    </div>
                     <Input
                       type="number"
-                      label="Maximum Receives"
+                      label="Max Receive Count"
                       value={maxReceiveCount}
                       onChange={(e) => setMaxReceiveCount(parseInt(e.target.value) || 1)}
                       min={1}

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import {
   ListFunctionsCommand,
   GetFunctionCommand,
@@ -93,12 +93,14 @@ export const useLambda = () => {
     fetchFunctions();
   }, [fetchFunctions]);
 
-  return {
+  const value = useMemo(() => ({
     functions,
     loading,
     fetchFunctions,
     getFunction,
     createFunction,
     invokeFunction,
-  };
+  }), [functions, loading, fetchFunctions, getFunction, createFunction, invokeFunction]);
+
+  return value;
 };

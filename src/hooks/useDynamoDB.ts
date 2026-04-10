@@ -15,6 +15,8 @@ export interface TableInfo {
   SortKey?: string;
   Status?: string;
   ItemCount?: number;
+  TableSizeBytes?: number;
+  TableArn?: string;
 }
 
 export interface NewTableForm {
@@ -61,6 +63,8 @@ export const useDynamoDB = () => {
         SortKey: sk,
         Status: table.TableStatus,
         ItemCount: table.ItemCount,
+        TableSizeBytes: table.TableSizeBytes,
+        TableArn: table.TableArn,
       });
 
       const scanResponse = await ddbDocClient.send(new ScanCommand({ TableName: tableName }));

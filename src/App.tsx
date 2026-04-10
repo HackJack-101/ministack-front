@@ -11,9 +11,19 @@ import { SQSCreateQueue } from "./pages/SQSCreateQueue";
 import SNS from "./pages/SNS";
 import Lambda from "./pages/Lambda";
 import { LambdaCreateFunction } from "./pages/LambdaCreateFunction";
+import { CloudWatchLogs } from "./pages/CloudWatchLogs";
+import { SSM } from "./pages/SSM";
+import { SES } from "./pages/SES";
+import { EventBridge } from "./pages/EventBridge";
+import { Route53 } from "./pages/Route53";
+import { KMS } from "./pages/KMS";
 import { IAM } from "./pages/IAM";
 import { IAMCreatePolicy } from "./pages/IAMCreatePolicy";
 import { IAMCreateRole } from "./pages/IAMCreateRole";
+import { CloudFormation } from "./pages/CloudFormation";
+import { EC2 } from "./pages/EC2";
+import { RDS } from "./pages/RDS";
+import { ECS } from "./pages/ECS";
 import { ToastProvider } from "./hooks/useToast";
 import { ToastContainer } from "./components/ui/ToastContainer";
 
@@ -40,9 +50,20 @@ function App() {
             <Route path="/lambda" element={<Lambda />} />
             <Route path="/lambda/create" element={<LambdaCreateFunction />} />
             <Route path="/lambda/:functionName" element={<Lambda />} />
+            <Route path="/logs" element={<CloudWatchLogs />} />
+            <Route path="/logs/*" element={<CloudWatchLogs />} />
+            <Route path="/ssm" element={<SSM />} />
+            <Route path="/ses" element={<SES />} />
+            <Route path="/eventbridge" element={<EventBridge />} />
+            <Route path="/route53" element={<Route53 />} />
+            <Route path="/kms" element={<KMS />} />
             <Route path="/iam" element={<IAM />} />
             <Route path="/iam/policies/create" element={<IAMCreatePolicy />} />
             <Route path="/iam/roles/create" element={<IAMCreateRole />} />
+            <Route path="/cloudformation" element={<CloudFormation />} />
+            <Route path="/ec2" element={<EC2 />} />
+            <Route path="/rds" element={<RDS />} />
+            <Route path="/ecs" element={<ECS />} />
           </Routes>
         </AppLayout>
       </Router>

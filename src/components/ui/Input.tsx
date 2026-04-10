@@ -2,7 +2,7 @@ import type { InputHTMLAttributes, TextareaHTMLAttributes } from "react";
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
-  accentColor?: "purple" | "blue" | "amber" | "emerald" | "orange" | "rose";
+  accentColor?: "purple" | "blue" | "amber" | "emerald" | "orange" | "rose" | "cyan" | "indigo" | "teal" | "pink" | "sky";
 }
 
 const accentColorMap = {
@@ -12,6 +12,11 @@ const accentColorMap = {
   emerald: "focus:border-emerald-500/60",
   orange: "focus:border-orange-500/60",
   rose: "focus:border-rose-500/60",
+  cyan: "focus:border-cyan-500/60",
+  indigo: "focus:border-indigo-500/60",
+  teal: "focus:border-teal-500/60",
+  pink: "focus:border-pink-500/60",
+  sky: "focus:border-sky-500/60",
 };
 
 export const Input = ({
@@ -37,7 +42,7 @@ export const Input = ({
 
 interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
-  accentColor?: "purple" | "blue" | "amber" | "emerald" | "orange" | "rose";
+  accentColor?: "purple" | "blue" | "amber" | "emerald" | "orange" | "rose" | "cyan" | "indigo" | "teal" | "pink" | "sky";
 }
 
 export const TextArea = ({

@@ -10,7 +10,14 @@ type ButtonVariant =
   | "ghost"
   | "outline"
   | "purple"
-  | "rose";
+  | "rose"
+  | "cyan"
+  | "indigo"
+  | "teal"
+  | "pink"
+  | "amber"
+  | "emerald"
+  | "sky";
 type ButtonSize = "xs" | "sm" | "md" | "lg";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -29,6 +36,13 @@ const variantStyles: Record<ButtonVariant, string> = {
   warning: "bg-amber-600 hover:bg-amber-500 text-white border-amber-500/30",
   purple: "bg-purple-600 hover:bg-purple-500 text-white border-purple-500/30",
   rose: "bg-rose-600 hover:bg-rose-500 text-white border-rose-500/30",
+  cyan: "bg-cyan-600 hover:bg-cyan-500 text-white border-cyan-500/30",
+  indigo: "bg-indigo-600 hover:bg-indigo-500 text-white border-indigo-500/30",
+  teal: "bg-teal-600 hover:bg-teal-500 text-white border-teal-500/30",
+  pink: "bg-pink-600 hover:bg-pink-500 text-white border-pink-500/30",
+  amber: "bg-amber-600 hover:bg-amber-500 text-white border-amber-500/30",
+  emerald: "bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500/30",
+  sky: "bg-sky-600 hover:bg-sky-500 text-white border-sky-500/30",
   ghost:
     "bg-transparent hover:bg-surface-hover text-text-secondary hover:text-text-primary border-transparent",
   outline:

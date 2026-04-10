@@ -8,6 +8,7 @@ import { Button } from "../components/ui/Button";
 import { PageHeader } from "../components/ui/PageHeader";
 import { TextArea } from "../components/ui/Input";
 import { Spinner } from "../components/ui/Spinner";
+import { Badge } from "../components/ui/Badge";
 
 const Lambda: React.FC = () => {
   const { functionName } = useParams();
@@ -15,6 +16,7 @@ const Lambda: React.FC = () => {
   const toast = useToast();
   const { functions, loading, fetchFunctions, invokeFunction } = useLambda();
 
+  const [activeTab, setActiveTab] = useState<"invoke" | "settings">("invoke");
   const [invoking, setInvoking] = useState(false);
   const [payload, setPayload] = useState("{}");
   const [invokeResult, setInvokeResult] = useState<{
@@ -158,6 +160,29 @@ const Lambda: React.FC = () => {
         )
       ) : (
         <div className="space-y-4">
+          <div className="flex items-center gap-1 border-b border-border-subtle mb-5">
+            <button
+              onClick={() => setActiveTab("invoke")}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-all ${
+                activeTab === "invoke"
+                  ? "border-amber-500 text-text-primary"
+                  : "border-transparent text-text-muted hover:text-text-primary"
+              }`}
+            >
+              Invoke
+            </button>
+            <button
+              onClick={() => setActiveTab("settings")}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-all ${
+                activeTab === "settings"
+                  ? "border-amber-500 text-text-primary"
+                  : "border-transparent text-text-muted hover:text-text-primary"
+              }`}
+            >
+              Settings
+            </button>
+          </div>
+
           <div className="flex items-center gap-3">
             <button onClick={() => navigate("/lambda")}
               className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-primary transition-colors">
@@ -165,112 +190,152 @@ const Lambda: React.FC = () => {
               Functions
             </button>
             <span className="text-text-faint">/</span>
-            <span className="text-sm font-medium text-amber-500">{functionName}</span>
+            <button
+              onClick={() => {
+                navigate(`/lambda/${functionName}`);
+                setActiveTab("invoke");
+              }}
+              className="text-sm font-medium text-amber-500 hover:text-amber-600 transition-colors"
+            >
+              {functionName}
+            </button>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            <div className="space-y-4">
-              <div className="bg-surface-card rounded-card border border-border-subtle p-4">
-                <h2 className="text-xs font-semibold text-text-secondary mb-3 flex items-center gap-2 uppercase tracking-wider">
-                  <Info className="w-3.5 h-3.5 text-amber-500" />
-                  Function Details
-                </h2>
-                <div className="space-y-3">
-                  <div>
-                    <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">ARN</span>
-                    <span className="text-xs text-text-muted font-mono break-all">{selectedFunction?.FunctionArn}</span>
+          {activeTab === "invoke" ? (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+              <div className="space-y-4">
+                <div className="bg-surface-card rounded-card border border-border-subtle p-4">
+                  <h2 className="text-xs font-semibold text-text-secondary mb-3 flex items-center gap-2 uppercase tracking-wider">
+                    <Play className="w-3.5 h-3.5 text-amber-500" />
+                    Invoke Function
+                  </h2>
+                  <form onSubmit={handleInvoke} className="space-y-3">
+                    <TextArea label="Payload (JSON)" rows={6} accentColor="amber"
+                      placeholder="{}" value={payload} onChange={(e) => setPayload(e.target.value)} />
+                    <Button type="submit" variant="warning" size="sm" className="w-full !justify-center"
+                      isLoading={invoking} leftIcon={<Play className="w-3.5 h-3.5" />}>
+                      Invoke
+                    </Button>
+                  </form>
+                </div>
+              </div>
+
+              <div className="lg:col-span-2 space-y-4">
+                <div className="bg-surface-card rounded-card border border-border-subtle overflow-hidden min-h-[400px] flex flex-col">
+                  <div className="bg-surface-elevated px-4 py-3 border-b border-border-subtle flex justify-between items-center">
+                    <h2 className="text-xs font-semibold text-text-secondary flex items-center gap-2 uppercase tracking-wider">
+                      <Terminal className="w-3.5 h-3.5 text-amber-500" />
+                      Invocation Result
+                    </h2>
+                    {invokeResult && (
+                      <div className="flex gap-2">
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${invokeResult.functionError ? "bg-red-500/10 text-red-500" : "bg-green-500/10 text-green-500"}`}>
+                          Status: {invokeResult.statusCode}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+
+                  <div className="flex-1 p-0 flex flex-col">
+                    {!invokeResult && !invoking ? (
+                      <div className="flex-1 flex flex-col items-center justify-center text-text-muted p-10 text-center">
+                        <div className="p-3 bg-surface-elevated rounded-full mb-3">
+                          <Code2 className="w-6 h-6 text-text-faint" />
+                        </div>
+                        <p className="text-sm">Invoke the function to see results and logs.</p>
+                      </div>
+                    ) : invoking ? (
+                      <div className="flex-1 flex flex-col items-center justify-center p-10">
+                        <Spinner size="lg" color="text-amber-500" label="Invoking function..." />
+                      </div>
+                    ) : (
+                      <div className="flex-1 divide-y divide-border-subtle overflow-auto">
+                        <div className="p-4 space-y-2">
+                          <div className="flex items-center gap-2 mb-1">
+                            <FileJson className="w-3.5 h-3.5 text-text-muted" />
+                            <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">Response Payload</span>
+                          </div>
+                          <pre className="bg-surface-elevated border border-border-subtle p-3 rounded text-xs font-mono text-text-secondary overflow-x-auto whitespace-pre-wrap break-all">
+                            {invokeResult?.payload || "No payload returned"}
+                          </pre>
+                        </div>
+                        <div className="p-4 space-y-2">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Terminal className="w-3.5 h-3.5 text-text-muted" />
+                            <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">Execution Logs</span>
+                          </div>
+                          <pre className="bg-surface-elevated border border-border-subtle p-3 rounded text-xs font-mono text-text-muted overflow-x-auto whitespace-pre-wrap break-all min-h-[150px]">
+                            {invokeResult?.logs || "No logs available"}
+                          </pre>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="max-w-2xl space-y-4">
+              <div className="bg-surface-card rounded-card border border-border-subtle p-6">
+                <h2 className="text-xs font-semibold text-text-secondary mb-5 flex items-center gap-2 uppercase tracking-wider">
+                  <Info className="w-3.5 h-3.5 text-amber-500" />
+                  Function Configuration
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">Function Name</span>
+                      <span className="text-sm text-text-primary font-medium">{selectedFunction?.FunctionName}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">ARN</span>
+                      <span className="text-xs text-text-muted font-mono break-all">{selectedFunction?.FunctionArn}</span>
+                    </div>
                     <div>
                       <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">Runtime</span>
-                      <span className="text-sm text-text-primary font-medium">{selectedFunction?.Runtime}</span>
+                      <Badge variant="warning">{selectedFunction?.Runtime}</Badge>
                     </div>
+                  </div>
+                  <div className="space-y-4">
                     <div>
-                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">Memory</span>
+                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">Memory Size</span>
                       <span className="text-sm text-text-primary font-medium">{selectedFunction?.MemorySize} MB</span>
                     </div>
-                  </div>
-                  <div>
-                    <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">Handler</span>
-                    <span className="text-sm text-text-primary font-medium">{selectedFunction?.Handler}</span>
-                  </div>
-                  <div>
-                    <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">Code Size</span>
-                    <span className="text-sm text-text-primary font-medium">{formatSize(selectedFunction?.CodeSize)}</span>
+                    <div>
+                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">Timeout</span>
+                      <span className="text-sm text-text-primary font-medium">{selectedFunction?.Timeout} seconds</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">Handler</span>
+                      <span className="text-sm text-text-primary font-medium">{selectedFunction?.Handler}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">Code Size</span>
+                      <span className="text-sm text-text-primary font-medium">{formatSize(selectedFunction?.CodeSize)}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              <div className="bg-surface-card rounded-card border border-border-subtle p-4">
-                <h2 className="text-xs font-semibold text-text-secondary mb-3 flex items-center gap-2 uppercase tracking-wider">
-                  <Play className="w-3.5 h-3.5 text-amber-500" />
-                  Invoke Function
-                </h2>
-                <form onSubmit={handleInvoke} className="space-y-3">
-                  <TextArea label="Payload (JSON)" rows={6} accentColor="amber"
-                    placeholder="{}" value={payload} onChange={(e) => setPayload(e.target.value)} />
-                  <Button type="submit" variant="warning" size="sm" className="w-full !justify-center"
-                    isLoading={invoking} leftIcon={<Play className="w-3.5 h-3.5" />}>
-                    Invoke
-                  </Button>
-                </form>
-              </div>
-            </div>
-
-            <div className="lg:col-span-2 space-y-4">
-              <div className="bg-surface-card rounded-card border border-border-subtle overflow-hidden min-h-[400px] flex flex-col">
-                <div className="bg-surface-elevated px-4 py-3 border-b border-border-subtle flex justify-between items-center">
-                  <h2 className="text-xs font-semibold text-text-secondary flex items-center gap-2 uppercase tracking-wider">
-                    <Terminal className="w-3.5 h-3.5 text-amber-500" />
-                    Invocation Result
-                  </h2>
-                  {invokeResult && (
-                    <div className="flex gap-2">
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${invokeResult.functionError ? "bg-red-500/10 text-red-500" : "bg-green-500/10 text-green-500"}`}>
-                        Status: {invokeResult.statusCode}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex-1 p-0 flex flex-col">
-                  {!invokeResult && !invoking ? (
-                    <div className="flex-1 flex flex-col items-center justify-center text-text-muted p-10 text-center">
-                      <div className="p-3 bg-surface-elevated rounded-full mb-3">
-                        <Code2 className="w-6 h-6 text-text-faint" />
-                      </div>
-                      <p className="text-sm">Invoke the function to see results and logs.</p>
-                    </div>
-                  ) : invoking ? (
-                    <div className="flex-1 flex flex-col items-center justify-center p-10">
-                      <Spinner size="lg" color="text-amber-500" label="Invoking function..." />
-                    </div>
-                  ) : (
-                    <div className="flex-1 divide-y divide-border-subtle overflow-auto">
-                      <div className="p-4 space-y-2">
-                        <div className="flex items-center gap-2 mb-1">
-                          <FileJson className="w-3.5 h-3.5 text-text-muted" />
-                          <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">Response Payload</span>
-                        </div>
-                        <pre className="bg-surface-elevated border border-border-subtle p-3 rounded text-xs font-mono text-text-secondary overflow-x-auto whitespace-pre-wrap break-all">
-                          {invokeResult?.payload || "No payload returned"}
-                        </pre>
-                      </div>
-                      <div className="p-4 space-y-2">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Terminal className="w-3.5 h-3.5 text-text-muted" />
-                          <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">Execution Logs</span>
-                        </div>
-                        <pre className="bg-surface-elevated border border-border-subtle p-3 rounded text-xs font-mono text-text-muted overflow-x-auto whitespace-pre-wrap break-all min-h-[150px]">
-                          {invokeResult?.logs || "No logs available"}
-                        </pre>
-                      </div>
-                    </div>
-                  )}
+                <div className="mt-8 pt-6 border-t border-border-subtle">
+                   <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">Environment Variables</h3>
+                      <Badge variant="default">{Object.keys(selectedFunction?.Environment?.Variables || {}).length}</Badge>
+                   </div>
+                   {Object.keys(selectedFunction?.Environment?.Variables || {}).length > 0 ? (
+                     <div className="bg-surface-elevated rounded-lg p-3 border border-border-subtle">
+                        {Object.entries(selectedFunction?.Environment?.Variables || {}).map(([key, value]) => (
+                          <div key={key} className="flex justify-between py-1 text-xs">
+                            <span className="font-mono text-text-secondary">{key}</span>
+                            <span className="font-mono text-text-muted">{value}</span>
+                          </div>
+                        ))}
+                     </div>
+                   ) : (
+                     <p className="text-xs text-text-faint italic">No environment variables configured.</p>
+                   )}
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       )}
     </div>

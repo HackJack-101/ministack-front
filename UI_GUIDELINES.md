@@ -361,3 +361,50 @@ The choice of UI pattern for creating resources depends on the complexity and nu
 - Provides space for detailed configuration, validation, and multi-step workflows.
 - Uses `<PageHeader>` with a back button to return to the list view.
 - Used for: S3 Buckets, DynamoDB Tables, Lambda Functions, IAM Policies, IAM Roles.
+
+---
+
+## 17. Resource Settings & Tabbed Navigation
+
+For resources that have multiple management areas (e.g. S3 objects vs settings), use top-level tabbed navigation within the service page.
+
+### Tab Row Layout
+- Position: Directly below `<PageHeader />` and above main content.
+- Style: `flex items-center gap-1 border-b border-border-subtle mb-5`
+- Active Tab: Bottom border in service color, `text-text-primary`, font-medium.
+- Inactive Tab: `text-text-muted`, `hover:text-text-primary`.
+
+```tsx
+<div className="flex items-center gap-1 border-b border-border-subtle mb-5">
+  <button 
+    onClick={() => setActiveTab("objects")}
+    className={`px-4 py-2 text-sm font-medium border-b-2 transition-all ${
+      activeTab === "objects" 
+        ? "border-blue-500 text-text-primary" 
+        : "border-transparent text-text-muted hover:text-text-primary"
+    }`}
+  >
+    Objects
+  </button>
+  <button 
+    onClick={() => setActiveTab("settings")}
+    className={`px-4 py-2 text-sm font-medium border-b-2 transition-all ${
+      activeTab === "settings" 
+        ? "border-blue-500 text-text-primary" 
+        : "border-transparent text-text-muted hover:text-text-primary"
+    }`}
+  >
+    Settings
+  </button>
+</div>
+```
+
+### Standard Tab Names by Service
+
+| Service  | Tab 1 (Data/Action) | Tab 2 (Management) |
+|----------|---------------------|--------------------|
+| S3       | Objects             | Settings           |
+| Lambda   | Invoke              | Settings           |
+| SQS      | Messages            | Settings           |
+| SNS      | Publish             | Subscriptions      |
+| DynamoDB | Items               | Settings           |

@@ -20,6 +20,7 @@ import {
 import { Button } from "../ui/Button";
 import { useToast } from "../../hooks/useToast";
 import { useS3 } from "../../hooks/useS3";
+import { MINISTACK_ENDPOINT } from "../../services/awsClients";
 import { Spinner } from "../ui/Spinner";
 
 interface ObjectDetailProps {
@@ -251,9 +252,9 @@ export const ObjectDetail: React.FC<ObjectDetailProps> = ({
               >
                 Download Object
               </Button>
-              <a 
-                href={`http://localhost:4566/${bucketName}/${object.Key}`} 
-                target="_blank" 
+              <a
+                href={`${MINISTACK_ENDPOINT}/${bucketName}/${object.Key}`}
+                target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center px-4 py-1.5 text-xs font-medium text-blue-500 hover:text-white hover:bg-blue-500 border border-blue-500/30 rounded-md transition-all"
               >

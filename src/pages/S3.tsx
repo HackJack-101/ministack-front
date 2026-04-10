@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Database, RefreshCw, Plus, ArrowLeft, Upload, Settings } from "lucide-react";
+import { Database, RefreshCw, Plus, ArrowLeft, Upload } from "lucide-react";
 import { useS3 } from "../hooks/useS3";
 import { BucketList } from "../components/s3/BucketList";
 import { ObjectsTable } from "../components/s3/ObjectsTable";
 import { UploadZone } from "../components/s3/UploadZone";
 import { ObjectDetail } from "../components/s3/ObjectDetail";
-import { BucketSettingsModal } from "../components/s3/BucketSettingsModal";
+import { BucketSettings } from "../components/s3/BucketSettings";
 import { Button } from "../components/ui/Button";
 import { PageHeader } from "../components/ui/PageHeader";
 import { useConfirmModal } from "../hooks/useConfirmModal";
@@ -18,7 +18,7 @@ export const S3 = () => {
   const s3 = useS3();
 
   const { confirm, ConfirmModalComponent } = useConfirmModal();
-  const [settingsBucket, setSettingsBucket] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"objects" | "settings">("objects");
   const [isUploading, setIsUploading] = useState(false);
   const [uploadPath, setUploadPath] = useState("");
 
@@ -103,40 +103,47 @@ export const S3 = () => {
               </Button>
             )}
             {s3.selectedBucket && !showObjectDetail && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSettingsBucket(s3.selectedBucket)}
-                  title="Bucket Settings"
-                  aria-label="Bucket Settings"
-                >
-                  <Settings className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={isUploading ? "outline" : "primary"}
-                  size="sm"
-                  onClick={() => setIsUploading(!isUploading)}
-                  leftIcon={isUploading ? <Database className="w-3.5 h-3.5" /> : <Upload className="w-3.5 h-3.5" />}
-                >
-                  {isUploading ? "View Objects" : "Upload Files"}
-                </Button>
-              </>
+              <Button
+                variant={isUploading ? "outline" : "primary"}
+                size="sm"
+                onClick={() => {
+                  setIsUploading(!isUploading);
+                  setActiveTab("objects");
+                }}
+                leftIcon={isUploading ? <Database className="w-3.5 h-3.5" /> : <Upload className="w-3.5 h-3.5" />}
+              >
+                {isUploading ? "View Objects" : "Upload Files"}
+              </Button>
             )}
           </>
         }
       />
 
-      {settingsBucket && (
-        <BucketSettingsModal 
-          bucketName={settingsBucket} 
-          open={!!settingsBucket} 
-          onClose={() => setSettingsBucket(null)} 
-        />
-      )}
-
       {s3.selectedBucket ? (
         <div className="space-y-4">
+          <div className="flex items-center gap-1 border-b border-border-subtle mb-5">
+            <button
+              onClick={() => setActiveTab("objects")}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-all ${
+                activeTab === "objects"
+                  ? "border-blue-500 text-text-primary"
+                  : "border-transparent text-text-muted hover:text-text-primary"
+              }`}
+            >
+              Objects
+            </button>
+            <button
+              onClick={() => setActiveTab("settings")}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-all ${
+                activeTab === "settings"
+                  ? "border-blue-500 text-text-primary"
+                  : "border-transparent text-text-muted hover:text-text-primary"
+              }`}
+            >
+              Settings
+            </button>
+          </div>
+
           <div className="flex items-center gap-3">
             <button
               onClick={() => {
@@ -150,17 +157,13 @@ export const S3 = () => {
             </button>
             <span className="text-text-faint">/</span>
             <button
-              onClick={() => navigate(`/s3/${s3.selectedBucket}`)}
+              onClick={() => {
+                navigate(`/s3/${s3.selectedBucket}`);
+                setActiveTab("objects");
+              }}
               className="text-sm font-medium text-blue-500 hover:text-blue-600 transition-colors"
             >
               {s3.selectedBucket}
-            </button>
-            <button
-              onClick={() => setSettingsBucket(s3.selectedBucket)}
-              className="p-1 text-text-faint hover:text-blue-500 transition-colors"
-              title="Bucket Settings"
-            >
-              <Settings className="w-3.5 h-3.5" />
             </button>
             {objectPath && (
               <div className="flex items-center gap-1.5">
@@ -202,35 +205,39 @@ export const S3 = () => {
             )}
           </div>
 
-          <div className="bg-surface-card rounded-card border border-border-subtle overflow-hidden">
-            {isUploading ? (
-              <UploadZone
-                selectedBucket={s3.selectedBucket}
-                uploadPath={uploadPath}
-                onUploadPathChange={setUploadPath}
-                uploadingFiles={s3.uploadingFiles}
-                isLoading={s3.objectsLoading}
-                fileInputRef={s3.fileInputRef}
-                onFilesSelected={(files) => s3.uploadFiles(files, uploadPath)}
-              />
-            ) : showObjectDetail ? (
-              <ObjectDetail
-                bucketName={s3.selectedBucket}
-                object={selectedObject}
-                onDelete={(key) => handleDeleteObjects([key])}
-                onDownload={s3.downloadObject}
-              />
-            ) : (
-              <ObjectsTable
-                objects={s3.objects}
-                loading={s3.objectsLoading}
-                onDelete={(key) => handleDeleteObjects([key])}
-                onDeleteBatch={handleDeleteObjects}
-                onCopy={handleCopyObject}
-                onSelect={(key) => navigate(`/s3/${s3.selectedBucket}/${key}`)}
-              />
-            )}
-          </div>
+          {activeTab === "objects" ? (
+            <div className="bg-surface-card rounded-card border border-border-subtle overflow-hidden">
+              {isUploading ? (
+                <UploadZone
+                  selectedBucket={s3.selectedBucket}
+                  uploadPath={uploadPath}
+                  onUploadPathChange={setUploadPath}
+                  uploadingFiles={s3.uploadingFiles}
+                  isLoading={s3.objectsLoading}
+                  fileInputRef={s3.fileInputRef}
+                  onFilesSelected={(files) => s3.uploadFiles(files, uploadPath)}
+                />
+              ) : showObjectDetail ? (
+                <ObjectDetail
+                  bucketName={s3.selectedBucket}
+                  object={selectedObject}
+                  onDelete={(key) => handleDeleteObjects([key])}
+                  onDownload={s3.downloadObject}
+                />
+              ) : (
+                <ObjectsTable
+                  objects={s3.objects}
+                  loading={s3.objectsLoading}
+                  onDelete={(key) => handleDeleteObjects([key])}
+                  onDeleteBatch={handleDeleteObjects}
+                  onCopy={handleCopyObject}
+                  onSelect={(key) => navigate(`/s3/${s3.selectedBucket}/${key}`)}
+                />
+              )}
+            </div>
+          ) : (
+            <BucketSettings bucketName={s3.selectedBucket} />
+          )}
         </div>
       ) : (
         <BucketList
@@ -240,7 +247,8 @@ export const S3 = () => {
           onDelete={handleDeleteBucket}
           onSettings={(e, name) => {
             e.stopPropagation();
-            setSettingsBucket(name);
+            navigate(`/s3/${name}`);
+            setActiveTab("settings");
           }}
           onCreateClick={() => navigate("/s3/create")}
         />
