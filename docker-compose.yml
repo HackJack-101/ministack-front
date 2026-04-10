@@ -33,7 +33,7 @@ services:
     container_name: ministack-ui
     pull_policy: always
     ports:
-      - "8089:80"
+      - "4566:80"
     restart: unless-stopped
     depends_on:
       ministack:
