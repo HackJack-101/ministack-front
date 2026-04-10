@@ -29,10 +29,9 @@ services:
     restart: unless-stopped
 
   ministack-ui:
+    image: ghcr.io/hackjack-101/ministack-front:latest
     container_name: ministack-ui
-    build:
-      context: .
-      dockerfile: Dockerfile
+    pull_policy: always
     ports:
       - "8089:80"
     restart: unless-stopped

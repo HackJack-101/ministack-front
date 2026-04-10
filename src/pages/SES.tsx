@@ -10,7 +10,16 @@ import { Input, TextArea } from "../components/ui/Input";
 import { useConfirmModal } from "../hooks/useConfirmModal";
 
 export const SES = () => {
-  const ses = useSES();
+  const {
+    fetchIdentities,
+    fetchSentEmails,
+    identities,
+    sentEmails,
+    loading,
+    verifyIdentity,
+    deleteIdentity,
+    sendEmail,
+  } = useSES();
   const { confirm, ConfirmModalComponent } = useConfirmModal();
   const [activeTab, setActiveTab] = useState<"identities" | "emails">("identities");
   const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
@@ -19,14 +28,14 @@ export const SES = () => {
   const [sendForm, setSendForm] = useState({ source: "", to: "", subject: "", body: "" });
 
   useEffect(() => {
-    ses.fetchIdentities();
-    ses.fetchSentEmails();
-  }, [ses.fetchIdentities, ses.fetchSentEmails]);
+    fetchIdentities();
+    fetchSentEmails();
+  }, [fetchIdentities, fetchSentEmails]);
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!verifyEmail) return;
-    await ses.verifyIdentity(verifyEmail);
+    await verifyIdentity(verifyEmail);
     setIsVerifyModalOpen(false);
     setVerifyEmail("");
   };
@@ -38,7 +47,7 @@ export const SES = () => {
       .map((s) => s.trim())
       .filter(Boolean);
     if (!sendForm.source || to.length === 0 || !sendForm.subject || !sendForm.body) return;
-    await ses.sendEmail(sendForm.source, to, sendForm.subject, sendForm.body);
+    await sendEmail(sendForm.source, to, sendForm.subject, sendForm.body);
     setIsSendModalOpen(false);
     setSendForm({ source: "", to: "", subject: "", body: "" });
   };
@@ -47,7 +56,7 @@ export const SES = () => {
     confirm({
       title: "Delete Identity?",
       description: `Are you sure you want to delete the identity "${identity}"?`,
-      action: () => ses.deleteIdentity(identity),
+      action: () => deleteIdentity(identity),
     });
   };
 
@@ -62,12 +71,12 @@ export const SES = () => {
               variant="ghost"
               size="sm"
               onClick={() => {
-                ses.fetchIdentities();
-                ses.fetchSentEmails();
+                fetchIdentities();
+                fetchSentEmails();
               }}
               title="Refresh"
             >
-              <RefreshCw className={`w-4 h-4 ${ses.loading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </Button>
             {activeTab === "identities" ? (
               <Button
@@ -101,7 +110,7 @@ export const SES = () => {
               : "text-text-muted border-transparent hover:text-text-primary"
           }`}
         >
-          Identities ({ses.identities.length})
+          Identities ({identities.length})
         </button>
         <button
           onClick={() => setActiveTab("emails")}
@@ -111,7 +120,7 @@ export const SES = () => {
               : "text-text-muted border-transparent hover:text-text-primary"
           }`}
         >
-          Sent Emails ({ses.sentEmails.length})
+          Sent Emails ({sentEmails.length})
         </button>
       </div>
 
@@ -151,9 +160,9 @@ export const SES = () => {
                 className: "w-20",
               },
             ]}
-            rows={ses.identities}
+            rows={identities}
             rowKey={(id: string) => id}
-            loading={ses.loading}
+            loading={loading}
             emptyIcon={Mail}
             emptyTitle="No identities"
             emptyDescription="Verify an email address or domain to start sending emails."
@@ -201,7 +210,7 @@ export const SES = () => {
                 ),
               },
             ]}
-            rows={ses.sentEmails}
+            rows={sentEmails}
             rowKey={(email: SentEmail) => email.id}
             emptyIcon={Inbox}
             emptyTitle="No sent emails"

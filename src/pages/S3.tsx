@@ -15,7 +15,23 @@ import { pluralize } from "../utils/format";
 export const S3 = () => {
   const { bucketName, "*": objectPath } = useParams();
   const navigate = useNavigate();
-  const s3 = useS3();
+  const {
+    setSelectedBucket,
+    fetchObjects,
+    fetchBuckets,
+    loading,
+    objectsLoading,
+    objects,
+    buckets,
+    uploadingFiles,
+    fileInputRef,
+    downloadObject,
+    deleteObjects,
+    copyObject,
+    deleteBucket,
+    uploadFiles,
+    selectedBucket: s3SelectedBucket,
+  } = useS3();
 
   const { confirm, ConfirmModalComponent } = useConfirmModal();
   const [activeTab, setActiveTab] = useState<"objects" | "settings">("objects");
@@ -44,25 +60,25 @@ export const S3 = () => {
     }
   }
 
-  const selectedObject = objectPath ? s3.objects.find((obj) => obj.Key === objectPath) : null;
-  const isBrowsing = !selectedObject || (s3.objects.length > 1 && objectPath?.endsWith("/"));
+  const selectedObject = objectPath ? objects.find((obj) => obj.Key === objectPath) : null;
+  const isBrowsing = !selectedObject || (objects.length > 1 && objectPath?.endsWith("/"));
   const showObjectDetail = !isBrowsing && selectedObject;
 
   useEffect(() => {
     if (bucketName) {
-      s3.setSelectedBucket(bucketName);
-      s3.fetchObjects(bucketName, objectPath);
+      setSelectedBucket(bucketName);
+      fetchObjects(bucketName, objectPath);
     } else {
-      s3.setSelectedBucket(null);
+      setSelectedBucket(null);
     }
-  }, [bucketName, objectPath, s3]);
+  }, [bucketName, objectPath, setSelectedBucket, fetchObjects]);
 
   const handleDeleteBucket = (e: React.MouseEvent, name: string) => {
     e.stopPropagation();
     confirm({
       title: `Delete bucket "${name}"?`,
       description: "The bucket must be empty. This action cannot be undone.",
-      action: () => s3.deleteBucket(name),
+      action: () => deleteBucket(name),
     });
   };
 
@@ -70,14 +86,14 @@ export const S3 = () => {
     confirm({
       title: `Delete ${keys.length} objects?`,
       description: "This action cannot be undone.",
-      action: () => s3.deleteObjects(keys),
+      action: () => deleteObjects(keys),
     });
   };
 
   const handleCopyObject = (key: string) => {
     const destKey = prompt("Enter destination key:", `${key}_copy`);
     if (destKey) {
-      s3.copyObject(key, destKey);
+      copyObject(key, destKey);
     }
   };
 
@@ -91,13 +107,13 @@ export const S3 = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => (s3.selectedBucket ? s3.fetchObjects(s3.selectedBucket, objectPath) : s3.fetchBuckets())}
+              onClick={() => (s3SelectedBucket ? fetchObjects(s3SelectedBucket, objectPath) : fetchBuckets())}
               title="Refresh"
               aria-label="Refresh"
             >
-              <RefreshCw className={`w-4 h-4 ${s3.loading || s3.objectsLoading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`w-4 h-4 ${loading || objectsLoading ? "animate-spin" : ""}`} />
             </Button>
-            {!s3.selectedBucket && (
+            {!s3SelectedBucket && (
               <Button
                 variant="primary"
                 size="sm"
@@ -107,7 +123,7 @@ export const S3 = () => {
                 Create Bucket
               </Button>
             )}
-            {s3.selectedBucket && !showObjectDetail && (
+            {s3SelectedBucket && !showObjectDetail && (
               <Button
                 variant={isUploading ? "outline" : "primary"}
                 size="sm"
@@ -124,7 +140,7 @@ export const S3 = () => {
         }
       />
 
-      {s3.selectedBucket ? (
+      {s3SelectedBucket ? (
         <div className="space-y-4">
           <div className="flex items-center gap-1 border-b border-border-subtle mb-5">
             <button
@@ -163,12 +179,12 @@ export const S3 = () => {
             <span className="text-text-faint">/</span>
             <button
               onClick={() => {
-                navigate(`/s3/${s3.selectedBucket}`);
+                navigate(`/s3/${s3SelectedBucket}`);
                 setActiveTab("objects");
               }}
               className="text-sm font-medium text-blue-500 hover:text-blue-600 transition-colors"
             >
-              {s3.selectedBucket}
+              {s3SelectedBucket}
             </button>
             {objectPath && (
               <div className="flex items-center gap-1.5">
@@ -186,7 +202,7 @@ export const S3 = () => {
                         </span>
                       ) : (
                         <button
-                          onClick={() => navigate(`/s3/${s3.selectedBucket}/${path}`)}
+                          onClick={() => navigate(`/s3/${s3SelectedBucket}/${path}`)}
                           className="text-xs font-mono text-blue-500 hover:text-blue-600 transition-colors"
                         >
                           {segment}
@@ -199,7 +215,7 @@ export const S3 = () => {
             )}
             {!isUploading && (
               <span className="text-xs text-text-muted bg-surface-elevated border border-border-subtle px-1.5 py-0.5 rounded">
-                {pluralize(s3.objects.length, "object")}
+                {pluralize(objects.length, "object")}
               </span>
             )}
             {isUploading && (
@@ -213,40 +229,40 @@ export const S3 = () => {
             <div className="bg-surface-card rounded-card border border-border-subtle overflow-hidden">
               {isUploading ? (
                 <UploadZone
-                  selectedBucket={s3.selectedBucket}
+                  selectedBucket={s3SelectedBucket}
                   uploadPath={uploadPath}
                   onUploadPathChange={setUploadPath}
-                  uploadingFiles={s3.uploadingFiles}
-                  isLoading={s3.objectsLoading}
-                  fileInputRef={s3.fileInputRef}
-                  onFilesSelected={(files) => s3.uploadFiles(files, uploadPath)}
+                  uploadingFiles={uploadingFiles}
+                  isLoading={objectsLoading}
+                  fileInputRef={fileInputRef}
+                  onFilesSelected={(files) => uploadFiles(files, uploadPath)}
                 />
               ) : showObjectDetail ? (
                 <ObjectDetail
-                  bucketName={s3.selectedBucket}
+                  bucketName={s3SelectedBucket}
                   object={selectedObject}
                   onDelete={(key) => handleDeleteObjects([key])}
-                  onDownload={s3.downloadObject}
+                  onDownload={downloadObject}
                 />
               ) : (
                 <ObjectsTable
-                  objects={s3.objects}
-                  loading={s3.objectsLoading}
+                  objects={objects}
+                  loading={objectsLoading}
                   onDelete={(key) => handleDeleteObjects([key])}
                   onDeleteBatch={handleDeleteObjects}
                   onCopy={handleCopyObject}
-                  onSelect={(key) => navigate(`/s3/${s3.selectedBucket}/${key}`)}
+                  onSelect={(key) => navigate(`/s3/${s3SelectedBucket}/${key}`)}
                 />
               )}
             </div>
           ) : (
-            <BucketSettings bucketName={s3.selectedBucket} />
+            <BucketSettings bucketName={s3SelectedBucket} />
           )}
         </div>
       ) : (
         <BucketList
-          buckets={s3.buckets}
-          loading={s3.loading}
+          buckets={buckets}
+          loading={loading}
           onSelect={(name) => navigate(`/s3/${name}`)}
           onDelete={handleDeleteBucket}
           onSettings={(e, name) => {

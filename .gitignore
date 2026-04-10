@@ -23,3 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 data
+
+# Agent & AI Assistant directories
+.agents
+.claude
+.junie

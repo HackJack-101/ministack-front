@@ -75,37 +75,40 @@ export const useS3 = () => {
     } finally {
       setLoading(false);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [toast]);
 
-  const fetchObjects = useCallback(async (bucketName: string, prefix?: string) => {
-    setObjectsLoading(true);
-    try {
-      const response = await s3Client.send(
-        new ListObjectsV2Command({
-          Bucket: bucketName,
-          Prefix: prefix || undefined,
-          Delimiter: "/",
-        }),
-      );
+  const fetchObjects = useCallback(
+    async (bucketName: string, prefix?: string) => {
+      setObjectsLoading(true);
+      try {
+        const response = await s3Client.send(
+          new ListObjectsV2Command({
+            Bucket: bucketName,
+            Prefix: prefix || undefined,
+            Delimiter: "/",
+          }),
+        );
 
-      const folders: _Object[] = (response.CommonPrefixes || []).map((p) => ({
-        Key: p.Prefix,
-        Size: 0,
-      }));
+        const folders: _Object[] = (response.CommonPrefixes || []).map((p) => ({
+          Key: p.Prefix,
+          Size: 0,
+        }));
 
-      // Filter out the prefix itself if it's returned in Contents and it's a folder (ends with /)
-      const files = (response.Contents || []).filter((obj) => {
-        if (!prefix || !prefix.endsWith("/")) return true;
-        return obj.Key !== prefix;
-      });
+        // Filter out the prefix itself if it's returned in Contents and it's a folder (ends with /)
+        const files = (response.Contents || []).filter((obj) => {
+          if (!prefix || !prefix.endsWith("/")) return true;
+          return obj.Key !== prefix;
+        });
 
-      setObjects([...folders, ...files]);
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : `Failed to fetch objects for ${bucketName}`);
-    } finally {
-      setObjectsLoading(false);
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+        setObjects([...folders, ...files]);
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : `Failed to fetch objects for ${bucketName}`);
+      } finally {
+        setObjectsLoading(false);
+      }
+    },
+    [toast],
+  );
 
   useEffect(() => {
     fetchBuckets();

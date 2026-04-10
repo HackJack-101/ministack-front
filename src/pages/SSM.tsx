@@ -9,7 +9,7 @@ import { CreateParameterModal } from "../components/ssm/CreateParameterModal";
 import type { ParameterMetadata } from "@aws-sdk/client-ssm";
 
 export const SSM = () => {
-  const ssm = useSSM();
+  const { fetchParameters, getParameterValue, deleteParameter, parameters, loading, putParameter } = useSSM();
   const { confirm, ConfirmModalComponent } = useConfirmModal();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -17,12 +17,12 @@ export const SSM = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    ssm.fetchParameters();
-  }, [ssm.fetchParameters]);
+    fetchParameters();
+  }, [fetchParameters]);
 
   const handleEdit = async (param: ParameterMetadata) => {
     if (!param.Name) return;
-    const value = await ssm.getParameterValue(param.Name);
+    const value = await getParameterValue(param.Name);
     setEditingParam({
       name: param.Name,
       value,
@@ -35,11 +35,11 @@ export const SSM = () => {
     confirm({
       title: "Delete parameter?",
       description: `Are you sure you want to delete "${name}"? This action cannot be undone.`,
-      action: () => ssm.deleteParameter(name),
+      action: () => deleteParameter(name),
     });
   };
 
-  const filteredParams = ssm.parameters.filter((p) => p.Name?.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredParams = parameters.filter((p) => p.Name?.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <div className="space-y-5">
@@ -48,8 +48,8 @@ export const SSM = () => {
         subtitle="Manage hierarchical configuration data and secrets"
         actions={
           <>
-            <Button variant="ghost" size="sm" onClick={ssm.fetchParameters} title="Refresh">
-              <RefreshCw className={`w-4 h-4 ${ssm.loading ? "animate-spin" : ""}`} />
+            <Button variant="ghost" size="sm" onClick={fetchParameters} title="Refresh">
+              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </Button>
             <Button
               variant="indigo"
@@ -138,7 +138,7 @@ export const SSM = () => {
           ]}
           rows={filteredParams}
           rowKey={(p: ParameterMetadata) => p.Name || ""}
-          loading={ssm.loading}
+          loading={loading}
           emptyIcon={Settings}
           emptyTitle="No parameters found"
           emptyDescription="Create a parameter to store configuration or secrets."
@@ -153,7 +153,7 @@ export const SSM = () => {
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onConfirm={async (name, value, type) => {
-          await ssm.putParameter(name, value, type);
+          await putParameter(name, value, type);
         }}
         initialName={editingParam?.name}
         initialValue={editingParam?.value}

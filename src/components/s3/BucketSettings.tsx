@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Shield,
   Lock,
@@ -25,7 +25,30 @@ interface BucketSettingsProps {
 type TabType = "general" | "permissions" | "management" | "notifications" | "logging" | "tags";
 
 export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
-  const s3 = useS3();
+  const {
+    getBucketVersioning,
+    getBucketEncryption,
+    getBucketPolicy,
+    getBucketCors,
+    getBucketLifecycle,
+    getBucketLogging,
+    getBucketNotification,
+    getBucketReplication,
+    getObjectLockConfiguration,
+    getBucketTagging,
+    putBucketVersioning,
+    putBucketEncryption,
+    deleteBucketEncryption,
+    putBucketPolicy,
+    deleteBucketPolicy,
+    putBucketCors,
+    deleteBucketCors,
+    putBucketLifecycle,
+    deleteBucketLifecycle,
+    putBucketNotification,
+    putBucketTagging,
+    deleteBucketTagging,
+  } = useS3();
   const toast = useToast();
   const [activeTab, setActiveTab] = useState<TabType>("general");
   const [loading, setLoading] = useState(true);
@@ -47,16 +70,16 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
     setLoading(true);
     try {
       const [v, enc, pol, c, l, log, n, r, ol, t] = await Promise.all([
-        s3.getBucketVersioning(bucketName),
-        s3.getBucketEncryption(bucketName),
-        s3.getBucketPolicy(bucketName),
-        s3.getBucketCors(bucketName),
-        s3.getBucketLifecycle(bucketName),
-        s3.getBucketLogging(bucketName),
-        s3.getBucketNotification(bucketName),
-        s3.getBucketReplication(bucketName),
-        s3.getObjectLockConfiguration(bucketName),
-        s3.getBucketTagging(bucketName),
+        getBucketVersioning(bucketName),
+        getBucketEncryption(bucketName),
+        getBucketPolicy(bucketName),
+        getBucketCors(bucketName),
+        getBucketLifecycle(bucketName),
+        getBucketLogging(bucketName),
+        getBucketNotification(bucketName),
+        getBucketReplication(bucketName),
+        getObjectLockConfiguration(bucketName),
+        getBucketTagging(bucketName),
       ]);
 
       setVersioning(v as any);
@@ -74,7 +97,19 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
     } finally {
       setLoading(false);
     }
-  }, [bucketName, s3]);
+  }, [
+    bucketName,
+    getBucketVersioning,
+    getBucketEncryption,
+    getBucketPolicy,
+    getBucketCors,
+    getBucketLifecycle,
+    getBucketLogging,
+    getBucketNotification,
+    getBucketReplication,
+    getObjectLockConfiguration,
+    getBucketTagging,
+  ]);
 
   useEffect(() => {
     if (bucketName) {
@@ -88,40 +123,40 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
     try {
       if (activeTab === "general") {
         if (versioning !== "Disabled") {
-          await s3.putBucketVersioning(bucketName, versioning as any);
+          await putBucketVersioning(bucketName, versioning as any);
         }
         if (encryption) {
-          await s3.putBucketEncryption(bucketName);
+          await putBucketEncryption(bucketName);
         } else {
-          await s3.deleteBucketEncryption(bucketName);
+          await deleteBucketEncryption(bucketName);
         }
       } else if (activeTab === "permissions") {
         if (policy.trim()) {
-          await s3.putBucketPolicy(bucketName, policy);
+          await putBucketPolicy(bucketName, policy);
         } else {
-          await s3.deleteBucketPolicy(bucketName);
+          await deleteBucketPolicy(bucketName);
         }
 
         if (cors.trim() && cors !== "[]") {
-          await s3.putBucketCors(bucketName, JSON.parse(cors));
+          await putBucketCors(bucketName, JSON.parse(cors));
         } else {
-          await s3.deleteBucketCors(bucketName);
+          await deleteBucketCors(bucketName);
         }
       } else if (activeTab === "management") {
         if (lifecycle.trim() && lifecycle !== "[]") {
-          await s3.putBucketLifecycle(bucketName, JSON.parse(lifecycle));
+          await putBucketLifecycle(bucketName, JSON.parse(lifecycle));
         } else {
-          await s3.deleteBucketLifecycle(bucketName);
+          await deleteBucketLifecycle(bucketName);
         }
       } else if (activeTab === "notifications") {
         if (notifications) {
-          await s3.putBucketNotification(bucketName, notifications);
+          await putBucketNotification(bucketName, notifications);
         }
       } else if (activeTab === "tags") {
         if (tags.length > 0) {
-          await s3.putBucketTagging(bucketName, tags);
+          await putBucketTagging(bucketName, tags);
         } else {
-          await s3.deleteBucketTagging(bucketName);
+          await deleteBucketTagging(bucketName);
         }
       }
       toast.success("Settings updated successfully");

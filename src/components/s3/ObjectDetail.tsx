@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import type { _Object, ObjectVersion } from "@aws-sdk/client-s3";
 import {
   FileText,
@@ -31,8 +31,8 @@ interface ObjectDetailProps {
 }
 
 export const ObjectDetail: React.FC<ObjectDetailProps> = ({ bucketName, object, onDelete, onDownload }) => {
+  const { headObject, listObjectVersions, getObjectLegalHold, putObjectLegalHold } = useS3();
   const toast = useToast();
-  const s3 = useS3();
   const s3Uri = `s3://${bucketName}/${object.Key}`;
   const [loading, setLoading] = useState(true);
   const [headInfo, setHeadInfo] = useState<any>(null);
@@ -43,9 +43,9 @@ export const ObjectDetail: React.FC<ObjectDetailProps> = ({ bucketName, object, 
     setLoading(true);
     try {
       const [h, v, lh] = await Promise.all([
-        s3.headObject(object.Key!),
-        s3.listObjectVersions(object.Key!),
-        s3.getObjectLegalHold(object.Key!),
+        headObject(object.Key!),
+        listObjectVersions(object.Key!),
+        getObjectLegalHold(object.Key!),
       ]);
       setHeadInfo(h);
       setVersions(v);
@@ -55,7 +55,7 @@ export const ObjectDetail: React.FC<ObjectDetailProps> = ({ bucketName, object, 
     } finally {
       setLoading(false);
     }
-  }, [object.Key, s3]);
+  }, [object.Key, headObject, listObjectVersions, getObjectLegalHold]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -65,7 +65,7 @@ export const ObjectDetail: React.FC<ObjectDetailProps> = ({ bucketName, object, 
   const handleToggleLegalHold = async () => {
     try {
       const newStatus = legalHold?.Status === "ON" ? "OFF" : "ON";
-      await s3.putObjectLegalHold(object.Key!, newStatus);
+      await putObjectLegalHold(object.Key!, newStatus);
       setLegalHold({ Status: newStatus });
       toast.success(`Legal Hold turned ${newStatus}`);
     } catch (err: any) {
