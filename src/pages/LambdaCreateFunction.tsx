@@ -39,6 +39,7 @@ export const LambdaCreateFunction = () => {
       LogGroup: "",
     },
   });
+  const [useAdvancedLogging, setUseAdvancedLogging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -54,13 +55,15 @@ export const LambdaCreateFunction = () => {
       const success = await lambda.createFunction({
         ...formData,
         ZipFile: new Uint8Array(arrayBuffer),
-        LoggingConfig: {
-          ...formData.LoggingConfig,
-          LogFormat: formData.LoggingConfig.LogFormat as any,
-          ApplicationLogLevel: formData.LoggingConfig.ApplicationLogLevel as any,
-          SystemLogLevel: formData.LoggingConfig.SystemLogLevel as any,
-          LogGroup: formData.LoggingConfig.LogGroup || undefined,
-        },
+        LoggingConfig: useAdvancedLogging
+          ? {
+              ...formData.LoggingConfig,
+              LogFormat: formData.LoggingConfig.LogFormat as any,
+              ApplicationLogLevel: formData.LoggingConfig.ApplicationLogLevel as any,
+              SystemLogLevel: formData.LoggingConfig.SystemLogLevel as any,
+              LogGroup: formData.LoggingConfig.LogGroup || undefined,
+            }
+          : undefined,
       });
       if (success) {
         toast.success(`Function "${formData.FunctionName}" created successfully`);
@@ -202,91 +205,116 @@ export const LambdaCreateFunction = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <section className="space-y-4">
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-amber-500" />
-                <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Logging Settings</h3>
-              </div>
-
-              <div className="space-y-4 bg-surface-elevated p-5 rounded-xl border border-border-subtle">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
-                      Log Format
-                    </label>
-                    <select
-                      className="w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-amber-500/60 transition-colors text-sm"
-                      value={formData.LoggingConfig.LogFormat}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          LoggingConfig: { ...formData.LoggingConfig, LogFormat: e.target.value },
-                        })
-                      }
-                    >
-                      <option value="Text">Text</option>
-                      <option value="JSON">JSON</option>
-                    </select>
-                  </div>
-
-                  <Input
-                    label="Log Group"
-                    placeholder="/aws/lambda/..."
-                    value={formData.LoggingConfig.LogGroup}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        LoggingConfig: { ...formData.LoggingConfig, LogGroup: e.target.value },
-                      })
-                    }
-                    accentColor="amber"
-                  />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-amber-500" />
+                  <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                    Logging Settings
+                  </h3>
                 </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
-                      Application Log Level
-                    </label>
-                    <select
-                      className="w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-amber-500/60 transition-colors text-sm"
-                      value={formData.LoggingConfig.ApplicationLogLevel}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          LoggingConfig: { ...formData.LoggingConfig, ApplicationLogLevel: e.target.value },
-                        })
-                      }
-                    >
-                      <option value="TRACE">TRACE</option>
-                      <option value="DEBUG">DEBUG</option>
-                      <option value="INFO">INFO</option>
-                      <option value="WARN">WARN</option>
-                      <option value="ERROR">ERROR</option>
-                      <option value="FATAL">FATAL</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
-                      System Log Level
-                    </label>
-                    <select
-                      className="w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-amber-500/60 transition-colors text-sm"
-                      value={formData.LoggingConfig.SystemLogLevel}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          LoggingConfig: { ...formData.LoggingConfig, SystemLogLevel: e.target.value },
-                        })
-                      }
-                    >
-                      <option value="DEBUG">DEBUG</option>
-                      <option value="INFO">INFO</option>
-                      <option value="WARN">WARN</option>
-                    </select>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-text-muted uppercase font-medium">Advanced</span>
+                  <button
+                    onClick={() => setUseAdvancedLogging(!useAdvancedLogging)}
+                    className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors focus:outline-none focus:ring-1 focus:ring-amber-500/50 ${
+                      useAdvancedLogging ? "bg-amber-500" : "bg-surface-elevated border border-border-subtle"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform ${
+                        useAdvancedLogging ? "translate-x-3.5" : "translate-x-0.5"
+                      }`}
+                    />
+                  </button>
                 </div>
               </div>
+
+              {useAdvancedLogging ? (
+                <div className="space-y-4 bg-surface-elevated p-5 rounded-xl border border-border-subtle animate-in fade-in slide-in-from-top-1 duration-200">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
+                        Log Format
+                      </label>
+                      <select
+                        className="w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-amber-500/60 transition-colors text-sm"
+                        value={formData.LoggingConfig.LogFormat}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            LoggingConfig: { ...formData.LoggingConfig, LogFormat: e.target.value },
+                          })
+                        }
+                      >
+                        <option value="Text">Text</option>
+                        <option value="JSON">JSON</option>
+                      </select>
+                    </div>
+
+                    <Input
+                      label="Log Group"
+                      placeholder="/aws/lambda/..."
+                      value={formData.LoggingConfig.LogGroup}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          LoggingConfig: { ...formData.LoggingConfig, LogGroup: e.target.value },
+                        })
+                      }
+                      accentColor="amber"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
+                        Application Log Level
+                      </label>
+                      <select
+                        className="w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-amber-500/60 transition-colors text-sm"
+                        value={formData.LoggingConfig.ApplicationLogLevel}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            LoggingConfig: { ...formData.LoggingConfig, ApplicationLogLevel: e.target.value },
+                          })
+                        }
+                      >
+                        <option value="TRACE">TRACE</option>
+                        <option value="DEBUG">DEBUG</option>
+                        <option value="INFO">INFO</option>
+                        <option value="WARN">WARN</option>
+                        <option value="ERROR">ERROR</option>
+                        <option value="FATAL">FATAL</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
+                        System Log Level
+                      </label>
+                      <select
+                        className="w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-amber-500/60 transition-colors text-sm"
+                        value={formData.LoggingConfig.SystemLogLevel}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            LoggingConfig: { ...formData.LoggingConfig, SystemLogLevel: e.target.value },
+                          })
+                        }
+                      >
+                        <option value="DEBUG">DEBUG</option>
+                        <option value="INFO">INFO</option>
+                        <option value="WARN">WARN</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-surface-elevated p-5 rounded-xl border border-border-subtle h-[155px] flex items-center justify-center text-center italic text-text-muted text-xs px-10">
+                  Default logging settings will be used (Text format, INFO levels).
+                </div>
+              )}
             </section>
 
             <section className="space-y-4">

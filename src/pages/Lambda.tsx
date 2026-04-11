@@ -158,6 +158,7 @@ const Lambda: React.FC = () => {
       LogGroup: "",
     },
   });
+  const [enableAdvancedLogging, setEnableAdvancedLogging] = useState(false);
 
   // Sync edit form with selected function
   React.useEffect(() => {
@@ -180,6 +181,7 @@ const Lambda: React.FC = () => {
           LogGroup: selectedFunction.LoggingConfig?.LogGroup || "",
         },
       });
+      setEnableAdvancedLogging(!!selectedFunction.LoggingConfig);
     }
   }, [selectedFunction, editing]);
 
@@ -212,10 +214,17 @@ const Lambda: React.FC = () => {
     try {
       const success = await updateFunctionConfiguration({
         ...editForm,
-        LoggingConfig: {
-          ...editForm.LoggingConfig,
-          LogGroup: editForm.LoggingConfig?.LogGroup || undefined,
-        },
+        LoggingConfig: enableAdvancedLogging
+          ? {
+              ...editForm.LoggingConfig,
+              LogGroup: editForm.LoggingConfig?.LogGroup || undefined,
+            }
+          : {
+              LogFormat: "Text",
+              ApplicationLogLevel: "INFO",
+              SystemLogLevel: "INFO",
+              LogGroup: undefined,
+            },
       });
       if (success) {
         setEditing(false);
@@ -706,102 +715,128 @@ const Lambda: React.FC = () => {
                         </div>
 
                         <div className="pt-6 border-t border-border-subtle">
-                          <div className="flex items-center gap-2 mb-4">
-                            <FileText className="w-4 h-4 text-amber-500" />
-                            <h3 className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
-                              Logging Settings
-                            </h3>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-1.5">
-                                <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
-                                  Log Format
-                                </label>
-                                <select
-                                  className="w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-amber-500/60 transition-colors text-sm"
-                                  value={editForm.LoggingConfig?.LogFormat}
-                                  onChange={(e) =>
-                                    setEditForm({
-                                      ...editForm,
-                                      LoggingConfig: {
-                                        ...editForm.LoggingConfig,
-                                        LogFormat: e.target.value as any,
-                                      },
-                                    })
-                                  }
-                                >
-                                  <option value="Text">Text</option>
-                                  <option value="JSON">JSON</option>
-                                </select>
-                              </div>
-
-                              <Input
-                                label="Log Group"
-                                value={editForm.LoggingConfig?.LogGroup}
-                                onChange={(e) =>
-                                  setEditForm({
-                                    ...editForm,
-                                    LoggingConfig: { ...editForm.LoggingConfig, LogGroup: e.target.value },
-                                  })
-                                }
-                                accentColor="amber"
-                                placeholder="/aws/lambda/..."
-                              />
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                              <FileText className="w-4 h-4 text-amber-500" />
+                              <h3 className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+                                Logging Settings
+                              </h3>
                             </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-1.5">
-                                <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
-                                  Application Log Level
-                                </label>
-                                <select
-                                  className="w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-amber-500/60 transition-colors text-sm"
-                                  value={editForm.LoggingConfig?.ApplicationLogLevel}
-                                  onChange={(e) =>
-                                    setEditForm({
-                                      ...editForm,
-                                      LoggingConfig: {
-                                        ...editForm.LoggingConfig,
-                                        ApplicationLogLevel: e.target.value as any,
-                                      },
-                                    })
-                                  }
-                                >
-                                  <option value="TRACE">TRACE</option>
-                                  <option value="DEBUG">DEBUG</option>
-                                  <option value="INFO">INFO</option>
-                                  <option value="WARN">WARN</option>
-                                  <option value="ERROR">ERROR</option>
-                                  <option value="FATAL">FATAL</option>
-                                </select>
-                              </div>
-
-                              <div className="space-y-1.5">
-                                <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
-                                  System Log Level
-                                </label>
-                                <select
-                                  className="w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-amber-500/60 transition-colors text-sm"
-                                  value={editForm.LoggingConfig?.SystemLogLevel}
-                                  onChange={(e) =>
-                                    setEditForm({
-                                      ...editForm,
-                                      LoggingConfig: {
-                                        ...editForm.LoggingConfig,
-                                        SystemLogLevel: e.target.value as any,
-                                      },
-                                    })
-                                  }
-                                >
-                                  <option value="DEBUG">DEBUG</option>
-                                  <option value="INFO">INFO</option>
-                                  <option value="WARN">WARN</option>
-                                </select>
-                              </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] text-text-muted uppercase font-medium">Advanced</span>
+                              <button
+                                onClick={() => setEnableAdvancedLogging(!enableAdvancedLogging)}
+                                className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors focus:outline-none focus:ring-1 focus:ring-amber-500/50 ${
+                                  enableAdvancedLogging
+                                    ? "bg-amber-500"
+                                    : "bg-surface-elevated border border-border-subtle"
+                                }`}
+                              >
+                                <span
+                                  className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform ${
+                                    enableAdvancedLogging ? "translate-x-3.5" : "translate-x-0.5"
+                                  }`}
+                                />
+                              </button>
                             </div>
                           </div>
+
+                          {enableAdvancedLogging ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-top-1 duration-200">
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                  <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
+                                    Log Format
+                                  </label>
+                                  <select
+                                    className="w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-amber-500/60 transition-colors text-sm"
+                                    value={editForm.LoggingConfig?.LogFormat}
+                                    onChange={(e) =>
+                                      setEditForm({
+                                        ...editForm,
+                                        LoggingConfig: {
+                                          ...editForm.LoggingConfig,
+                                          LogFormat: e.target.value as any,
+                                        },
+                                      })
+                                    }
+                                  >
+                                    <option value="Text">Text</option>
+                                    <option value="JSON">JSON</option>
+                                  </select>
+                                </div>
+
+                                <Input
+                                  label="Log Group"
+                                  value={editForm.LoggingConfig?.LogGroup}
+                                  onChange={(e) =>
+                                    setEditForm({
+                                      ...editForm,
+                                      LoggingConfig: { ...editForm.LoggingConfig, LogGroup: e.target.value },
+                                    })
+                                  }
+                                  accentColor="amber"
+                                  placeholder="/aws/lambda/..."
+                                />
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                  <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
+                                    Application Log Level
+                                  </label>
+                                  <select
+                                    className="w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-amber-500/60 transition-colors text-sm"
+                                    value={editForm.LoggingConfig?.ApplicationLogLevel}
+                                    onChange={(e) =>
+                                      setEditForm({
+                                        ...editForm,
+                                        LoggingConfig: {
+                                          ...editForm.LoggingConfig,
+                                          ApplicationLogLevel: e.target.value as any,
+                                        },
+                                      })
+                                    }
+                                  >
+                                    <option value="TRACE">TRACE</option>
+                                    <option value="DEBUG">DEBUG</option>
+                                    <option value="INFO">INFO</option>
+                                    <option value="WARN">WARN</option>
+                                    <option value="ERROR">ERROR</option>
+                                    <option value="FATAL">FATAL</option>
+                                  </select>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                  <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
+                                    System Log Level
+                                  </label>
+                                  <select
+                                    className="w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-amber-500/60 transition-colors text-sm"
+                                    value={editForm.LoggingConfig?.SystemLogLevel}
+                                    onChange={(e) =>
+                                      setEditForm({
+                                        ...editForm,
+                                        LoggingConfig: {
+                                          ...editForm.LoggingConfig,
+                                          SystemLogLevel: e.target.value as any,
+                                        },
+                                      })
+                                    }
+                                  >
+                                    <option value="DEBUG">DEBUG</option>
+                                    <option value="INFO">INFO</option>
+                                    <option value="WARN">WARN</option>
+                                  </select>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="bg-surface-elevated p-4 rounded-lg border border-border-subtle text-center italic text-text-muted text-[11px]">
+                              Default logging settings are active (Text format, INFO levels). Enable advanced logging to
+                              customize.
+                            </div>
+                          )}
                         </div>
 
                         <div className="pt-6 border-t border-border-subtle">
