@@ -70,6 +70,7 @@ function App() {
             <Route path="/rds" element={<RDS />} />
             <Route path="/ecs" element={<ECS />} />
             <Route path="/cognito" element={<Cognito />} />
+            <Route path="/cognito/user-pools/:poolId" element={<Cognito />} />
             <Route path="/wafv2" element={<WAFv2 />} />
             <Route path="/acm" element={<ACM />} />
             <Route path="/kinesis" element={<Kinesis />} />

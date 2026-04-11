@@ -1,10 +1,11 @@
 import type { LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
 
 interface EmptyStateProps {
   icon: LucideIcon;
   title: string;
   description?: string;
-  action?: { label: string; onClick: () => void };
+  action?: { label: string; onClick: () => void } | ReactNode;
 }
 
 export const EmptyState = ({ icon: Icon, title, description, action }: EmptyStateProps) => (
@@ -15,12 +16,18 @@ export const EmptyState = ({ icon: Icon, title, description, action }: EmptyStat
         <p className="text-sm text-text-secondary">{title}</p>
         {description && <p className="text-xs text-text-muted mt-1">{description}</p>}
         {action && (
-          <button
-            onClick={action.onClick}
-            className="mt-3 text-xs text-text-muted hover:text-text-secondary border border-border-subtle hover:border-border-default px-3 py-1.5 rounded transition-colors"
-          >
-            {action.label}
-          </button>
+          <div className="mt-3">
+            {typeof action === "object" && action !== null && "label" in action && "onClick" in action ? (
+              <button
+                onClick={(action as { label: string; onClick: () => void }).onClick}
+                className="text-xs text-text-muted hover:text-text-secondary border border-border-subtle hover:border-border-default px-3 py-1.5 rounded transition-colors"
+              >
+                {(action as { label: string; onClick: () => void }).label}
+              </button>
+            ) : (
+              action
+            )}
+          </div>
         )}
       </div>
     </div>

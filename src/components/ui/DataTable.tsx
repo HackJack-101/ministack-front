@@ -20,6 +20,7 @@ interface DataTableProps<T> {
   emptyDescription?: string;
   emptyAction?: { label: string; onClick: () => void };
   accentColor?: string;
+  onRowClick?: (row: T) => void;
 }
 
 export function DataTable<T>({
@@ -32,6 +33,7 @@ export function DataTable<T>({
   emptyDescription,
   emptyAction,
   accentColor = "text-blue-500",
+  onRowClick,
 }: DataTableProps<T>) {
   return (
     <div className="bg-surface-card rounded-card border border-border-subtle overflow-hidden">
@@ -68,7 +70,11 @@ export function DataTable<T>({
               </tr>
             ) : (
               rows.map((row) => (
-                <tr key={rowKey(row)} className="hover:bg-surface-hover transition-colors group">
+                <tr
+                  key={rowKey(row)}
+                  onClick={() => onRowClick?.(row)}
+                  className={`group transition-colors ${onRowClick ? "cursor-pointer hover:bg-surface-hover" : "hover:bg-surface-hover/50"}`}
+                >
                   {columns.map((col) => (
                     <td key={col.key} className={`px-4 py-3 text-text-secondary text-sm ${col.className ?? ""}`}>
                       {col.render(row)}
