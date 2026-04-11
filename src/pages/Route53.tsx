@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Globe, RefreshCw, Plus, Trash2, Server, Search } from "lucide-react";
+import { Badge } from "../components/ui/Badge";
 import { useRoute53 } from "../hooks/useRoute53";
 import { PageHeader } from "../components/ui/PageHeader";
 import { Button } from "../components/ui/Button";
@@ -144,11 +145,7 @@ export const Route53 = () => {
                 {
                   key: "type",
                   header: "Type",
-                  render: (r: ResourceRecordSet) => (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface-elevated border border-border-subtle font-bold text-text-muted">
-                      {r.Type}
-                    </span>
-                  ),
+                  render: (r: ResourceRecordSet) => <Badge variant="mono">{r.Type}</Badge>,
                 },
                 { key: "ttl", header: "TTL", render: (r: ResourceRecordSet) => r.TTL || "-" },
                 {

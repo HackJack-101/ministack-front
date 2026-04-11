@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Key, RefreshCw, Plus, Trash2, Power } from "lucide-react";
+import { Badge } from "../components/ui/Badge";
 import { useKMS } from "../hooks/useKMS";
 import { PageHeader } from "../components/ui/PageHeader";
 import { Button } from "../components/ui/Button";
@@ -89,15 +90,7 @@ export const KMS = () => {
               key: "status",
               header: "Status",
               render: (k: KeyMetadata) => (
-                <span
-                  className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border ${
-                    k.Enabled
-                      ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                      : "bg-red-500/10 text-red-500 border-red-500/20"
-                  }`}
-                >
-                  {k.Enabled ? "Enabled" : "Disabled"}
-                </span>
+                <Badge variant={k.Enabled ? "success" : "error"}>{k.Enabled ? "Enabled" : "Disabled"}</Badge>
               ),
             },
             {

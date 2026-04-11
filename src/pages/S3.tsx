@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Database, RefreshCw, Plus, ArrowLeft, Upload } from "lucide-react";
+import { Badge } from "../components/ui/Badge";
 import { useS3 } from "../hooks/useS3";
 import { BucketList } from "../components/s3/BucketList";
 import { ObjectsTable } from "../components/s3/ObjectsTable";
@@ -213,16 +214,8 @@ export const S3 = () => {
                 })}
               </div>
             )}
-            {!isUploading && (
-              <span className="text-xs text-text-muted bg-surface-elevated border border-border-subtle px-1.5 py-0.5 rounded">
-                {pluralize(objects.length, "object")}
-              </span>
-            )}
-            {isUploading && (
-              <span className="text-xs text-blue-500 bg-blue-500/10 border border-blue-500/20 px-1.5 py-0.5 rounded uppercase tracking-wider font-medium">
-                Upload Mode
-              </span>
-            )}
+            {!isUploading && <Badge variant="default">{pluralize(objects.length, "object")}</Badge>}
+            {isUploading && <Badge variant="blue">Upload Mode</Badge>}
           </div>
 
           {activeTab === "objects" ? (

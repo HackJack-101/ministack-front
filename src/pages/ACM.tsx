@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { BadgeCheck, RefreshCw, Plus, Trash2, Globe } from "lucide-react";
+import { Badge } from "../components/ui/Badge";
 import { useACM } from "../hooks/useACM";
 import { PageHeader } from "../components/ui/PageHeader";
 import { Button } from "../components/ui/Button";
@@ -99,11 +100,7 @@ export default function ACM() {
             {
               key: "type",
               header: "Type",
-              render: (p: any) => (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
-                  {p.Type || "AMAZON_ISSUED"}
-                </span>
-              ),
+              render: (p: any) => <Badge variant="blue">{p.Type || "AMAZON_ISSUED"}</Badge>,
             },
             {
               key: "actions",
