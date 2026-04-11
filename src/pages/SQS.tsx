@@ -42,6 +42,7 @@ export const SQS = () => {
   const [queueAttributes, setQueueAttributes] = useState<Record<string, string>>({});
   const [tags, setTags] = useState<Record<string, string>>({});
   const [messages, setMessages] = useState<Message[]>([]);
+  const [hasPolled, setHasPolled] = useState(false);
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [tagLoading, setTagLoading] = useState(false);
   const [messageBody, setMessageBody] = useState("");
@@ -112,6 +113,7 @@ export const SQS = () => {
 
   const fetchMessages = useCallback(async (queueUrl: string) => {
     setMessagesLoading(true);
+    setHasPolled(true);
     try {
       const response = await sqsClient.send(
         new ReceiveMessageCommand({
@@ -175,11 +177,15 @@ export const SQS = () => {
 
   useEffect(() => {
     if (selectedQueueUrl) {
-      fetchMessages(selectedQueueUrl);
       fetchQueueAttributes(selectedQueueUrl);
       fetchQueueTags(selectedQueueUrl);
     }
-  }, [selectedQueueUrl, fetchMessages, fetchQueueAttributes, fetchQueueTags]);
+  }, [selectedQueueUrl, fetchQueueAttributes, fetchQueueTags]);
+
+  useEffect(() => {
+    setHasPolled(false);
+    setMessages([]);
+  }, [selectedQueueUrl]);
 
   const handleDeleteQueue = (queueUrl: string) => {
     const name = queueUrl.split("/").pop();
@@ -662,20 +668,36 @@ export const SQS = () => {
                         onClick={() => fetchMessages(selectedQueueUrl)}
                         leftIcon={<RefreshCw className={`w-3 h-3 ${messagesLoading ? "animate-spin" : ""}`} />}
                       >
-                        Refresh
+                        Pull for messages
                       </Button>
                     </div>
                   </div>
                   <div>
                     {messagesLoading && messages.length === 0 ? (
                       <div className="py-16 text-center">
-                        <Spinner size="md" color="text-orange-500" label="Polling for messages..." />
+                        <Spinner size="md" color="text-orange-500" label="Pulling for messages..." />
                       </div>
+                    ) : !hasPolled ? (
+                      <EmptyState
+                        icon={Inbox}
+                        title="Pull for messages"
+                        description="Click the button below to retrieve messages from the queue. This will make them 'In Flight' and invisible to other consumers for a period."
+                        action={
+                          <Button
+                            variant="warning"
+                            size="sm"
+                            onClick={() => fetchMessages(selectedQueueUrl!)}
+                            leftIcon={<RefreshCw className={`w-3.5 h-3.5 ${messagesLoading ? "animate-spin" : ""}`} />}
+                          >
+                            Pull for messages
+                          </Button>
+                        }
+                      />
                     ) : messages.length === 0 ? (
                       <EmptyState
                         icon={Inbox}
                         title="No messages available"
-                        description="Polling might return nothing if messages are invisible."
+                        description="Pulling might return nothing if messages are invisible or if the queue is empty."
                       />
                     ) : (
                       <div className="divide-y divide-border-subtle">
