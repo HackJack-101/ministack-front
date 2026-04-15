@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Box, FileJson, Globe, Info, Layers, Sparkles, Zap } from "lucide-react";
+import { ArrowLeft, Box, FileJson, Globe, Info, Layers, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Input, TextArea } from "../components/ui/Input";
 import { PageHeader } from "../components/ui/PageHeader";
@@ -79,6 +79,54 @@ const TRUST_POLICY_TEMPLATES = [
   },
 ];
 
+const WILDCARD_PERMISSION_TEMPLATES = [
+  {
+    id: "s3-full",
+    name: "S3",
+    policyName: "S3FullAccess",
+    policy: {
+      Version: "2012-10-17",
+      Statement: [{ Effect: "Allow", Action: "s3:*", Resource: "*" }],
+    },
+  },
+  {
+    id: "sqs-full",
+    name: "SQS",
+    policyName: "SQSFullAccess",
+    policy: {
+      Version: "2012-10-17",
+      Statement: [{ Effect: "Allow", Action: "sqs:*", Resource: "*" }],
+    },
+  },
+  {
+    id: "secrets-full",
+    name: "Secrets Manager",
+    policyName: "SecretsManagerFullAccess",
+    policy: {
+      Version: "2012-10-17",
+      Statement: [{ Effect: "Allow", Action: "secretsmanager:*", Resource: "*" }],
+    },
+  },
+  {
+    id: "lambda-full",
+    name: "Lambda",
+    policyName: "LambdaFullAccess",
+    policy: {
+      Version: "2012-10-17",
+      Statement: [{ Effect: "Allow", Action: "lambda:*", Resource: "*" }],
+    },
+  },
+  {
+    id: "cw-logs-full",
+    name: "CloudWatch Logs",
+    policyName: "CloudWatchLogsFullAccess",
+    policy: {
+      Version: "2012-10-17",
+      Statement: [{ Effect: "Allow", Action: "logs:*", Resource: "*" }],
+    },
+  },
+];
+
 const DEFAULT_ASSUME_ROLE_POLICY = JSON.stringify(TRUST_POLICY_TEMPLATES[0].policy, null, 2);
 
 export const IAMCreateRole = () => {
@@ -89,6 +137,7 @@ export const IAMCreateRole = () => {
 
   const [roleName, setRoleName] = useState("");
   const [policyDocument, setPolicyDocument] = useState(DEFAULT_ASSUME_ROLE_POLICY);
+  const [selectedWildcards, setSelectedWildcards] = useState<string[]>([]);
 
   const handleCreate = async () => {
     if (!roleName || !policyDocument) {
@@ -99,6 +148,15 @@ export const IAMCreateRole = () => {
     setLoading(true);
     try {
       await iam.createRole(roleName, policyDocument);
+
+      // Apply selected wildcards as inline policies
+      for (const wildcardId of selectedWildcards) {
+        const template = WILDCARD_PERMISSION_TEMPLATES.find((t) => t.id === wildcardId);
+        if (template) {
+          await iam.putRolePolicy(roleName, template.policyName, JSON.stringify(template.policy, null, 2));
+        }
+      }
+
       toast.success(`Role "${roleName}" created successfully`);
       navigate("/iam");
     } catch (err: any) {
@@ -106,6 +164,10 @@ export const IAMCreateRole = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleWildcard = (id: string) => {
+    setSelectedWildcards((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
   };
 
   return (
@@ -196,6 +258,41 @@ export const IAMCreateRole = () => {
                   this role.
                 </p>
               </div>
+            </div>
+          </section>
+
+          <section className="space-y-4 pt-6 border-t border-border-subtle">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-purple-500" />
+              <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                Quick Wildcard Permissions
+              </h3>
+            </div>
+            <p className="text-[11px] text-text-muted">
+              Select full access permissions to be added as inline policies to the role upon creation.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {WILDCARD_PERMISSION_TEMPLATES.map((template) => {
+                const isSelected = selectedWildcards.includes(template.id);
+                return (
+                  <button
+                    key={template.id}
+                    type="button"
+                    onClick={() => toggleWildcard(template.id)}
+                    className={`flex items-center justify-between p-3 rounded-xl border transition-all text-left ${
+                      isSelected
+                        ? "bg-purple-500/10 border-purple-500/30 text-purple-700 shadow-sm ring-1 ring-purple-500/20"
+                        : "bg-surface-elevated border-border-subtle text-text-secondary hover:border-purple-500/30 hover:bg-surface-hover"
+                    }`}
+                  >
+                    <div className="space-y-0.5">
+                      <p className="text-[11px] font-semibold">{template.name}</p>
+                      <p className="text-[9px] text-text-muted truncate">Full Access (*)</p>
+                    </div>
+                    {isSelected && <ShieldCheck className="w-3.5 h-3.5 text-purple-500" />}
+                  </button>
+                );
+              })}
             </div>
           </section>
         </div>

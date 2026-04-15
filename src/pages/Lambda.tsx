@@ -22,12 +22,19 @@ import {
   Activity,
   FileText,
   Sparkles,
+  ScrollText,
+  CheckCircle2,
+  XCircle,
+  ExternalLink,
+  RotateCcw,
 } from "lucide-react";
 import {
   useLambda,
   type UpdateFunctionConfigurationForm,
   type EventSourceMappingConfiguration,
 } from "../hooks/useLambda";
+import { useCloudWatchLogs } from "../hooks/useCloudWatchLogs";
+import { MINISTACK_ENDPOINT } from "../services/awsClients";
 import { useIAM } from "../hooks/useIAM";
 import { useToast } from "../hooks/useToast";
 import { useConfirmModal } from "../hooks/useConfirmModal";
@@ -41,6 +48,7 @@ import { CreateTriggerModal } from "../components/lambda/CreateTriggerModal";
 import { formatJson } from "../utils/format";
 
 const RUNTIMES = [
+  { value: "nodejs22.x", label: "Node.js 22.x" },
   { value: "nodejs20.x", label: "Node.js 20.x" },
   { value: "nodejs18.x", label: "Node.js 18.x" },
   { value: "python3.12", label: "Python 3.12" },
@@ -51,6 +59,35 @@ const RUNTIMES = [
   { value: "java17", label: "Java 17" },
   { value: "dotnet8", label: " .NET 8" },
 ];
+
+const LAMBDA_TRUST_POLICY = {
+  Version: "2012-10-17",
+  Statement: [
+    {
+      Effect: "Allow",
+      Principal: {
+        Service: "lambda.amazonaws.com",
+      },
+      Action: "sts:AssumeRole",
+    },
+  ],
+};
+
+const SECRETS_MANAGER_POLICY = {
+  Version: "2012-10-17",
+  Statement: [
+    {
+      Effect: "Allow",
+      Action: ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret", "secretsmanager:ListSecrets"],
+      Resource: "*",
+    },
+    {
+      Effect: "Allow",
+      Action: ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
+      Resource: "arn:aws:logs:*:*:*",
+    },
+  ],
+};
 
 const Lambda: React.FC = () => {
   const { functionName } = useParams();
@@ -70,7 +107,19 @@ const Lambda: React.FC = () => {
     deleteEventSourceMapping,
     updateEventSourceMapping,
   } = useLambda();
-  const { roles, loading: iamLoading } = useIAM();
+  const {
+    roles,
+    loading: iamLoading,
+    getRole,
+    getPolicyDocument,
+    updateRoleTrustPolicy,
+    listAttachedRolePolicies,
+    attachRolePolicy,
+    createPolicy,
+    listRolePolicies,
+    getRolePolicy,
+  } = useIAM();
+  const { filterLogEvents, describeLogGroups, createLogGroup } = useCloudWatchLogs();
 
   const [activeTab, setActiveTab] = useState<"invoke" | "settings" | "triggers">("invoke");
   const [invoking, setInvoking] = useState(false);
@@ -83,8 +132,269 @@ const Lambda: React.FC = () => {
   const [triggers, setTriggers] = useState<EventSourceMappingConfiguration[]>([]);
   const [triggersLoading, setTriggersLoading] = useState(false);
   const [isAddingTrigger, setIsAddingTrigger] = useState(false);
+  const [roleTrustValid, setRoleTrustValid] = useState<boolean | null>(null);
+  const [permissionsValid, setPermissionsValid] = useState<boolean | null>(null);
+  const [checkingRole, setCheckingRole] = useState(false);
+  const [checkingPermissions, setCheckingPermissions] = useState(false);
+  const [fixingRole, setFixingRole] = useState(false);
+  const [fixingPermissions, setFixingPermissions] = useState(false);
+  const [logGroupExists, setLogGroupExists] = useState<boolean | null>(null);
+  const [checkingLogGroup, setCheckingLogGroup] = useState(false);
+  const [creatingLogGroup, setCreatingLogGroup] = useState(false);
+
+  const [cloudWatchLogs, setCloudWatchLogs] = useState<string | null>(null);
+  const [refreshingLogs, setRefreshingLogs] = useState(false);
 
   const selectedFunction = functions.find((f) => f.FunctionName === functionName);
+
+  const [payload, setPayload] = useState("{}");
+  const [invokeResult, setInvokeResult] = useState<{
+    payload: string | null;
+    logs: string | null;
+    statusCode?: number;
+    functionError?: string;
+  } | null>(null);
+
+  const [editForm, setEditForm] = useState<UpdateFunctionConfigurationForm>({
+    FunctionName: functionName || "",
+    Runtime: "",
+    Handler: "",
+    Role: "",
+    Description: "",
+    Timeout: 3,
+    MemorySize: 128,
+    Environment: { Variables: {} },
+    LoggingConfig: {
+      LogFormat: "Text",
+      ApplicationLogLevel: "INFO",
+      SystemLogLevel: "INFO",
+      LogGroup: "",
+    },
+  });
+
+  const checkRoleTrustPolicy = React.useCallback(
+    async (roleArn: string) => {
+      if (!roleArn) return;
+      setCheckingRole(true);
+      try {
+        const roleName = roleArn.split("/").pop();
+        if (!roleName) return;
+
+        const role = await getRole(roleName);
+        if (role?.AssumeRolePolicyDocument) {
+          const doc =
+            typeof role.AssumeRolePolicyDocument === "string"
+              ? JSON.parse(decodeURIComponent(role.AssumeRolePolicyDocument))
+              : role.AssumeRolePolicyDocument;
+
+          const statements = Array.isArray(doc.Statement) ? doc.Statement : [doc.Statement];
+          const isValid = statements.some((s: any) => {
+            const principal = s.Principal?.Service;
+            const services = Array.isArray(principal) ? principal : [principal];
+            return s.Effect === "Allow" && s.Action === "sts:AssumeRole" && services.includes("lambda.amazonaws.com");
+          });
+          setRoleTrustValid(isValid);
+        }
+      } catch (err) {
+        console.error("Failed to check role trust policy", err);
+        setRoleTrustValid(null);
+      } finally {
+        setCheckingRole(false);
+      }
+    },
+    [getRole],
+  );
+
+  const handleFixRoleTrustPolicy = async () => {
+    if (!selectedFunction?.Role) return;
+    const roleName = selectedFunction.Role.split("/").pop();
+    if (!roleName) return;
+
+    setFixingRole(true);
+    try {
+      await updateRoleTrustPolicy(roleName, JSON.stringify(LAMBDA_TRUST_POLICY));
+      setRoleTrustValid(true);
+      toast.success("Role trust policy updated for Lambda execution");
+    } catch {
+      // Error handled by hook
+    } finally {
+      setFixingRole(false);
+    }
+  };
+
+  const checkPermissions = React.useCallback(
+    async (roleArn: string) => {
+      if (!roleArn) return;
+      setCheckingPermissions(true);
+      try {
+        const roleName = roleArn.split("/").pop();
+        if (!roleName) return;
+
+        // Fetch both attached and inline policies
+        const [attachedPolicies, inlinePolicyNames] = await Promise.all([
+          listAttachedRolePolicies(roleName),
+          listRolePolicies(roleName),
+        ]);
+
+        let hasSecretsManagerAccess = false;
+        let hasCloudWatchLogsAccess = false;
+
+        const checkStatement = (s: any) => {
+          if (s.Effect !== "Allow") return { sm: false, cw: false };
+          const actions = Array.isArray(s.Action) ? s.Action : [s.Action];
+
+          const sm = actions.some(
+            (a: string) =>
+              a === "*" ||
+              a === "secretsmanager:*" ||
+              a === "secretsmanager:GetSecretValue" ||
+              a.startsWith("secretsmanager:Get"),
+          );
+
+          const cw = actions.some(
+            (a: string) =>
+              a === "*" ||
+              a === "logs:*" ||
+              a === "logs:CreateLogGroup" ||
+              a === "logs:PutLogEvents" ||
+              a === "logs:CreateLogStream",
+          );
+
+          return { sm, cw };
+        };
+
+        const processPolicyDocument = (doc: any) => {
+          const policyObj = typeof doc === "string" ? JSON.parse(doc) : doc;
+          const statements = Array.isArray(policyObj.Statement) ? policyObj.Statement : [policyObj.Statement];
+
+          for (const s of statements) {
+            const { sm, cw } = checkStatement(s);
+            if (sm) hasSecretsManagerAccess = true;
+            if (cw) hasCloudWatchLogsAccess = true;
+          }
+        };
+
+        // Check attached policies
+        await Promise.all(
+          attachedPolicies.map(async (policy) => {
+            if (!policy.PolicyArn || (hasSecretsManagerAccess && hasCloudWatchLogsAccess)) return;
+            try {
+              const doc = await getPolicyDocument(policy.PolicyArn);
+              if (doc) processPolicyDocument(doc);
+            } catch (err) {
+              console.error(`Failed to check attached policy ${policy.PolicyArn}`, err);
+            }
+          }),
+        );
+
+        // Check inline policies if still missing something
+        if (!hasSecretsManagerAccess || !hasCloudWatchLogsAccess) {
+          await Promise.all(
+            inlinePolicyNames.map(async (policyName) => {
+              if (hasSecretsManagerAccess && hasCloudWatchLogsAccess) return;
+              try {
+                const doc = await getRolePolicy(roleName, policyName);
+                if (doc) processPolicyDocument(doc);
+              } catch (err) {
+                console.error(`Failed to check inline policy ${policyName}`, err);
+              }
+            }),
+          );
+        }
+
+        setPermissionsValid(hasSecretsManagerAccess && hasCloudWatchLogsAccess);
+      } catch (err) {
+        console.error("Failed to check permissions", err);
+        setPermissionsValid(null);
+      } finally {
+        setCheckingPermissions(false);
+      }
+    },
+    [listAttachedRolePolicies, listRolePolicies, getPolicyDocument, getRolePolicy],
+  );
+
+  const handleFixPermissions = async () => {
+    if (!selectedFunction?.Role) return;
+    const roleName = selectedFunction.Role.split("/").pop();
+    if (!roleName) return;
+
+    setFixingPermissions(true);
+    try {
+      const policyName = `LambdaSecretsManagerAccess-${roleName}`;
+      try {
+        await createPolicy(policyName, JSON.stringify(SECRETS_MANAGER_POLICY));
+      } catch {
+        // Already exists is fine
+      }
+
+      const policyArn = `arn:aws:iam::000000000000:policy/${policyName}`;
+      await attachRolePolicy(roleName, policyArn);
+
+      setPermissionsValid(true);
+      toast.success("Secrets Manager and CloudWatch Logs permissions attached to role");
+    } catch {
+      // Error handled by hook
+    } finally {
+      setFixingPermissions(false);
+    }
+  };
+
+  const checkLogGroup = React.useCallback(
+    async (name: string) => {
+      if (!name) return;
+      setCheckingLogGroup(true);
+      try {
+        const logGroupName = `/aws/lambda/${name}`;
+        const groups = await describeLogGroups(logGroupName);
+        const exists = groups.some((g) => g.logGroupName === logGroupName);
+        setLogGroupExists(exists);
+      } catch (err) {
+        console.error("Failed to check log group", err);
+        setLogGroupExists(null);
+      } finally {
+        setCheckingLogGroup(false);
+      }
+    },
+    [describeLogGroups],
+  );
+
+  const handleCreateLogGroup = async () => {
+    if (!functionName) return;
+    setCreatingLogGroup(true);
+    try {
+      const logGroupName = `/aws/lambda/${functionName}`;
+      await createLogGroup(logGroupName);
+      setLogGroupExists(true);
+      toast.success(`Log group ${logGroupName} created`);
+    } catch {
+      // Error handled by hook
+    } finally {
+      setCreatingLogGroup(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (selectedFunction?.Role) {
+      checkRoleTrustPolicy(selectedFunction.Role);
+      checkPermissions(selectedFunction.Role);
+    } else {
+      setRoleTrustValid(null);
+      setPermissionsValid(null);
+    }
+
+    if (functionName) {
+      checkLogGroup(functionName);
+    } else {
+      setLogGroupExists(null);
+    }
+  }, [selectedFunction?.Role, functionName, checkRoleTrustPolicy, checkPermissions, checkLogGroup]);
+
+  React.useEffect(() => {
+    if (editing && editForm.Role) {
+      checkRoleTrustPolicy(editForm.Role);
+      checkPermissions(editForm.Role);
+    }
+  }, [editForm.Role, editing, checkRoleTrustPolicy, checkPermissions]);
 
   const fetchTriggers = React.useCallback(async () => {
     if (!functionName) return;
@@ -134,32 +444,6 @@ const Lambda: React.FC = () => {
     }
   };
 
-  const [payload, setPayload] = useState("{}");
-  const [invokeResult, setInvokeResult] = useState<{
-    payload: string | null;
-    logs: string | null;
-    statusCode?: number;
-    functionError?: string;
-  } | null>(null);
-
-  const [editForm, setEditForm] = useState<UpdateFunctionConfigurationForm>({
-    FunctionName: functionName || "",
-    Runtime: "",
-    Handler: "",
-    Role: "",
-    Description: "",
-    Timeout: 3,
-    MemorySize: 128,
-    Environment: { Variables: {} },
-    LoggingConfig: {
-      LogFormat: "Text",
-      ApplicationLogLevel: "INFO",
-      SystemLogLevel: "INFO",
-      LogGroup: "",
-    },
-  });
-  const [enableAdvancedLogging, setEnableAdvancedLogging] = useState(false);
-
   // Sync edit form with selected function
   React.useEffect(() => {
     if (selectedFunction && !editing) {
@@ -181,7 +465,6 @@ const Lambda: React.FC = () => {
           LogGroup: selectedFunction.LoggingConfig?.LogGroup || "",
         },
       });
-      setEnableAdvancedLogging(!!selectedFunction.LoggingConfig);
     }
   }, [selectedFunction, editing]);
 
@@ -191,6 +474,7 @@ const Lambda: React.FC = () => {
 
     setInvoking(true);
     setInvokeResult(null);
+    setCloudWatchLogs(null);
     try {
       const result = await invokeFunction(functionName, payload);
       if (result) {
@@ -208,23 +492,37 @@ const Lambda: React.FC = () => {
     }
   };
 
+  const handleRefreshLogs = async () => {
+    if (!functionName) return;
+    setRefreshingLogs(true);
+    try {
+      const logGroupName = `/aws/lambda/${functionName}`;
+      const events = await filterLogEvents(logGroupName, undefined, 50);
+      const formattedLogs = events
+        .map((event) => {
+          const timestamp = event.timestamp ? new Date(event.timestamp).toISOString() : "";
+          const message = event.message || "";
+          return `[${timestamp}] ${message}${message.endsWith("\n") ? "" : "\n"}`;
+        })
+        .join("");
+      setCloudWatchLogs(formattedLogs || "No logs found in CloudWatch.");
+    } catch (err) {
+      console.error("Failed to refresh logs", err);
+    } finally {
+      setRefreshingLogs(false);
+    }
+  };
+
   const handleUpdateConfiguration = async () => {
     if (!functionName) return;
     setSaving(true);
     try {
       const success = await updateFunctionConfiguration({
         ...editForm,
-        LoggingConfig: enableAdvancedLogging
-          ? {
-              ...editForm.LoggingConfig,
-              LogGroup: editForm.LoggingConfig?.LogGroup || undefined,
-            }
-          : {
-              LogFormat: "Text",
-              ApplicationLogLevel: "INFO",
-              SystemLogLevel: "INFO",
-              LogGroup: undefined,
-            },
+        LoggingConfig: {
+          ...editForm.LoggingConfig,
+          LogGroup: editForm.LoggingConfig?.LogGroup || undefined,
+        },
       });
       if (success) {
         setEditing(false);
@@ -301,6 +599,35 @@ const Lambda: React.FC = () => {
     }));
   };
 
+  const quickAddAwsVariables = () => {
+    setEditForm((prev) => ({
+      ...prev,
+      Environment: {
+        Variables: {
+          ...(prev.Environment?.Variables || {}),
+          AWS_REGION: "us-east-1",
+          AWS_ACCESS_KEY_ID: "test",
+          AWS_SECRET_ACCESS_KEY: "test",
+          AWS_ENDPOINT_URL: MINISTACK_ENDPOINT,
+        },
+      },
+    }));
+    toast.success("AWS environment variables added");
+  };
+
+  const resetLoggingSettings = () => {
+    setEditForm((prev) => ({
+      ...prev,
+      LoggingConfig: {
+        LogFormat: "Text",
+        ApplicationLogLevel: "INFO",
+        SystemLogLevel: "INFO",
+        LogGroup: "",
+      },
+    }));
+    toast.success("Logging settings reset to defaults");
+  };
+
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -349,7 +676,7 @@ const Lambda: React.FC = () => {
             </Button>
             {!functionName && (
               <Button
-                variant="warning"
+                variant="amber"
                 size="sm"
                 onClick={() => navigate("/lambda/create")}
                 leftIcon={<Plus className="w-3.5 h-3.5" />}
@@ -584,14 +911,33 @@ const Lambda: React.FC = () => {
                           </pre>
                         </div>
                         <div className="p-4 space-y-2">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Terminal className="w-3.5 h-3.5 text-text-muted" />
-                            <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">
-                              Execution Logs
-                            </span>
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                              <Terminal className="w-3.5 h-3.5 text-text-muted" />
+                              <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">
+                                Execution Logs
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <button
+                                onClick={handleRefreshLogs}
+                                disabled={refreshingLogs}
+                                className="flex items-center gap-1.5 text-[10px] font-medium text-amber-500 hover:text-amber-600 transition-colors disabled:opacity-50"
+                              >
+                                <RefreshCw className={`w-3 h-3 ${refreshingLogs ? "animate-spin" : ""}`} />
+                                Refresh
+                              </button>
+                              <button
+                                onClick={() => navigate(`/logs/${encodeURIComponent(`/aws/lambda/${functionName}`)}`)}
+                                className="flex items-center gap-1.5 text-[10px] font-medium text-text-muted hover:text-amber-500 transition-colors"
+                              >
+                                <ExternalLink className="w-3 h-3" />
+                                View full logs
+                              </button>
+                            </div>
                           </div>
                           <pre className="bg-surface-elevated border border-border-subtle p-3 rounded text-xs font-mono text-text-muted overflow-x-auto whitespace-pre-wrap break-all min-h-[150px]">
-                            {invokeResult?.logs || "No logs available"}
+                            {cloudWatchLogs || invokeResult?.logs || "No logs available"}
                           </pre>
                         </div>
                       </div>
@@ -666,9 +1012,12 @@ const Lambda: React.FC = () => {
                             />
 
                             <div className="space-y-1.5">
-                              <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
-                                Execution Role
-                              </label>
+                              <div className="flex items-center justify-between">
+                                <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
+                                  Execution Role
+                                </label>
+                                {checkingRole && <Spinner size="sm" />}
+                              </div>
                               <select
                                 className="w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-amber-500/60 transition-colors text-sm"
                                 value={editForm.Role}
@@ -684,6 +1033,12 @@ const Lambda: React.FC = () => {
                                   </option>
                                 ))}
                               </select>
+                              {roleTrustValid === false && (
+                                <div className="flex items-center gap-1.5 px-1 py-0.5 text-[10px] text-red-500 font-medium">
+                                  <XCircle className="w-3 h-3" />
+                                  Role trust policy does not allow Lambda execution
+                                </div>
+                              )}
                             </div>
                           </div>
 
@@ -722,121 +1077,105 @@ const Lambda: React.FC = () => {
                                 Logging Settings
                               </h3>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[10px] text-text-muted uppercase font-medium">Advanced</span>
-                              <button
-                                onClick={() => setEnableAdvancedLogging(!enableAdvancedLogging)}
-                                className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors focus:outline-none focus:ring-1 focus:ring-amber-500/50 ${
-                                  enableAdvancedLogging
-                                    ? "bg-amber-500"
-                                    : "bg-surface-elevated border border-border-subtle"
-                                }`}
-                              >
-                                <span
-                                  className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform ${
-                                    enableAdvancedLogging ? "translate-x-3.5" : "translate-x-0.5"
-                                  }`}
-                                />
-                              </button>
-                            </div>
+                            <button
+                              type="button"
+                              onClick={resetLoggingSettings}
+                              className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-medium text-text-muted hover:text-amber-500 transition-colors uppercase tracking-wider bg-surface-elevated hover:bg-surface-hover border border-border-subtle rounded-md"
+                            >
+                              <RotateCcw className="w-3 h-3" />
+                              Reset to Defaults
+                            </button>
                           </div>
 
-                          {enableAdvancedLogging ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-top-1 duration-200">
-                              <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                  <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
-                                    Log Format
-                                  </label>
-                                  <select
-                                    className="w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-amber-500/60 transition-colors text-sm"
-                                    value={editForm.LoggingConfig?.LogFormat}
-                                    onChange={(e) =>
-                                      setEditForm({
-                                        ...editForm,
-                                        LoggingConfig: {
-                                          ...editForm.LoggingConfig,
-                                          LogFormat: e.target.value as any,
-                                        },
-                                      })
-                                    }
-                                  >
-                                    <option value="Text">Text</option>
-                                    <option value="JSON">JSON</option>
-                                  </select>
-                                </div>
-
-                                <Input
-                                  label="Log Group"
-                                  value={editForm.LoggingConfig?.LogGroup}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-1.5">
+                                <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
+                                  Log Format
+                                </label>
+                                <select
+                                  className="w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-amber-500/60 transition-colors text-sm"
+                                  value={editForm.LoggingConfig?.LogFormat}
                                   onChange={(e) =>
                                     setEditForm({
                                       ...editForm,
-                                      LoggingConfig: { ...editForm.LoggingConfig, LogGroup: e.target.value },
+                                      LoggingConfig: {
+                                        ...editForm.LoggingConfig,
+                                        LogFormat: e.target.value as any,
+                                      },
                                     })
                                   }
-                                  accentColor="amber"
-                                  placeholder="/aws/lambda/..."
-                                />
+                                >
+                                  <option value="Text">Text</option>
+                                  <option value="JSON">JSON</option>
+                                </select>
                               </div>
 
-                              <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                  <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
-                                    Application Log Level
-                                  </label>
-                                  <select
-                                    className="w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-amber-500/60 transition-colors text-sm"
-                                    value={editForm.LoggingConfig?.ApplicationLogLevel}
-                                    onChange={(e) =>
-                                      setEditForm({
-                                        ...editForm,
-                                        LoggingConfig: {
-                                          ...editForm.LoggingConfig,
-                                          ApplicationLogLevel: e.target.value as any,
-                                        },
-                                      })
-                                    }
-                                  >
-                                    <option value="TRACE">TRACE</option>
-                                    <option value="DEBUG">DEBUG</option>
-                                    <option value="INFO">INFO</option>
-                                    <option value="WARN">WARN</option>
-                                    <option value="ERROR">ERROR</option>
-                                    <option value="FATAL">FATAL</option>
-                                  </select>
-                                </div>
+                              <Input
+                                label="Log Group"
+                                value={editForm.LoggingConfig?.LogGroup}
+                                onChange={(e) =>
+                                  setEditForm({
+                                    ...editForm,
+                                    LoggingConfig: { ...editForm.LoggingConfig, LogGroup: e.target.value },
+                                  })
+                                }
+                                accentColor="amber"
+                                placeholder="/aws/lambda/..."
+                              />
+                            </div>
 
-                                <div className="space-y-1.5">
-                                  <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
-                                    System Log Level
-                                  </label>
-                                  <select
-                                    className="w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-amber-500/60 transition-colors text-sm"
-                                    value={editForm.LoggingConfig?.SystemLogLevel}
-                                    onChange={(e) =>
-                                      setEditForm({
-                                        ...editForm,
-                                        LoggingConfig: {
-                                          ...editForm.LoggingConfig,
-                                          SystemLogLevel: e.target.value as any,
-                                        },
-                                      })
-                                    }
-                                  >
-                                    <option value="DEBUG">DEBUG</option>
-                                    <option value="INFO">INFO</option>
-                                    <option value="WARN">WARN</option>
-                                  </select>
-                                </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-1.5">
+                                <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
+                                  Application Log Level
+                                </label>
+                                <select
+                                  className="w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-amber-500/60 transition-colors text-sm"
+                                  value={editForm.LoggingConfig?.ApplicationLogLevel}
+                                  onChange={(e) =>
+                                    setEditForm({
+                                      ...editForm,
+                                      LoggingConfig: {
+                                        ...editForm.LoggingConfig,
+                                        ApplicationLogLevel: e.target.value as any,
+                                      },
+                                    })
+                                  }
+                                >
+                                  <option value="TRACE">TRACE</option>
+                                  <option value="DEBUG">DEBUG</option>
+                                  <option value="INFO">INFO</option>
+                                  <option value="WARN">WARN</option>
+                                  <option value="ERROR">ERROR</option>
+                                  <option value="FATAL">FATAL</option>
+                                </select>
+                              </div>
+
+                              <div className="space-y-1.5">
+                                <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
+                                  System Log Level
+                                </label>
+                                <select
+                                  className="w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary focus:outline-none focus:border-amber-500/60 transition-colors text-sm"
+                                  value={editForm.LoggingConfig?.SystemLogLevel}
+                                  onChange={(e) =>
+                                    setEditForm({
+                                      ...editForm,
+                                      LoggingConfig: {
+                                        ...editForm.LoggingConfig,
+                                        SystemLogLevel: e.target.value as any,
+                                      },
+                                    })
+                                  }
+                                >
+                                  <option value="DEBUG">DEBUG</option>
+                                  <option value="INFO">INFO</option>
+                                  <option value="WARN">WARN</option>
+                                </select>
                               </div>
                             </div>
-                          ) : (
-                            <div className="bg-surface-elevated p-4 rounded-lg border border-border-subtle text-center italic text-text-muted text-[11px]">
-                              Default logging settings are active (Text format, INFO levels). Enable advanced logging to
-                              customize.
-                            </div>
-                          )}
+                          </div>
                         </div>
 
                         <div className="pt-6 border-t border-border-subtle">
@@ -844,14 +1183,24 @@ const Lambda: React.FC = () => {
                             <h3 className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
                               Environment Variables
                             </h3>
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={addEnvVar}
-                              leftIcon={<Plus className="w-3 h-3" />}
-                            >
-                              Add Variable
-                            </Button>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="xs"
+                                onClick={quickAddAwsVariables}
+                                leftIcon={<Sparkles className="w-3 h-3 text-amber-500" />}
+                              >
+                                Quick Add AWS
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="xs"
+                                onClick={addEnvVar}
+                                leftIcon={<Plus className="w-3 h-3" />}
+                              >
+                                Add Variable
+                              </Button>
+                            </div>
                           </div>
                           <div className="space-y-2">
                             {Object.entries(editForm.Environment?.Variables || {}).map(([key, value], idx) => (
@@ -925,12 +1274,139 @@ const Lambda: React.FC = () => {
                             </p>
                           </div>
                           <div>
-                            <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em] mb-1">
-                              Execution Role
-                            </span>
-                            <div className="flex items-center gap-2 text-xs text-text-muted font-mono bg-surface-elevated p-2 rounded border border-border-subtle break-all">
-                              <Shield className="w-3 h-3 flex-shrink-0" />
-                              {selectedFunction?.Role}
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em]">
+                                Execution Role
+                              </span>
+                              {selectedFunction?.Role && (
+                                <a
+                                  href={`/iam?tab=roles`}
+                                  className="text-[10px] text-amber-500 hover:text-amber-400 flex items-center gap-1 transition-colors"
+                                  title="View in IAM"
+                                >
+                                  View Role <ExternalLink className="w-2.5 h-2.5" />
+                                </a>
+                              )}
+                            </div>
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2 text-xs text-text-muted font-mono bg-surface-elevated p-2 rounded border border-border-subtle break-all">
+                                <Shield className="w-3 h-3 flex-shrink-0" />
+                                {selectedFunction?.Role}
+                              </div>
+                              {roleTrustValid === false && (
+                                <div className="flex items-start gap-2 p-2 rounded bg-red-500/5 border border-red-500/10 animate-in fade-in slide-in-from-top-1">
+                                  <XCircle className="w-3.5 h-3.5 text-red-500 mt-0.5" />
+                                  <div className="flex-1 space-y-1.5">
+                                    <p className="text-[11px] text-red-500 font-medium leading-relaxed">
+                                      Trust Policy error: Lambda cannot assume this role. This will prevent your
+                                      function from accessing AWS services.
+                                    </p>
+                                    <Button
+                                      size="xs"
+                                      variant="danger"
+                                      onClick={handleFixRoleTrustPolicy}
+                                      isLoading={fixingRole}
+                                      className="h-6 text-[10px]"
+                                    >
+                                      Fix Trust Policy
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
+                              {roleTrustValid === true && (
+                                <div className="flex items-center gap-1.5 px-2 py-1 text-[10px] text-green-500 font-medium">
+                                  <CheckCircle2 className="w-3 h-3" />
+                                  Trust Policy is correctly configured
+                                </div>
+                              )}
+                              {checkingPermissions && (
+                                <div className="flex items-center gap-1.5 px-2 py-1 text-[10px] text-text-muted italic">
+                                  <RefreshCw className="w-3 h-3 animate-spin" />
+                                  Checking permissions...
+                                </div>
+                              )}
+                              {permissionsValid === false && (
+                                <div className="flex items-start gap-2 p-2 rounded bg-amber-500/5 border border-amber-500/10 animate-in fade-in slide-in-from-top-1">
+                                  <AlertCircle className="w-3.5 h-3.5 text-amber-500 mt-0.5" />
+                                  <div className="flex-1 space-y-1.5">
+                                    <p className="text-[11px] text-amber-500 font-medium leading-relaxed">
+                                      Missing Permissions: This role might not have access to Secrets Manager or
+                                      CloudWatch Logs.
+                                    </p>
+                                    <Button
+                                      size="xs"
+                                      variant="warning"
+                                      onClick={handleFixPermissions}
+                                      isLoading={fixingPermissions}
+                                      className="h-6 text-[10px]"
+                                    >
+                                      Fix Permissions
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
+                              {permissionsValid === true && (
+                                <div className="flex items-center gap-1.5 px-2 py-1 text-[10px] text-green-500 font-medium">
+                                  <CheckCircle2 className="w-3 h-3" />
+                                  Required permissions are present
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div>
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="block text-[10px] font-medium text-text-muted uppercase tracking-[0.15em]">
+                                Log Group Status
+                              </span>
+                              {logGroupExists && (
+                                <a
+                                  href={`/logs/aws/lambda/${encodeURIComponent(functionName || "")}`}
+                                  className="text-[10px] text-amber-500 hover:text-amber-400 flex items-center gap-1 transition-colors"
+                                  title="View in CloudWatch"
+                                >
+                                  View Logs <ExternalLink className="w-2.5 h-2.5" />
+                                </a>
+                              )}
+                            </div>
+                            <div className="space-y-2">
+                              {checkingLogGroup && (
+                                <div className="flex items-center gap-1.5 px-2 py-1 text-[10px] text-text-muted italic">
+                                  <RefreshCw className="w-3 h-3 animate-spin" />
+                                  Checking log group...
+                                </div>
+                              )}
+                              {logGroupExists === false && (
+                                <div className="flex items-start gap-2 p-2 rounded bg-amber-500/5 border border-amber-500/10 animate-in fade-in slide-in-from-top-1">
+                                  <AlertCircle className="w-3.5 h-3.5 text-amber-500 mt-0.5" />
+                                  <div className="flex-1 space-y-1.5">
+                                    <p className="text-[11px] text-amber-500 font-medium leading-relaxed">
+                                      Log group <code className="text-[10px]">/aws/lambda/{functionName}</code> does not
+                                      exist yet.
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                      <Button
+                                        size="xs"
+                                        variant="warning"
+                                        onClick={handleCreateLogGroup}
+                                        isLoading={creatingLogGroup}
+                                        className="h-6 text-[10px]"
+                                      >
+                                        Create Now
+                                      </Button>
+                                      <span className="text-[9px] text-text-muted">
+                                        or it will be created on first execution
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                              {logGroupExists === true && (
+                                <div className="flex items-center gap-1.5 px-2 py-1 text-[10px] text-green-500 font-medium">
+                                  <CheckCircle2 className="w-3 h-3" />
+                                  Log group exists in CloudWatch
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -1147,6 +1623,28 @@ const Lambda: React.FC = () => {
                   <h3 className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] mb-4">Metadata</h3>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center text-xs">
+                      <span className="text-text-muted">State</span>
+                      <Badge variant={selectedFunction?.State === "Active" ? "success" : "warning"}>
+                        {selectedFunction?.State || "Unknown"}
+                      </Badge>
+                    </div>
+                    {selectedFunction?.LastUpdateStatus && (
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-text-muted">Last Update</span>
+                        <Badge
+                          variant={
+                            selectedFunction.LastUpdateStatus === "Successful"
+                              ? "success"
+                              : selectedFunction.LastUpdateStatus === "InProgress"
+                                ? "warning"
+                                : "error"
+                          }
+                        >
+                          {selectedFunction.LastUpdateStatus}
+                        </Badge>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center text-xs">
                       <span className="text-text-muted">Version</span>
                       <span className="text-text-primary font-medium">{selectedFunction?.Version || "$LATEST"}</span>
                     </div>
@@ -1279,13 +1777,22 @@ const Lambda: React.FC = () => {
                               </div>
                             </td>
                             <td className="px-4 py-3 text-right">
-                              <button
-                                onClick={() => handleDeleteTrigger(trigger.UUID!)}
-                                className="p-1.5 text-text-faint hover:text-red-500 hover:bg-red-500/10 rounded transition-colors opacity-0 group-hover:opacity-100"
-                                title="Delete Trigger"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
+                              <div className="flex items-center justify-end gap-1">
+                                <button
+                                  onClick={() => navigate(`/logs/${encodeURIComponent(`/aws/lambda/${functionName}`)}`)}
+                                  className="p-1.5 text-text-faint hover:text-blue-500 hover:bg-blue-500/10 rounded transition-colors opacity-0 group-hover:opacity-100"
+                                  title="View Logs"
+                                >
+                                  <ScrollText className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteTrigger(trigger.UUID!)}
+                                  className="p-1.5 text-text-faint hover:text-red-500 hover:bg-red-500/10 rounded transition-colors opacity-0 group-hover:opacity-100"
+                                  title="Delete Trigger"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         );

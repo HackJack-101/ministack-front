@@ -10,9 +10,11 @@ import { Modal } from "../components/ui/Modal";
 import { Input } from "../components/ui/Input";
 import { Spinner } from "../components/ui/Spinner";
 import { useConfirmModal } from "../hooks/useConfirmModal";
+import { serviceTokens } from "../design-system/serviceTokens";
 
 export default function ACM() {
   const { certificates, loading, requestCertificate, deleteCertificate, refresh } = useACM();
+  const acmToken = serviceTokens.acm;
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [domainName, setDomainName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
@@ -46,11 +48,11 @@ export default function ACM() {
         subtitle="Manage SSL/TLS certificates for your domains"
         actions={
           <>
-            <Button variant="outline" size="sm" onClick={refresh} disabled={loading}>
+            <Button variant="ghost" size="sm" onClick={refresh} disabled={loading}>
               <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
               Refresh
             </Button>
-            <Button size="sm" onClick={() => setIsCreateModalOpen(true)}>
+            <Button variant={acmToken.buttonVariant} size="sm" onClick={() => setIsCreateModalOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
               Request Certificate
             </Button>
@@ -68,23 +70,26 @@ export default function ACM() {
           title="No Certificates"
           description="Request a certificate to secure your custom domains."
           icon={BadgeCheck}
-          action={{
-            label: "Request Certificate",
-            onClick: () => setIsCreateModalOpen(true),
-          }}
+          action={
+            <Button variant={acmToken.buttonVariant} size="sm" onClick={() => setIsCreateModalOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Request Certificate
+            </Button>
+          }
         />
       ) : (
         <DataTable
           rows={certificates}
           rowKey={(p) => p.CertificateArn || ""}
+          accentColor="emerald"
           columns={[
             {
               key: "domain",
               header: "Domain Name",
               render: (p: any) => (
                 <div className="flex items-center">
-                  <Globe className="w-4 h-4 mr-2 text-emerald-500" />
-                  <span className="font-medium text-gray-900 dark:text-white">{p.DomainName}</span>
+                  <Globe className={`w-4 h-4 mr-2 ${acmToken.iconColor}`} />
+                  <span className="font-medium text-text-primary">{p.DomainName}</span>
                 </div>
               ),
             },
@@ -92,7 +97,7 @@ export default function ACM() {
               key: "arn",
               header: "Certificate ARN",
               render: (p: any) => (
-                <span className="text-xs text-gray-500 break-all max-w-xs block" title={p.CertificateArn}>
+                <span className="text-xs text-text-muted break-all max-w-xs block" title={p.CertificateArn}>
                   {p.CertificateArn}
                 </span>
               ),
@@ -100,7 +105,7 @@ export default function ACM() {
             {
               key: "type",
               header: "Type",
-              render: (p: any) => <Badge variant="blue">{p.Type || "AMAZON_ISSUED"}</Badge>,
+              render: (p: any) => <Badge variant={acmToken.badgeVariant}>{p.Type || "AMAZON_ISSUED"}</Badge>,
             },
             {
               key: "actions",
@@ -111,7 +116,7 @@ export default function ACM() {
                   variant="ghost"
                   size="sm"
                   onClick={() => handleDelete(p.CertificateArn!, p.DomainName!)}
-                  className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-opacity"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -130,12 +135,13 @@ export default function ACM() {
             onChange={(e) => setDomainName(e.target.value)}
             required
             autoFocus
+            accentColor="emerald"
           />
           <div className="flex justify-end gap-3 pt-4">
-            <Button variant="outline" type="button" onClick={() => setIsCreateModalOpen(false)}>
+            <Button variant="ghost" type="button" onClick={() => setIsCreateModalOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" isLoading={isCreating} color="emerald">
+            <Button variant={acmToken.buttonVariant} type="submit" isLoading={isCreating}>
               Request Certificate
             </Button>
           </div>

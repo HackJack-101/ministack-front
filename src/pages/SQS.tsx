@@ -18,7 +18,20 @@ import {
   type Message,
 } from "@aws-sdk/client-sqs";
 import { sqsClient } from "../services/awsClients";
-import { Plus, RefreshCw, MessageSquare, Send, Inbox, ArrowLeft, Trash2, Trash, Timer, RotateCcw } from "lucide-react";
+import {
+  Plus,
+  RefreshCw,
+  MessageSquare,
+  Send,
+  Inbox,
+  ArrowLeft,
+  Trash2,
+  Trash,
+  Timer,
+  RotateCcw,
+  Copy,
+  Check,
+} from "lucide-react";
 import { useToast } from "../hooks/useToast";
 import { useConfirmModal } from "../hooks/useConfirmModal";
 import { useSQS } from "../hooks/useSQS";
@@ -54,6 +67,7 @@ export const SQS = () => {
   const [isBulkSend, setIsBulkSend] = useState(false);
   const [bulkBody, setBulkBody] = useState("");
   const [isRedriveModalOpen, setIsRedriveModalOpen] = useState(false);
+  const [arnCopied, setArnCopied] = useState(false);
 
   // Settings states
   const [visibilityTimeout, setVisibilityTimeout] = useState(30);
@@ -460,7 +474,7 @@ export const SQS = () => {
             )}
             {!selectedQueueUrl && (
               <Button
-                variant="warning"
+                variant="orange"
                 size="sm"
                 onClick={() => navigate("/sqs/create")}
                 leftIcon={<Plus className="w-3.5 h-3.5" />}
@@ -532,6 +546,31 @@ export const SQS = () => {
                       </Badge>
                     )}
                   </div>
+                  {queueAttributes.QueueArn && (
+                    <div className="px-4 py-2.5 border-b border-border-subtle flex items-center justify-between gap-2">
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">ARN</span>
+                        <span className="text-xs text-text-secondary font-mono truncate mt-0.5">
+                          {queueAttributes.QueueArn}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(queueAttributes.QueueArn);
+                          setArnCopied(true);
+                          setTimeout(() => setArnCopied(false), 2000);
+                        }}
+                        className="shrink-0 p-1.5 text-text-faint hover:text-orange-500 hover:bg-orange-500/10 rounded transition-colors"
+                        title="Copy ARN"
+                      >
+                        {arnCopied ? (
+                          <Check className="w-3.5 h-3.5 text-emerald-500" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    </div>
+                  )}
                   <div className="p-3">
                     <Button
                       variant="ghost"

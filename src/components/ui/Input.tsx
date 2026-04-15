@@ -30,14 +30,18 @@ const accentColorMap = {
   sky: "focus:border-sky-500/60",
 };
 
-export const Input = ({ label, accentColor = "blue", className = "", ...props }: InputProps) => {
+export const Input = ({ label, accentColor = "blue", className = "", id, ...props }: InputProps) => {
+  const inputId = id ?? (label ? `input-${label.toLowerCase().replace(/\s+/g, "-")}` : undefined);
   return (
     <div className="space-y-1.5">
       {label && (
-        <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">{label}</label>
+        <label htmlFor={inputId} className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">
+          {label}
+        </label>
       )}
       <input
-        className={`w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary placeholder:text-text-faint focus:outline-none ${accentColorMap[accentColor]} transition-colors font-sans text-sm ${className}`}
+        id={inputId}
+        className={`w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary placeholder:text-text-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 ${accentColorMap[accentColor]} transition-colors font-sans text-sm ${className}`}
         {...props}
       />
     </div>
@@ -60,14 +64,21 @@ interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
     | "sky";
 }
 
-export const TextArea = ({ label, accentColor = "blue", className = "", ...props }: TextAreaProps) => {
+export const TextArea = ({ label, accentColor = "blue", className = "", id, ...props }: TextAreaProps) => {
+  const textareaId = id ?? (label ? `textarea-${label.toLowerCase().replace(/\s+/g, "-")}` : undefined);
   return (
     <div className="space-y-1.5">
       {label && (
-        <label className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5">{label}</label>
+        <label
+          htmlFor={textareaId}
+          className="text-[11px] text-text-muted uppercase tracking-[0.15em] font-medium px-0.5"
+        >
+          {label}
+        </label>
       )}
       <textarea
-        className={`w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary placeholder:text-text-faint focus:outline-none ${accentColorMap[accentColor]} transition-colors font-mono text-sm resize-none ${className}`}
+        id={textareaId}
+        className={`w-full bg-surface-input border border-border-default rounded-btn px-3 py-1.5 text-text-primary placeholder:text-text-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 ${accentColorMap[accentColor]} transition-colors font-mono text-sm resize-none ${className}`}
         {...props}
       />
     </div>

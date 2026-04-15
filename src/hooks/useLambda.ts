@@ -25,6 +25,9 @@ export interface CreateFunctionForm {
   Role: string;
   ZipFile: Uint8Array;
   LoggingConfig?: LoggingConfig;
+  Environment?: {
+    Variables?: Record<string, string>;
+  };
 }
 
 export interface CreateEventSourceMappingForm {
@@ -77,6 +80,7 @@ export const useLambda = () => {
             Role: params.Role,
             Code: { ZipFile: params.ZipFile },
             LoggingConfig: params.LoggingConfig,
+            Environment: params.Environment,
           }),
         );
         toast.success(`Function "${params.FunctionName}" created successfully`);
@@ -147,7 +151,9 @@ export const useLambda = () => {
             LoggingConfig: params.LoggingConfig,
           }),
         );
-        toast.success(`Function configuration for "${params.FunctionName}" updated successfully`);
+        toast.success(
+          `Function configuration for "${params.FunctionName}" updated successfully. Changes will be available in the next execution.`,
+        );
         await fetchFunctions();
         return true;
       } catch (err: unknown) {

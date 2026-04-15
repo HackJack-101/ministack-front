@@ -27,3 +27,6 @@ data
 .agents
 .claude
 .junie
+
+# Storybook
+storybook-static/

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { MINISTACK_ENDPOINT } from "../services/awsClients";
 
 export interface MiniStackHealth {
   version: string;
@@ -19,8 +20,9 @@ export const useHealth = () => {
 
   const fetchHealth = useCallback(async () => {
     try {
-      // Use relative URL to leverage Vite/Nginx proxy and avoid CORS issues
-      const response = await fetch("/_ministack/health");
+      // Build health URL from the configured endpoint
+      const endpoint = MINISTACK_ENDPOINT.replace(/\/+$/, "");
+      const response = await fetch(`${endpoint}/_ministack/health`);
       if (response.ok) {
         const data = await response.json();
         setHealth({

@@ -198,6 +198,33 @@ export const useS3 = () => {
     [fetchObjects, selectedBucket, toast],
   );
 
+  const moveObject = useCallback(
+    async (sourceKey: string, destKey: string) => {
+      if (!selectedBucket) return;
+      try {
+        await s3Client.send(
+          new CopyObjectCommand({
+            Bucket: selectedBucket,
+            CopySource: `${selectedBucket}/${sourceKey}`,
+            Key: destKey,
+          }),
+        );
+        await s3Client.send(
+          new DeleteObjectCommand({
+            Bucket: selectedBucket,
+            Key: sourceKey,
+          }),
+        );
+        const parentPrefix = sourceKey.includes("/") ? sourceKey.substring(0, sourceKey.lastIndexOf("/") + 1) : "";
+        fetchObjects(selectedBucket, parentPrefix);
+        toast.success(`Moved ${sourceKey} to ${destKey}.`);
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : "Failed to move object");
+      }
+    },
+    [fetchObjects, selectedBucket, toast],
+  );
+
   const headObject = useCallback(
     async (key: string) => {
       if (!selectedBucket) return null;
@@ -549,6 +576,7 @@ export const useS3 = () => {
       deleteObject,
       deleteObjects,
       copyObject,
+      moveObject,
       headObject,
       listObjectVersions,
       uploadFiles,
@@ -600,6 +628,7 @@ export const useS3 = () => {
       deleteObject,
       deleteObjects,
       copyObject,
+      moveObject,
       headObject,
       listObjectVersions,
       uploadFiles,

@@ -1,5 +1,7 @@
 # UI Guidelines — Ministack Front-End
 
+The canonical source for all UI metadata and service branding is the **Design System** (see Section 19).
+
 This document defines the UI conventions to follow across all sessions to keep the interface coherent.
 It is automatically loaded via `CLAUDE.md` and must be updated whenever a new pattern is established.
 
@@ -486,3 +488,51 @@ For resources that have multiple management areas (e.g. S3 objects vs settings),
 | SQS      | Messages            | Settings           |
 | SNS      | Publish             | Subscriptions      |
 | DynamoDB | Items               | Settings           |
+
+---
+
+## 19. Design System & Tokens
+
+Ministack uses a centralized **Design System** to ensure visual consistency across all 23+ AWS services.
+
+### Architecture
+
+The source of truth is `src/design-system/serviceTokens.ts`. It maps **Service Keys** (like `lambda`, `s3`, `iam`) to a complete set of UI metadata (**Service Tokens**):
+
+- **Label**: Human-readable name (e.g., "Lambda").
+- **Icon**: A `LucideIcon` reference for universal service identification.
+- **Path**: The root route for the service.
+- **Colors**: Standardized `iconColor`, `iconBg`, `buttonVariant`, `badgeVariant`, and `focusRing`.
+
+### Usage
+
+Always consume tokens via the `serviceTokens` object or the `getServiceToken` helper:
+
+```tsx
+import { serviceTokens } from "../design-system/serviceTokens";
+
+const token = serviceTokens.lambda;
+
+return (
+  <Button variant={token.buttonVariant} className={token.focusRing}>
+    <token.icon className={token.iconColor} />
+    {token.label}
+  </Button>
+);
+```
+
+### Live Showcase & Documentation
+
+- **Showcase Page**: A live gallery of all design tokens, components, and service variants is available at `/design-system` within the application.
+- **Storybook**: UI primitives (Button, Badge, Modal, etc.) are documented in isolation via Storybook.
+
+```bash
+npm run storybook
+```
+
+### Best Practices
+
+1. **No Hardcoding**: Never hardcode colors or icons that are part of the service metadata.
+2. **Branding consistency**: Use `focusRing`, `iconBg`, and `iconColor` from the token to maintain service-specific identity across the entire page.
+3. **Extend First**: When adding a new service, first register it in `serviceTokens.ts` before building its management pages.
+4. **Component reuse**: Favor shared components (`Button`, `Badge`, `DataTable`, `Modal`) over custom styled markup.

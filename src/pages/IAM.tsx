@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { User, Shield, Users, FileKey, RefreshCw, Plus, Edit2, Trash2 } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { User, Shield, Users, FileKey, RefreshCw, Plus, Edit2, Trash2, Link } from "lucide-react";
 import { useIAM } from "../hooks/useIAM";
 import { useConfirmModal } from "../hooks/useConfirmModal";
 import { PageHeader } from "../components/ui/PageHeader";
@@ -12,6 +12,7 @@ import { EditUserModal } from "../components/iam/EditUserModal";
 import { EditGroupModal } from "../components/iam/EditGroupModal";
 import { EditRoleModal } from "../components/iam/EditRoleModal";
 import { EditPolicyModal } from "../components/iam/EditPolicyModal";
+import { RolePoliciesModal } from "../components/iam/RolePoliciesModal";
 import { pluralizeWord } from "../utils/format";
 
 type Tab = "users" | "roles" | "groups" | "policies";
@@ -37,7 +38,16 @@ export const IAM: React.FC = () => {
   } = useIAM();
   const navigate = useNavigate();
   const { confirm, ConfirmModalComponent } = useConfirmModal();
-  const [activeTab, setActiveTab] = useState<Tab>("users");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const activeTab: Tab =
+    tabParam === "users" || tabParam === "roles" || tabParam === "groups" || tabParam === "policies"
+      ? tabParam
+      : "users";
+
+  const setActiveTab = (tab: Tab) => {
+    setSearchParams({ tab });
+  };
 
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
@@ -49,6 +59,7 @@ export const IAM: React.FC = () => {
   const [selectedGroup, setSelectedGroup] = useState<any>(null);
 
   const [isEditRoleModalOpen, setIsEditRoleModalOpen] = useState(false);
+  const [isRolePoliciesModalOpen, setIsRolePoliciesModalOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<any>(null);
 
   const [isEditPolicyModalOpen, setIsEditPolicyModalOpen] = useState(false);
@@ -172,6 +183,18 @@ export const IAM: React.FC = () => {
                 className: "w-20",
                 render: (r: any) => (
                   <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      title="Manage Policies"
+                      onClick={() => {
+                        setSelectedRole(r);
+                        setIsRolePoliciesModalOpen(true);
+                      }}
+                    >
+                      <Link className="w-3.5 h-3.5 text-purple-500" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -451,6 +474,15 @@ export const IAM: React.FC = () => {
         }}
         roleName={selectedRole?.RoleName || ""}
         onConfirm={(doc) => updateRoleTrustPolicy(selectedRole?.RoleName, doc)}
+      />
+
+      <RolePoliciesModal
+        open={isRolePoliciesModalOpen}
+        onClose={() => {
+          setIsRolePoliciesModalOpen(false);
+          setSelectedRole(null);
+        }}
+        roleName={selectedRole?.RoleName || ""}
       />
 
       <EditPolicyModal

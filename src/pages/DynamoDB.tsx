@@ -66,7 +66,7 @@ export const DynamoDB = () => {
             </Button>
             {!db.selectedTable && (
               <Button
-                variant="success"
+                variant="emerald"
                 size="sm"
                 onClick={() => navigate("/dynamodb/create")}
                 leftIcon={<Plus className="w-3.5 h-3.5" />}
@@ -76,7 +76,7 @@ export const DynamoDB = () => {
             )}
             {db.selectedTable && (
               <Button
-                variant="success"
+                variant="emerald"
                 size="sm"
                 onClick={() => setIsAddingItem(true)}
                 leftIcon={<Plus className="w-3.5 h-3.5" />}

@@ -1,10 +1,13 @@
-import { ShieldCheck, Circle } from "lucide-react";
+import { useState } from "react";
+import { ShieldCheck, Circle, Settings2 } from "lucide-react";
 import { ThemeToggle } from "../ui/ThemeToggle";
 import { useHealth } from "../../hooks/useHealth";
 import { MINISTACK_ENDPOINT } from "../../services/awsClients";
+import { EndpointSettingsModal } from "./EndpointSettingsModal";
 
 export const TopBar = () => {
   const { version, status, edition } = useHealth();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Clean up endpoint for display (remove protocol and trailing slashes)
   const displayEndpoint = MINISTACK_ENDPOINT.replace(/^https?:\/\//, "").replace(/\/+$/, "");
@@ -25,21 +28,30 @@ export const TopBar = () => {
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
-            <div className="relative">
-              <Circle
-                className={`w-1.5 h-1.5 ${
-                  status === "running"
-                    ? "text-emerald-500 fill-emerald-500"
-                    : status === "error"
-                      ? "text-rose-500 fill-rose-500"
-                      : "text-text-muted fill-text-muted"
-                }`}
-              />
-              {status === "running" && (
-                <div className="absolute inset-0 w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping opacity-40" />
-              )}
-            </div>
-            <code className="text-[11px] text-text-muted font-mono leading-none">{displayEndpoint}</code>
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="group flex items-center gap-1.5 hover:bg-surface-hover px-2 py-1 rounded transition-colors cursor-pointer"
+              title="MiniStack Connection Settings"
+            >
+              <div className="relative">
+                <Circle
+                  className={`w-1.5 h-1.5 ${
+                    status === "running"
+                      ? "text-emerald-500 fill-emerald-500"
+                      : status === "error"
+                        ? "text-rose-500 fill-rose-500"
+                        : "text-text-muted fill-text-muted"
+                  }`}
+                />
+                {status === "running" && (
+                  <div className="absolute inset-0 w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping opacity-40" />
+                )}
+              </div>
+              <code className="text-[11px] text-text-muted group-hover:text-text-primary font-mono leading-none transition-colors">
+                {displayEndpoint}
+              </code>
+              <Settings2 className="w-3 h-3 text-text-muted group-hover:text-text-primary opacity-0 group-hover:opacity-100 transition-all ml-0.5" />
+            </button>
           </div>
 
           {version && (
@@ -56,6 +68,8 @@ export const TopBar = () => {
         <div className="h-4 w-px bg-border-subtle" />
         <ThemeToggle />
       </div>
+
+      <EndpointSettingsModal open={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </header>
   );
 };

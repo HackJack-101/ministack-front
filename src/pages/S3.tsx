@@ -8,6 +8,7 @@ import { ObjectsTable } from "../components/s3/ObjectsTable";
 import { UploadZone } from "../components/s3/UploadZone";
 import { ObjectDetail } from "../components/s3/ObjectDetail";
 import { BucketSettings } from "../components/s3/BucketSettings";
+import { ObjectKeyModal } from "../components/s3/ObjectKeyModal";
 import { Button } from "../components/ui/Button";
 import { PageHeader } from "../components/ui/PageHeader";
 import { useConfirmModal } from "../hooks/useConfirmModal";
@@ -29,6 +30,7 @@ export const S3 = () => {
     downloadObject,
     deleteObjects,
     copyObject,
+    moveObject,
     deleteBucket,
     uploadFiles,
     selectedBucket: s3SelectedBucket,
@@ -36,6 +38,12 @@ export const S3 = () => {
 
   const { confirm, ConfirmModalComponent } = useConfirmModal();
   const [activeTab, setActiveTab] = useState<"objects" | "settings">("objects");
+  const [objectKeyModal, setObjectKeyModal] = useState<{
+    open: boolean;
+    title: string;
+    initialValue: string;
+    onConfirm: (v: string) => void;
+  } | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [prevObjectPath, setPrevObjectPath] = useState(objectPath);
   const [uploadPath, setUploadPath] = useState(() => {
@@ -92,10 +100,23 @@ export const S3 = () => {
   };
 
   const handleCopyObject = (key: string) => {
-    const destKey = prompt("Enter destination key:", `${key}_copy`);
-    if (destKey) {
-      copyObject(key, destKey);
-    }
+    setObjectKeyModal({
+      open: true,
+      title: "Copy Object",
+      initialValue: `${key}_copy`,
+      onConfirm: (destKey) => copyObject(key, destKey),
+    });
+  };
+
+  const handleMoveObject = (key: string) => {
+    setObjectKeyModal({
+      open: true,
+      title: "Move Object",
+      initialValue: key,
+      onConfirm: (destKey) => {
+        if (destKey !== key) moveObject(key, destKey);
+      },
+    });
   };
 
   return (
@@ -116,7 +137,7 @@ export const S3 = () => {
             </Button>
             {!s3SelectedBucket && (
               <Button
-                variant="primary"
+                variant="blue"
                 size="sm"
                 onClick={() => navigate("/s3/create")}
                 leftIcon={<Plus className="w-3.5 h-3.5" />}
@@ -126,7 +147,7 @@ export const S3 = () => {
             )}
             {s3SelectedBucket && !showObjectDetail && (
               <Button
-                variant={isUploading ? "outline" : "primary"}
+                variant={isUploading ? "outline" : "blue"}
                 size="sm"
                 onClick={() => {
                   setIsUploading(!isUploading);
@@ -244,6 +265,7 @@ export const S3 = () => {
                   onDelete={(key) => handleDeleteObjects([key])}
                   onDeleteBatch={handleDeleteObjects}
                   onCopy={handleCopyObject}
+                  onMove={handleMoveObject}
                   onSelect={(key) => navigate(`/s3/${s3SelectedBucket}/${key}`)}
                 />
               )}
@@ -268,6 +290,15 @@ export const S3 = () => {
       )}
 
       {ConfirmModalComponent}
+      {objectKeyModal && (
+        <ObjectKeyModal
+          open={objectKeyModal.open}
+          title={objectKeyModal.title}
+          initialValue={objectKeyModal.initialValue}
+          onConfirm={objectKeyModal.onConfirm}
+          onClose={() => setObjectKeyModal(null)}
+        />
+      )}
     </div>
   );
 };

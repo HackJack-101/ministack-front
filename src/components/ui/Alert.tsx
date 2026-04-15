@@ -56,6 +56,8 @@ export const Alert = ({ type, message, onDismiss, autoDismissMs }: AlertProps) =
 
   return (
     <div
+      role="alert"
+      aria-live="polite"
       className={`py-3 px-4 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 rounded-card shadow-lg ${bg} ${border} ${text}`}
     >
       <Icon className={`w-4 h-4 flex-shrink-0 ${iconColor}`} />
@@ -63,7 +65,7 @@ export const Alert = ({ type, message, onDismiss, autoDismissMs }: AlertProps) =
       {onDismiss && (
         <button
           onClick={onDismiss}
-          className="flex-shrink-0 hover:bg-surface-active p-1 rounded transition-colors ml-1"
+          className="flex-shrink-0 hover:bg-surface-active p-1 rounded transition-colors ml-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           aria-label="Dismiss"
         >
           <X className="w-3.5 h-3.5" />

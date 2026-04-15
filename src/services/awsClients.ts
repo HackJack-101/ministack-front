@@ -26,6 +26,12 @@ import { SFNClient } from "@aws-sdk/client-sfn";
 
 const REGION = "us-east-1";
 const getMinistackEndpoint = () => {
+  // Try to get from localStorage first to allow easy runtime configuration
+  if (typeof window !== "undefined") {
+    const saved = localStorage.getItem("ministack-endpoint");
+    if (saved) return saved;
+  }
+
   // Try to get from environment variable first (Vite-style)
   if (typeof import.meta !== "undefined" && import.meta.env?.VITE_MINISTACK_ENDPOINT) {
     return import.meta.env.VITE_MINISTACK_ENDPOINT;

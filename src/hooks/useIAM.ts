@@ -20,6 +20,14 @@ import {
   DeletePolicyVersionCommand,
   GetRoleCommand,
   GetPolicyVersionCommand,
+  GetPolicyCommand,
+  PutRolePolicyCommand,
+  DeleteRolePolicyCommand,
+  ListRolePoliciesCommand,
+  GetRolePolicyCommand,
+  AttachRolePolicyCommand,
+  DetachRolePolicyCommand,
+  ListAttachedRolePoliciesCommand,
   type User,
   type Role,
   type Group,
@@ -304,6 +312,130 @@ export const useIAM = () => {
     [toast],
   );
 
+  const getPolicy = useCallback(
+    async (policyArn: string) => {
+      try {
+        const res = await iamClient.send(new GetPolicyCommand({ PolicyArn: policyArn }));
+        return res.Policy;
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : "Failed to fetch policy details");
+        throw err;
+      }
+    },
+    [toast],
+  );
+
+  const getPolicyDocument = useCallback(
+    async (policyArn: string) => {
+      const policy = await getPolicy(policyArn);
+      if (!policy?.DefaultVersionId) return null;
+      const version = await getPolicyVersion(policyArn, policy.DefaultVersionId);
+      return version?.Document ? decodeURIComponent(version.Document) : null;
+    },
+    [getPolicy, getPolicyVersion],
+  );
+
+  const listAttachedRolePolicies = useCallback(
+    async (roleName: string) => {
+      try {
+        const res = await iamClient.send(new ListAttachedRolePoliciesCommand({ RoleName: roleName }));
+        return res.AttachedPolicies || [];
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : "Failed to fetch attached policies");
+        throw err;
+      }
+    },
+    [toast],
+  );
+
+  const attachRolePolicy = useCallback(
+    async (roleName: string, policyArn: string) => {
+      try {
+        await iamClient.send(new AttachRolePolicyCommand({ RoleName: roleName, PolicyArn: policyArn }));
+        toast.success("Policy attached successfully");
+        await fetchData();
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : "Failed to attach policy");
+        throw err;
+      }
+    },
+    [fetchData, toast],
+  );
+
+  const detachRolePolicy = useCallback(
+    async (roleName: string, policyArn: string) => {
+      try {
+        await iamClient.send(new DetachRolePolicyCommand({ RoleName: roleName, PolicyArn: policyArn }));
+        toast.success("Policy detached successfully");
+        await fetchData();
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : "Failed to detach policy");
+        throw err;
+      }
+    },
+    [fetchData, toast],
+  );
+
+  const putRolePolicy = useCallback(
+    async (roleName: string, policyName: string, policyDocument: string) => {
+      try {
+        await iamClient.send(
+          new PutRolePolicyCommand({
+            RoleName: roleName,
+            PolicyName: policyName,
+            PolicyDocument: policyDocument,
+          }),
+        );
+        toast.success(`Inline policy "${policyName}" updated successfully`);
+        await fetchData();
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : "Failed to put inline policy");
+        throw err;
+      }
+    },
+    [fetchData, toast],
+  );
+
+  const deleteRolePolicy = useCallback(
+    async (roleName: string, policyName: string) => {
+      try {
+        await iamClient.send(new DeleteRolePolicyCommand({ RoleName: roleName, PolicyName: policyName }));
+        toast.success(`Inline policy "${policyName}" deleted successfully`);
+        await fetchData();
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : "Failed to delete inline policy");
+        throw err;
+      }
+    },
+    [fetchData, toast],
+  );
+
+  const listRolePolicies = useCallback(
+    async (roleName: string) => {
+      try {
+        const res = await iamClient.send(new ListRolePoliciesCommand({ RoleName: roleName }));
+        return res.PolicyNames || [];
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : "Failed to fetch inline policies");
+        throw err;
+      }
+    },
+    [toast],
+  );
+
+  const getRolePolicy = useCallback(
+    async (roleName: string, policyName: string) => {
+      try {
+        const res = await iamClient.send(new GetRolePolicyCommand({ RoleName: roleName, PolicyName: policyName }));
+        return res.PolicyDocument ? decodeURIComponent(res.PolicyDocument) : null;
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : "Failed to fetch inline policy details");
+        throw err;
+      }
+    },
+    [toast],
+  );
+
   return useMemo(
     () => ({
       users,
@@ -324,8 +456,17 @@ export const useIAM = () => {
       updateGroup,
       updateRoleTrustPolicy,
       updatePolicyDocument,
+      getPolicy,
+      getPolicyDocument,
       getRole,
       getPolicyVersion,
+      listAttachedRolePolicies,
+      attachRolePolicy,
+      detachRolePolicy,
+      putRolePolicy,
+      deleteRolePolicy,
+      listRolePolicies,
+      getRolePolicy,
     }),
     [
       users,
@@ -346,8 +487,17 @@ export const useIAM = () => {
       updateGroup,
       updateRoleTrustPolicy,
       updatePolicyDocument,
+      getPolicy,
+      getPolicyDocument,
       getRole,
       getPolicyVersion,
+      listAttachedRolePolicies,
+      attachRolePolicy,
+      detachRolePolicy,
+      putRolePolicy,
+      deleteRolePolicy,
+      listRolePolicies,
+      getRolePolicy,
     ],
   );
 };

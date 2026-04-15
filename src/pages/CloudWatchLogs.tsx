@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { FileText, RefreshCw, Plus, Search, Trash2, Clock, ChevronRight } from "lucide-react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { FileText, RefreshCw, Plus, Search, Trash2, Clock, ChevronRight, Copy, Check } from "lucide-react";
 import { useCloudWatchLogs } from "../hooks/useCloudWatchLogs";
 import { PageHeader } from "../components/ui/PageHeader";
 import { Button } from "../components/ui/Button";
 import { DataTable } from "../components/ui/DataTable";
+import { EmptyState } from "../components/ui/EmptyState";
 import { Spinner } from "../components/ui/Spinner";
 import { useConfirmModal } from "../hooks/useConfirmModal";
 import { CreateLogGroupModal } from "../components/logs/CreateLogGroupModal";
@@ -12,6 +13,7 @@ import type { LogGroup, LogStream, OutputLogEvent } from "@aws-sdk/client-cloudw
 
 export const CloudWatchLogs = () => {
   const { "*": rawPath } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const {
     logGroups,
@@ -22,6 +24,7 @@ export const CloudWatchLogs = () => {
     filterLogEvents,
     deleteLogGroup,
     createLogGroup,
+    describeLogGroups,
   } = useCloudWatchLogs();
   const { confirm, ConfirmModalComponent } = useConfirmModal();
 
@@ -31,29 +34,52 @@ export const CloudWatchLogs = () => {
   const [eventsLoading, setEventsLoading] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [filterPattern, setFilterPattern] = useState("");
+  const [arnCopied, setArnCopied] = useState(false);
+  const [notFound, setNotFound] = useState(false);
 
   const { logGroupName, logStreamName } = useMemo(() => {
     if (!rawPath) return { logGroupName: null, logStreamName: null };
-    const parts = rawPath.split("/").filter(Boolean);
+
+    // We use a query parameter for the stream name to avoid ambiguity with slashes in log group names
+    const stream = searchParams.get("stream");
+
+    // useParams decodes the splat (*) so rawPath should have slashes preserved
+    // and if it was encoded with encodeURIComponent, it should be the full name.
+    const decodedPath = decodeURIComponent(rawPath);
+
     return {
-      logGroupName: parts[0] ? decodeURIComponent(parts[0]) : null,
-      logStreamName: parts[1] ? decodeURIComponent(parts[1]) : null,
+      logGroupName: decodedPath,
+      logStreamName: stream,
     };
-  }, [rawPath]);
+  }, [rawPath, searchParams]);
 
   const loadInitialData = useCallback(async () => {
     if (logGroupName && !logStreamName) {
       setStreamsLoading(true);
+      setNotFound(false);
+
+      // Check existence first to provide a better message
+      const groups = await describeLogGroups(logGroupName);
+      const exists = groups.some((g) => g.logGroupName === logGroupName);
+
+      if (!exists) {
+        setNotFound(true);
+        setStreamsLoading(false);
+        return;
+      }
+
       const streams = await fetchLogStreams(logGroupName);
       setLogStreams(streams);
       setStreamsLoading(false);
     } else if (logGroupName && logStreamName) {
       setEventsLoading(true);
+      setNotFound(false);
+
       const events = await fetchLogEvents(logGroupName, logStreamName);
       setLogEvents(events);
       setEventsLoading(false);
     }
-  }, [logGroupName, logStreamName, fetchLogStreams, fetchLogEvents]);
+  }, [logGroupName, logStreamName, fetchLogStreams, fetchLogEvents, describeLogGroups]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -146,45 +172,72 @@ export const CloudWatchLogs = () => {
     />
   );
 
-  const renderLogStreams = () => (
-    <DataTable
-      columns={[
-        {
-          key: "name",
-          header: "Log Stream Name",
-          render: (stream: LogStream) => (
-            <button
-              onClick={() =>
-                navigate(
-                  `/logs/${encodeURIComponent(logGroupName || "")}/${encodeURIComponent(stream.logStreamName || "")}`,
-                )
-              }
-              className="font-medium text-cyan-500 hover:text-cyan-600 text-left transition-colors"
-            >
-              {stream.logStreamName}
-            </button>
-          ),
-        },
-        {
-          key: "lastEvent",
-          header: "Last Event",
-          render: (stream: LogStream) =>
-            stream.lastEventTimestamp ? new Date(stream.lastEventTimestamp).toLocaleString() : "No events",
-        },
-        {
-          key: "creation",
-          header: "Creation Time",
-          render: (stream: LogStream) => (stream.creationTime ? new Date(stream.creationTime).toLocaleString() : "-"),
-        },
-      ]}
-      rows={logStreams}
-      rowKey={(stream: LogStream) => stream.logStreamName || ""}
-      loading={streamsLoading}
-      emptyIcon={Clock}
-      emptyTitle="No log streams"
-      emptyDescription="This log group doesn't have any streams yet."
-    />
-  );
+  const currentLogGroup = logGroups.find((g) => g.logGroupName === logGroupName);
+  const logGroupArn =
+    currentLogGroup?.logGroupArn ??
+    (logGroupName ? `arn:aws:logs:us-east-1:000000000000:log-group:${logGroupName}:*` : null);
+
+  const renderLogStreams = () => {
+    if (notFound) {
+      return (
+        <EmptyState
+          icon={FileText}
+          title="Log group not found"
+          description={`The log group "${logGroupName}" does not exist in CloudWatch Logs yet.`}
+          action={{
+            label: "Create Log Group",
+            onClick: () => logGroupName && handleCreateGroup(logGroupName),
+          }}
+          extra={
+            <div className="mt-4 p-4 bg-surface-elevated/50 border border-border-subtle rounded-lg text-[11px] text-text-muted italic max-w-sm mx-auto">
+              Tip: Lambda functions automatically create their log groups on the first execution. Try invoking your
+              function first!
+            </div>
+          }
+        />
+      );
+    }
+
+    return (
+      <DataTable
+        columns={[
+          {
+            key: "name",
+            header: "Log Stream Name",
+            render: (stream: LogStream) => (
+              <button
+                onClick={() =>
+                  navigate(
+                    `/logs/${encodeURIComponent(logGroupName || "")}?stream=${encodeURIComponent(stream.logStreamName || "")}`,
+                  )
+                }
+                className="font-medium text-cyan-500 hover:text-cyan-600 text-left transition-colors"
+              >
+                {stream.logStreamName}
+              </button>
+            ),
+          },
+          {
+            key: "lastEvent",
+            header: "Last Event",
+            render: (stream: LogStream) =>
+              stream.lastEventTimestamp ? new Date(stream.lastEventTimestamp).toLocaleString() : "No events",
+          },
+          {
+            key: "creation",
+            header: "Creation Time",
+            render: (stream: LogStream) => (stream.creationTime ? new Date(stream.creationTime).toLocaleString() : "-"),
+          },
+        ]}
+        rows={logStreams}
+        rowKey={(stream: LogStream) => stream.logStreamName || ""}
+        loading={streamsLoading}
+        emptyIcon={Clock}
+        emptyTitle="No log streams"
+        emptyDescription="This log group doesn't have any streams yet."
+      />
+    );
+  };
 
   const renderLogEvents = () => (
     <div className="space-y-4">
@@ -272,6 +325,24 @@ export const CloudWatchLogs = () => {
               {logGroupName}
             </button>
           </>
+        )}
+        {logGroupName && !logStreamName && logGroupArn && (
+          <span className="ml-auto flex items-center gap-1.5">
+            <span className="text-text-faint">ARN:</span>
+            <code className="text-xs text-cyan-500 font-mono">{logGroupArn}</code>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(logGroupArn);
+                setArnCopied(true);
+                setTimeout(() => setArnCopied(false), 2000);
+              }}
+              className="p-1 text-text-faint hover:text-cyan-500 transition-colors"
+              title="Copy ARN"
+              aria-label="Copy ARN"
+            >
+              {arnCopied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
+          </span>
         )}
         {logStreamName && (
           <>

@@ -5,17 +5,18 @@ import {
   ListSecretsCommand,
   CreateSecretCommand,
   DeleteSecretCommand,
+  UpdateSecretCommand,
   GetSecretValueCommand,
 } from "@aws-sdk/client-secrets-manager";
 import { secretsManagerClient } from "../services/awsClients";
-import { Plus, RefreshCw, Eye, EyeOff, Lock, Copy, Check, Trash2, ArrowLeft } from "lucide-react";
+import { Plus, RefreshCw, Eye, EyeOff, Lock, Copy, Check, Trash2, ArrowLeft, Pencil } from "lucide-react";
 import { useToast } from "../hooks/useToast";
 import { useConfirmModal } from "../hooks/useConfirmModal";
 import { Button } from "../components/ui/Button";
 import { PageHeader } from "../components/ui/PageHeader";
 import { DataTable } from "../components/ui/DataTable";
 import { Spinner } from "../components/ui/Spinner";
-import { CreateSecretModal } from "../components/secrets-manager/CreateSecretModal";
+import { SecretModal } from "../components/secrets-manager/SecretModal";
 
 export const SecretsManager = () => {
   const { secretName } = useParams();
@@ -24,10 +25,12 @@ export const SecretsManager = () => {
   const { confirm, ConfirmModalComponent } = useConfirmModal();
   const [secrets, setSecrets] = useState<SecretListEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isCreating, setIsCreating] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingSecret, setEditingSecret] = useState<{ name: string; value: string } | undefined>(undefined);
   const [visibleSecrets, setVisibleSecrets] = useState<Record<string, string>>({});
   const [fetchingValue, setFetchingValue] = useState<Record<string, boolean>>({});
   const [copiedSecret, setCopiedSecret] = useState<string | null>(null);
+  const [copiedArn, setCopiedArn] = useState<string | null>(null);
 
   const fetchSecrets = useCallback(async () => {
     setLoading(true);
@@ -84,6 +87,26 @@ export const SecretsManager = () => {
     [visibleSecrets, toast],
   );
 
+  const handleEdit = async (name: string) => {
+    let value = visibleSecrets[name];
+    if (!value) {
+      setLoading(true);
+      try {
+        const response = await secretsManagerClient.send(new GetSecretValueCommand({ SecretId: name }));
+        value = response.SecretString || "";
+        setVisibleSecrets((prev) => ({ ...prev, [name]: value }));
+      } catch (err: unknown) {
+        toast.error(`Failed to fetch value: ${err instanceof Error ? err.message : "Unknown error"}`);
+        setLoading(false);
+        return;
+      } finally {
+        setLoading(false);
+      }
+    }
+    setEditingSecret({ name, value });
+    setIsModalOpen(true);
+  };
+
   const handleCopySecret = async (name: string, value: string) => {
     try {
       await navigator.clipboard.writeText(value);
@@ -110,7 +133,27 @@ export const SecretsManager = () => {
     {
       key: "arn",
       header: "ARN",
-      render: (s: SecretListEntry) => <code className="text-xs text-purple-500 font-mono">{s.ARN}</code>,
+      render: (s: SecretListEntry) => (
+        <div className="flex items-center gap-1.5">
+          <code className="text-xs text-purple-500 font-mono">{s.ARN}</code>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(s.ARN!);
+              setCopiedArn(s.ARN!);
+              setTimeout(() => setCopiedArn(null), 2000);
+            }}
+            className="shrink-0 p-1 text-text-faint hover:text-purple-500 transition-colors"
+            title="Copy ARN"
+            aria-label="Copy ARN"
+          >
+            {copiedArn === s.ARN ? (
+              <Check className="w-3.5 h-3.5 text-emerald-500" />
+            ) : (
+              <Copy className="w-3.5 h-3.5" />
+            )}
+          </button>
+        </div>
+      ),
     },
     {
       key: "value",
@@ -158,10 +201,18 @@ export const SecretsManager = () => {
       header: "Actions",
       className: "text-right",
       render: (s: SecretListEntry) => (
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-1">
+          <button
+            onClick={() => handleEdit(s.Name!)}
+            className="p-1.5 text-text-faint hover:text-purple-500 hover:bg-purple-500/10 rounded transition-all opacity-0 group-hover:opacity-100"
+            title="Edit secret"
+            aria-label="Edit secret"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+          </button>
           <button
             onClick={() => handleDelete(s.Name!)}
-            className="p-1.5 text-text-faint hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
+            className="p-1.5 text-text-faint hover:text-red-500 hover:bg-red-500/10 rounded transition-all opacity-0 group-hover:opacity-100"
             title="Delete secret"
             aria-label="Delete secret"
           >
@@ -195,9 +246,12 @@ export const SecretsManager = () => {
             </Button>
             {!secretName && (
               <Button
-                variant="secondary"
+                variant="purple"
                 size="sm"
-                onClick={() => setIsCreating(true)}
+                onClick={() => {
+                  setEditingSecret(undefined);
+                  setIsModalOpen(true);
+                }}
                 leftIcon={<Plus className="w-3.5 h-3.5" />}
               >
                 Create Secret
@@ -217,13 +271,26 @@ export const SecretsManager = () => {
         </button>
       )}
 
-      <CreateSecretModal
-        open={isCreating}
-        onClose={() => setIsCreating(false)}
+      <SecretModal
+        open={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingSecret(undefined);
+        }}
+        initialData={editingSecret}
         onConfirm={async (name, value) => {
-          await secretsManagerClient.send(new CreateSecretCommand({ Name: name, SecretString: value }));
+          if (editingSecret) {
+            await secretsManagerClient.send(new UpdateSecretCommand({ SecretId: name, SecretString: value }));
+            toast.success(`Secret "${name}" updated successfully`);
+          } else {
+            await secretsManagerClient.send(new CreateSecretCommand({ Name: name, SecretString: value }));
+            toast.success(`Secret "${name}" created successfully`);
+          }
+          // Update local cache of the value if it was visible
+          if (visibleSecrets[name]) {
+            setVisibleSecrets((prev) => ({ ...prev, [name]: value }));
+          }
           fetchSecrets();
-          toast.success(`Secret "${name}" created successfully`);
         }}
         isLoading={loading}
       />
@@ -236,7 +303,13 @@ export const SecretsManager = () => {
         emptyIcon={Lock}
         emptyTitle="No secrets found"
         emptyDescription="Create a secret to get started."
-        emptyAction={{ label: "Create Secret", onClick: () => setIsCreating(true) }}
+        emptyAction={{
+          label: "Create Secret",
+          onClick: () => {
+            setEditingSecret(undefined);
+            setIsModalOpen(true);
+          },
+        }}
         accentColor="text-purple-500"
       />
 

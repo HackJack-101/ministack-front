@@ -1,7 +1,7 @@
 import type { ReactNode, ButtonHTMLAttributes } from "react";
 import { Loader2 } from "lucide-react";
 
-type ButtonVariant =
+export type ButtonVariant =
   | "primary"
   | "secondary"
   | "success"
@@ -17,8 +17,10 @@ type ButtonVariant =
   | "pink"
   | "amber"
   | "emerald"
-  | "sky";
-type ButtonSize = "xs" | "sm" | "md" | "lg";
+  | "sky"
+  | "orange"
+  | "blue";
+export type ButtonSize = "xs" | "sm" | "md" | "lg";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -43,6 +45,8 @@ const variantStyles: Record<ButtonVariant, string> = {
   amber: "bg-amber-600 hover:bg-amber-500 text-white border-amber-500/30",
   emerald: "bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500/30",
   sky: "bg-sky-600 hover:bg-sky-500 text-white border-sky-500/30",
+  orange: "bg-orange-600 hover:bg-orange-500 text-white border-orange-500/30",
+  blue: "bg-blue-500 hover:bg-blue-400 text-white border-blue-400/30",
   ghost: "bg-transparent hover:bg-surface-hover text-text-secondary hover:text-text-primary border-transparent",
   outline: "bg-transparent border-border-default hover:bg-surface-hover text-text-secondary hover:text-text-primary",
 };
@@ -70,8 +74,9 @@ export const Button = ({
   return (
     <button
       className={`
-        relative inline-flex items-center justify-center font-medium transition-colors
-        disabled:opacity-50 disabled:pointer-events-none
+        relative inline-flex items-center justify-center font-medium transition-colors cursor-pointer
+        disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500
         border
         ${variantStyles[variant]}
         ${sizeStyles[size]}

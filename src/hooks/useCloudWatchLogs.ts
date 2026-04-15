@@ -59,9 +59,9 @@ export const useCloudWatchLogs = () => {
   );
 
   const filterLogEvents = useCallback(
-    async (logGroupName: string, filterPattern?: string) => {
+    async (logGroupName: string, filterPattern?: string, limit?: number) => {
       try {
-        const response = await cwLogsClient.send(new FilterLogEventsCommand({ logGroupName, filterPattern }));
+        const response = await cwLogsClient.send(new FilterLogEventsCommand({ logGroupName, filterPattern, limit }));
         return response.events || [];
       } catch (err: unknown) {
         toast.error(err instanceof Error ? err.message : "Failed to filter log events");
@@ -97,6 +97,19 @@ export const useCloudWatchLogs = () => {
     [fetchLogGroups, toast],
   );
 
+  const describeLogGroups = useCallback(
+    async (logGroupNamePrefix?: string) => {
+      try {
+        const response = await cwLogsClient.send(new DescribeLogGroupsCommand({ logGroupNamePrefix }));
+        return response.logGroups || [];
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : "Failed to describe log groups");
+        return [];
+      }
+    },
+    [toast],
+  );
+
   useEffect(() => {
     fetchLogGroups();
   }, [fetchLogGroups]);
@@ -111,6 +124,7 @@ export const useCloudWatchLogs = () => {
       filterLogEvents,
       deleteLogGroup,
       createLogGroup,
+      describeLogGroups,
     }),
     [
       logGroups,
@@ -121,6 +135,7 @@ export const useCloudWatchLogs = () => {
       filterLogEvents,
       deleteLogGroup,
       createLogGroup,
+      describeLogGroups,
     ],
   );
 };

@@ -161,7 +161,7 @@ export const DynamoDBCreateTable = () => {
             Cancel
           </Button>
           <Button
-            variant="success"
+            variant="emerald"
             onClick={handleCreate}
             isLoading={loading}
             disabled={!form.name || !form.partitionKey}

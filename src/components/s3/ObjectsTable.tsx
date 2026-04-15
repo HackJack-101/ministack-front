@@ -1,6 +1,17 @@
 import { useMemo, useState } from "react";
 import type { _Object } from "@aws-sdk/client-s3";
-import { File, Folder, Trash2, ChevronUp, ChevronDown, ChevronsUpDown, Copy, CheckSquare, Square } from "lucide-react";
+import {
+  File,
+  Folder,
+  Trash2,
+  ChevronUp,
+  ChevronDown,
+  ChevronsUpDown,
+  Copy,
+  MoveRight,
+  CheckSquare,
+  Square,
+} from "lucide-react";
 import { Spinner } from "../ui/Spinner";
 import { EmptyState } from "../ui/EmptyState";
 import { Button } from "../ui/Button";
@@ -14,6 +25,7 @@ interface ObjectsTableProps {
   onDelete: (key: string) => void;
   onDeleteBatch: (keys: string[]) => void;
   onCopy: (key: string) => void;
+  onMove: (key: string) => void;
   onSelect?: (key: string) => void;
 }
 
@@ -22,7 +34,15 @@ const SortIcon = ({ field, sortField, sortDir }: { field: SortField; sortField: 
   return sortDir === "asc" ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />;
 };
 
-export const ObjectsTable = ({ objects, loading, onDelete, onDeleteBatch, onCopy, onSelect }: ObjectsTableProps) => {
+export const ObjectsTable = ({
+  objects,
+  loading,
+  onDelete,
+  onDeleteBatch,
+  onCopy,
+  onMove,
+  onSelect,
+}: ObjectsTableProps) => {
   const [sortField, setSortField] = useState<SortField>("Key");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
@@ -187,16 +207,28 @@ export const ObjectsTable = ({ objects, loading, onDelete, onDeleteBatch, onCopy
                     <td className="px-4 py-3 text-right">
                       <div className="flex justify-end gap-1">
                         {!isFolder && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onCopy(obj.Key!);
-                            }}
-                            className="p-1.5 text-text-faint hover:text-blue-500 hover:bg-blue-500/10 rounded transition-all opacity-0 group-hover:opacity-100"
-                            title="Copy Object"
-                          >
-                            <Copy className="w-3.5 h-3.5" />
-                          </button>
+                          <>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onMove(obj.Key!);
+                              }}
+                              className="p-1.5 text-text-faint hover:text-yellow-500 hover:bg-yellow-500/10 rounded transition-all opacity-0 group-hover:opacity-100"
+                              title="Move Object"
+                            >
+                              <MoveRight className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onCopy(obj.Key!);
+                              }}
+                              className="p-1.5 text-text-faint hover:text-blue-500 hover:bg-blue-500/10 rounded transition-all opacity-0 group-hover:opacity-100"
+                              title="Copy Object"
+                            >
+                              <Copy className="w-3.5 h-3.5" />
+                            </button>
+                          </>
                         )}
                         <button
                           onClick={(e) => {

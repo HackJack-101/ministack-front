@@ -32,6 +32,8 @@ import StepFunctions from "./pages/StepFunctions";
 import { ToastProvider } from "./hooks/useToast";
 import { ToastContainer } from "./components/ui/ToastContainer";
 
+import { DesignSystem } from "./pages/DesignSystem";
+
 function App() {
   return (
     <ToastProvider>
@@ -72,6 +74,7 @@ function App() {
             <Route path="/cognito" element={<Cognito />} />
             <Route path="/cognito/user-pools/:poolId" element={<Cognito />} />
             <Route path="/wafv2" element={<WAFv2 />} />
+            <Route path="/design-system" element={<DesignSystem />} />
             <Route path="/acm" element={<ACM />} />
             <Route path="/kinesis" element={<Kinesis />} />
             <Route path="/states" element={<StepFunctions />} />

@@ -6,9 +6,10 @@ interface EmptyStateProps {
   title: string;
   description?: string;
   action?: { label: string; onClick: () => void } | ReactNode;
+  extra?: ReactNode;
 }
 
-export const EmptyState = ({ icon: Icon, title, description, action }: EmptyStateProps) => (
+export const EmptyState = ({ icon: Icon, title, description, action, extra }: EmptyStateProps) => (
   <div className="py-12 px-6">
     <div className="flex items-start gap-3">
       <Icon className="w-4 h-4 text-text-faint mt-0.5 flex-shrink-0" />
@@ -29,6 +30,7 @@ export const EmptyState = ({ icon: Icon, title, description, action }: EmptyStat
             )}
           </div>
         )}
+        {extra && <div className="mt-4">{extra}</div>}
       </div>
     </div>
   </div>

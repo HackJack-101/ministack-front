@@ -232,7 +232,7 @@ export const SQSCreateQueue = () => {
             Cancel
           </Button>
           <Button
-            variant="warning"
+            variant="orange"
             onClick={handleCreate}
             isLoading={loading}
             disabled={!name}
