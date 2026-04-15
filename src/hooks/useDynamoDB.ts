@@ -71,35 +71,40 @@ export const useDynamoDB = () => {
     }
   }, [toast]);
 
-  const fetchTableDetails = useCallback(async (tableName: string) => {
-    setItemsLoading(true);
-    try {
-      const descResponse = await ddbDocClient.send(new DescribeTableCommand({ TableName: tableName }));
-      const table = descResponse.Table;
-      if (!table) throw new Error("Table not found");
+  const fetchTableDetails = useCallback(
+    async (tableName: string) => {
+      setItemsLoading(true);
+      try {
+        const [descResponse, scanResponse] = await Promise.all([
+          ddbDocClient.send(new DescribeTableCommand({ TableName: tableName })),
+          ddbDocClient.send(new ScanCommand({ TableName: tableName })),
+        ]);
 
-      const pk = table.KeySchema?.find((k) => k.KeyType === "HASH")?.AttributeName ?? "";
-      const sk = table.KeySchema?.find((k) => k.KeyType === "RANGE")?.AttributeName;
+        const table = descResponse.Table;
+        if (!table) throw new Error("Table not found");
 
-      setSelectedTable({
-        TableName: tableName,
-        PartitionKey: pk,
-        SortKey: sk,
-        Status: table.TableStatus,
-        ItemCount: table.ItemCount,
-        TableSizeBytes: table.TableSizeBytes,
-        TableArn: table.TableArn,
-        StreamArn: table.LatestStreamArn,
-      });
+        const pk = table.KeySchema?.find((k) => k.KeyType === "HASH")?.AttributeName ?? "";
+        const sk = table.KeySchema?.find((k) => k.KeyType === "RANGE")?.AttributeName;
 
-      const scanResponse = await ddbDocClient.send(new ScanCommand({ TableName: tableName }));
-      setItems((scanResponse.Items as Record<string, unknown>[]) || []);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : `Failed to fetch details for ${tableName}`);
-    } finally {
-      setItemsLoading(false);
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+        setSelectedTable({
+          TableName: tableName,
+          PartitionKey: pk,
+          SortKey: sk,
+          Status: table.TableStatus,
+          ItemCount: table.ItemCount,
+          TableSizeBytes: table.TableSizeBytes,
+          TableArn: table.TableArn,
+          StreamArn: table.LatestStreamArn,
+        });
+        setItems((scanResponse.Items as Record<string, unknown>[]) || []);
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : `Failed to fetch details for ${tableName}`);
+      } finally {
+        setItemsLoading(false);
+      }
+    },
+    [toast],
+  );
 
   useEffect(() => {
     fetchTables();

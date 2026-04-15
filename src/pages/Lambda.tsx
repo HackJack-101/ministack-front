@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Zap,
@@ -153,7 +153,10 @@ const Lambda: React.FC = () => {
   const [cloudWatchLogs, setCloudWatchLogs] = useState<string | null>(null);
   const [refreshingLogs, setRefreshingLogs] = useState(false);
 
-  const selectedFunction = functions.find((f) => f.FunctionName === functionName);
+  const selectedFunction = useMemo(
+    () => functions.find((f) => f.FunctionName === functionName),
+    [functions, functionName],
+  );
 
   const [payload, setPayload] = useState("{}");
   const [invokeResult, setInvokeResult] = useState<{
