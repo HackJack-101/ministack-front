@@ -1,4 +1,5 @@
 import { RefreshCw, Trash2, Database } from "lucide-react";
+import type { DBInstance } from "@aws-sdk/client-rds";
 import { useRDS } from "../hooks/useRDS";
 import { PageHeader } from "../components/ui/PageHeader";
 import { DataTable } from "../components/ui/DataTable";
@@ -32,7 +33,7 @@ export const RDS = () => {
     {
       key: "id",
       header: "DB Instance",
-      render: (instance: any) => (
+      render: (instance: DBInstance) => (
         <div className="flex flex-col">
           <span className="font-medium text-text-primary">{instance.DBInstanceIdentifier}</span>
           <span className="text-[10px] text-text-faint mt-0.5">
@@ -44,12 +45,12 @@ export const RDS = () => {
     {
       key: "status",
       header: "Status",
-      render: (instance: any) => getStatusBadge(instance.DBInstanceStatus),
+      render: (instance: DBInstance) => getStatusBadge(instance.DBInstanceStatus),
     },
     {
       key: "endpoint",
       header: "Endpoint",
-      render: (instance: any) => (
+      render: (instance: DBInstance) => (
         <div className="flex items-center gap-1.5 text-[11px] font-mono text-text-secondary">
           {instance.Endpoint ? (
             <span>
@@ -65,7 +66,7 @@ export const RDS = () => {
       key: "actions",
       header: "Actions",
       className: "text-right",
-      render: (instance: any) => (
+      render: (instance: DBInstance) => (
         <div className="flex items-center justify-end">
           <button
             onClick={(e) => {
@@ -102,7 +103,7 @@ export const RDS = () => {
         <DataTable
           columns={columns}
           rows={instances}
-          rowKey={(i: any) => i.DBInstanceIdentifier}
+          rowKey={(i: DBInstance) => i.DBInstanceIdentifier!}
           loading={loading && instances.length === 0}
           emptyIcon={Database}
           emptyTitle="No DB instances found"

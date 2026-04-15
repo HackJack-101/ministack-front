@@ -12,7 +12,7 @@ const meta: Meta<typeof ObjectKeyModal> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const ObjectKeyModalStory = (args: any) => {
+const ObjectKeyModalStory = (args) => {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <>

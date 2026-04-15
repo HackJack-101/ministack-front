@@ -21,7 +21,7 @@ export const JsonItemEditor = ({ table, onSubmit, onClose }: JsonItemEditorProps
       JSON.parse(json);
       await onSubmit(json);
       onClose();
-    } catch (err: unknown) {
+    } catch (err) {
       setError(err instanceof Error ? err.message : "Invalid JSON or failed to add item");
     }
   };

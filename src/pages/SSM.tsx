@@ -6,14 +6,14 @@ import { Button } from "../components/ui/Button";
 import { DataTable } from "../components/ui/DataTable";
 import { useConfirmModal } from "../hooks/useConfirmModal";
 import { CreateParameterModal } from "../components/ssm/CreateParameterModal";
-import type { ParameterMetadata } from "@aws-sdk/client-ssm";
+import type { ParameterMetadata, ParameterType } from "@aws-sdk/client-ssm";
 
 export const SSM = () => {
   const { fetchParameters, getParameterValue, deleteParameter, parameters, loading, putParameter } = useSSM();
   const { confirm, ConfirmModalComponent } = useConfirmModal();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingParam, setEditingParam] = useState<{ name: string; value: string; type: any } | null>(null);
+  const [editingParam, setEditingParam] = useState<{ name: string; value: string; type: ParameterType } | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
@@ -39,7 +39,9 @@ export const SSM = () => {
     });
   };
 
-  const filteredParams = parameters.filter((p) => p.Name?.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredParams = parameters.filter((p: ParameterMetadata) =>
+    p.Name?.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   return (
     <div className="space-y-5">

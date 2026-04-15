@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import type { LucideIcon } from "lucide-react";
 import { Trash2, Plus, Zap, MessageSquare, BellRing, Globe } from "lucide-react";
 import { Button } from "../ui/Button";
 import { useLambda } from "../../hooks/useLambda";
@@ -10,6 +11,7 @@ import type {
   LambdaFunctionConfiguration,
   QueueConfiguration,
   TopicConfiguration,
+  FilterRuleName,
 } from "@aws-sdk/client-s3";
 
 interface NotificationSettingsProps {
@@ -118,13 +120,13 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({ conf
     else item = { ...newConfig.TopicConfigurations![index] };
 
     const rules = [...(item.Filter?.Key?.FilterRules || [])];
-    const existingIdx = rules.findIndex((r) => r.Name === filterType);
+    const existingIdx = rules.findIndex((r) => (r.Name as string) === filterType);
 
     if (value) {
       if (existingIdx >= 0) {
-        rules[existingIdx] = { Name: filterType, Value: value };
+        rules[existingIdx] = { Name: filterType as FilterRuleName, Value: value };
       } else {
-        rules.push({ Name: filterType, Value: value });
+        rules.push({ Name: filterType as FilterRuleName, Value: value });
       }
     } else {
       if (existingIdx >= 0) {
@@ -136,15 +138,15 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({ conf
 
     if (type === "lambda") {
       const items = [...newConfig.LambdaFunctionConfigurations!];
-      items[index] = item;
+      items[index] = item as LambdaFunctionConfiguration;
       newConfig.LambdaFunctionConfigurations = items;
     } else if (type === "queue") {
       const items = [...newConfig.QueueConfigurations!];
-      items[index] = item;
+      items[index] = item as QueueConfiguration;
       newConfig.QueueConfigurations = items;
     } else if (type === "topic") {
       const items = [...newConfig.TopicConfigurations!];
-      items[index] = item;
+      items[index] = item as TopicConfiguration;
       newConfig.TopicConfigurations = items;
     }
     updateConfig(newConfig);
@@ -154,7 +156,7 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({ conf
     item: LambdaFunctionConfiguration | QueueConfiguration | TopicConfiguration,
     filterType: "Prefix" | "Suffix",
   ) => {
-    return item.Filter?.Key?.FilterRules?.find((r) => r.Name === filterType)?.Value || "";
+    return item.Filter?.Key?.FilterRules?.find((r) => (r.Name as string) === filterType)?.Value || "";
   };
 
   return (
@@ -485,7 +487,7 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({ conf
 };
 
 interface NotificationItemProps {
-  icon: any;
+  icon: LucideIcon;
   color: string;
   title: string;
   onRemove: () => void;

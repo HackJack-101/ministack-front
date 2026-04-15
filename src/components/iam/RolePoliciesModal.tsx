@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Shield, FileKey, Plus, Trash2, Search, Link as LinkIcon, ShieldCheck, Zap } from "lucide-react";
+import type { Policy } from "@aws-sdk/client-iam";
 import { Button } from "../ui/Button";
 import { Modal } from "../ui/Modal";
 import { useIAM } from "../../hooks/useIAM";
@@ -146,7 +147,7 @@ export const RolePoliciesModal: React.FC<RolePoliciesModalProps> = ({ open, onCl
   };
 
   const availablePolicies = policies.filter(
-    (p) =>
+    (p: Policy) =>
       !attachedPolicies.some((ap) => ap.PolicyArn === p.Arn) &&
       (p.PolicyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.Arn?.toLowerCase().includes(searchTerm.toLowerCase())),

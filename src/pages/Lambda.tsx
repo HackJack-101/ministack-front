@@ -33,6 +33,9 @@ import {
   type UpdateFunctionConfigurationForm,
   type EventSourceMappingConfiguration,
   type CreateEventSourceMappingForm,
+  type LogFormat,
+  type ApplicationLogLevel,
+  type SystemLogLevel,
 } from "../hooks/useLambda";
 import { useCloudWatchLogs } from "../hooks/useCloudWatchLogs";
 import { MINISTACK_ENDPOINT } from "../services/awsClients";
@@ -281,7 +284,7 @@ const Lambda: React.FC = () => {
             if (!policy.PolicyArn || (hasSecretsManagerAccess && hasCloudWatchLogsAccess)) return;
             try {
               const doc = await getPolicyDocument(policy.PolicyArn);
-              if (doc) processPolicyDocument(doc as PolicyDocument);
+              if (doc) processPolicyDocument(doc as unknown as PolicyDocument);
             } catch (err) {
               console.error(`Failed to check attached policy ${policy.PolicyArn}`, err);
             }
@@ -479,6 +482,7 @@ const Lambda: React.FC = () => {
     try {
       const result = await invokeFunction(functionName, payload);
       if (result) {
+        console.log("Invoke result", result);
         setInvokeResult(result);
         if (result.functionError) {
           toast.error(`Function error: ${result.functionError}`);
@@ -486,7 +490,7 @@ const Lambda: React.FC = () => {
           toast.success("Function invoked successfully");
         }
       }
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to invoke function");
     } finally {
       setInvoking(false);
@@ -1102,7 +1106,7 @@ const Lambda: React.FC = () => {
                                       ...editForm,
                                       LoggingConfig: {
                                         ...editForm.LoggingConfig,
-                                        LogFormat: e.target.value as unknown as any,
+                                        LogFormat: e.target.value as LogFormat,
                                       },
                                     })
                                   }
@@ -1139,7 +1143,7 @@ const Lambda: React.FC = () => {
                                       ...editForm,
                                       LoggingConfig: {
                                         ...editForm.LoggingConfig,
-                                        ApplicationLogLevel: e.target.value as unknown as any,
+                                        ApplicationLogLevel: e.target.value as ApplicationLogLevel,
                                       },
                                     })
                                   }
@@ -1165,7 +1169,7 @@ const Lambda: React.FC = () => {
                                       ...editForm,
                                       LoggingConfig: {
                                         ...editForm.LoggingConfig,
-                                        SystemLogLevel: e.target.value as unknown as any,
+                                        SystemLogLevel: e.target.value as SystemLogLevel,
                                       },
                                     })
                                   }

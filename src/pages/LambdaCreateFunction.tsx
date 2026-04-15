@@ -19,8 +19,8 @@ import {
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { PageHeader } from "../components/ui/PageHeader";
-import { useLambda } from "../hooks/useLambda";
 import { useIAM, type PolicyDocument, type PolicyStatement } from "../hooks/useIAM";
+import { useLambda, type LogFormat, type ApplicationLogLevel, type SystemLogLevel } from "../hooks/useLambda";
 import { useToast } from "../hooks/useToast";
 import { Spinner } from "../components/ui/Spinner";
 import { MINISTACK_ENDPOINT } from "../services/awsClients";
@@ -243,7 +243,7 @@ export const LambdaCreateFunction = () => {
             if (!policy.PolicyArn || (hasSecretsManagerAccess && hasCloudWatchLogsAccess)) return;
             try {
               const doc = await getPolicyDocument(policy.PolicyArn);
-              if (doc) processPolicyDocument(doc as PolicyDocument);
+              if (doc) processPolicyDocument(doc as unknown as PolicyDocument);
             } catch (err) {
               console.error(`Failed to check attached policy ${policy.PolicyArn}`, err);
             }
@@ -358,9 +358,9 @@ export const LambdaCreateFunction = () => {
         ZipFile: new Uint8Array(arrayBuffer),
         LoggingConfig: {
           ...formData.LoggingConfig,
-          LogFormat: formData.LoggingConfig.LogFormat as unknown as any,
-          ApplicationLogLevel: formData.LoggingConfig.ApplicationLogLevel as unknown as any,
-          SystemLogLevel: formData.LoggingConfig.SystemLogLevel as unknown as any,
+          LogFormat: formData.LoggingConfig.LogFormat as LogFormat,
+          ApplicationLogLevel: formData.LoggingConfig.ApplicationLogLevel as ApplicationLogLevel,
+          SystemLogLevel: formData.LoggingConfig.SystemLogLevel as SystemLogLevel,
           LogGroup: formData.LoggingConfig.LogGroup || undefined,
         },
         Environment:

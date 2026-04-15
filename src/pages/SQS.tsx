@@ -118,7 +118,7 @@ export const SQS = () => {
       await sqsClient.send(new SetQueueAttributesCommand({ QueueUrl: selectedQueueUrl, Attributes: attributes }));
       fetchQueueAttributes(selectedQueueUrl);
       toast.success("Queue settings updated successfully");
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to update queue settings");
     } finally {
       setSavingSettings(false);
@@ -139,7 +139,7 @@ export const SQS = () => {
         }),
       );
       setMessages(response.Messages || []);
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to fetch messages");
     } finally {
       setMessagesLoading(false);
@@ -155,7 +155,7 @@ export const SQS = () => {
         }),
       );
       setQueueAttributes(response.Attributes || {});
-    } catch (err: unknown) {
+    } catch (err) {
       console.error("Failed to fetch queue attributes:", err);
     }
   }, []);
@@ -168,7 +168,7 @@ export const SQS = () => {
         }),
       );
       setTags(response.Tags || {});
-    } catch (err: unknown) {
+    } catch (err) {
       console.error("Failed to fetch queue tags:", err);
     }
   }, []);
@@ -211,7 +211,7 @@ export const SQS = () => {
           await sqsClient.send(new DeleteQueueCommand({ QueueUrl: queueUrl }));
           if (selectedQueueUrl === queueUrl) setSelectedQueueUrl(null);
           fetchQueues();
-        } catch (err: unknown) {
+        } catch (err) {
           toast.error(err instanceof Error ? err.message : "Failed to delete queue");
         }
       },
@@ -238,7 +238,7 @@ export const SQS = () => {
       fetchMessages(selectedQueueUrl);
       fetchQueueAttributes(selectedQueueUrl);
       toast.success("Message sent successfully");
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to send message");
     } finally {
       setSendingMessage(false);
@@ -274,7 +274,7 @@ export const SQS = () => {
       fetchMessages(selectedQueueUrl);
       fetchQueueAttributes(selectedQueueUrl);
       toast.success(`Successfully sent ${bodies.length} messages`);
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to send messages");
     } finally {
       setSendingMessage(false);
@@ -286,7 +286,7 @@ export const SQS = () => {
     try {
       await sqsClient.send(new DeleteMessageCommand({ QueueUrl: selectedQueueUrl, ReceiptHandle: receiptHandle }));
       setMessages((prev) => prev.filter((m) => m.ReceiptHandle !== receiptHandle));
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to delete message");
     }
   };
@@ -303,7 +303,7 @@ export const SQS = () => {
           await sqsClient.send(new PurgeQueueCommand({ QueueUrl: selectedQueueUrl }));
           setMessages([]);
           toast.success("Queue purged successfully");
-        } catch (err: unknown) {
+        } catch (err) {
           toast.error(err instanceof Error ? err.message : "Failed to purge queue");
         }
       },
@@ -317,7 +317,7 @@ export const SQS = () => {
       await sqsClient.send(new TagQueueCommand({ QueueUrl: selectedQueueUrl, Tags: { [key]: value } }));
       fetchQueueTags(selectedQueueUrl);
       toast.success("Tag added successfully");
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to add tag");
     } finally {
       setTagLoading(false);
@@ -331,7 +331,7 @@ export const SQS = () => {
       await sqsClient.send(new UntagQueueCommand({ QueueUrl: selectedQueueUrl, TagKeys: [key] }));
       fetchQueueTags(selectedQueueUrl);
       toast.success("Tag removed successfully");
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to remove tag");
     } finally {
       setTagLoading(false);
@@ -352,7 +352,7 @@ export const SQS = () => {
         }),
       );
       toast.success("Message visibility updated");
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to update visibility");
     }
   };
@@ -386,7 +386,7 @@ export const SQS = () => {
           setMessages((prev) => prev.filter((m) => !selectedMessageIds.includes(m.MessageId!)));
           setSelectedMessageIds([]);
           toast.success(`Deleted ${selectedMessageIds.length} messages`);
-        } catch (err: unknown) {
+        } catch (err) {
           toast.error(err instanceof Error ? err.message : "Failed to delete messages in batch");
         } finally {
           setBatchActionLoading(false);
@@ -421,7 +421,7 @@ export const SQS = () => {
       }
 
       toast.success(`Updated visibility for ${selectedMessageIds.length} messages`);
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to update visibility in batch");
     } finally {
       setBatchActionLoading(false);

@@ -49,7 +49,7 @@ export const ObjectDetail: React.FC<ObjectDetailProps> = ({ bucketName, object, 
       ]);
       setHeadInfo(h);
       setVersions(v);
-      setLegalHold(lh);
+      setLegalHold(lh || null);
     } catch (err) {
       console.error("Failed to load object details", err);
     } finally {

@@ -35,7 +35,7 @@ export const useSES = () => {
     try {
       const response = await sesClient.send(new ListIdentitiesCommand({}));
       setIdentities(response.Identities || []);
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to fetch identities");
     } finally {
       setLoading(false);
@@ -50,7 +50,7 @@ export const useSES = () => {
         const data = await response.json();
         setSentEmails(data.emails || []);
       }
-    } catch (err: unknown) {
+    } catch (err) {
       console.error("Failed to fetch sent emails from ministack endpoint", err);
     }
   }, []);
@@ -61,7 +61,7 @@ export const useSES = () => {
         await sesClient.send(new VerifyEmailIdentityCommand({ EmailAddress: email }));
         toast.success("Identity verification requested");
         await fetchIdentities();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to verify identity");
       }
     },
@@ -74,7 +74,7 @@ export const useSES = () => {
         await sesClient.send(new DeleteIdentityCommand({ Identity: identity }));
         toast.success("Identity deleted");
         await fetchIdentities();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to delete identity");
       }
     },
@@ -96,7 +96,7 @@ export const useSES = () => {
         );
         toast.success("Email sent successfully");
         await fetchSentEmails();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to send email");
       }
     },

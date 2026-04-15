@@ -73,7 +73,7 @@ export const useIAM = () => {
       setRoles(rolesRes.Roles || []);
       setGroups(groupsRes.Groups || []);
       setPolicies(policiesRes.Policies || []);
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to fetch IAM data");
     } finally {
       setLoading(false);
@@ -90,7 +90,7 @@ export const useIAM = () => {
         await iamClient.send(new CreateUserCommand({ UserName: userName }));
         toast.success(`User "${userName}" created successfully`);
         await fetchData();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to create user");
         throw err;
       }
@@ -104,7 +104,7 @@ export const useIAM = () => {
         await iamClient.send(new CreateGroupCommand({ GroupName: groupName }));
         toast.success(`Group "${groupName}" created successfully`);
         await fetchData();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to create group");
         throw err;
       }
@@ -123,7 +123,7 @@ export const useIAM = () => {
         );
         toast.success(`Role "${roleName}" created successfully`);
         await fetchData();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to create role");
         throw err;
       }
@@ -142,7 +142,7 @@ export const useIAM = () => {
         );
         toast.success(`Policy "${policyName}" created successfully`);
         await fetchData();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to create policy");
         throw err;
       }
@@ -156,7 +156,7 @@ export const useIAM = () => {
         await iamClient.send(new DeleteUserCommand({ UserName: userName }));
         toast.success(`User "${userName}" deleted successfully`);
         await fetchData();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to delete user");
       }
     },
@@ -169,7 +169,7 @@ export const useIAM = () => {
         await iamClient.send(new DeleteRoleCommand({ RoleName: roleName }));
         toast.success(`Role "${roleName}" deleted successfully`);
         await fetchData();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to delete role");
       }
     },
@@ -182,7 +182,7 @@ export const useIAM = () => {
         await iamClient.send(new DeleteGroupCommand({ GroupName: groupName }));
         toast.success(`Group "${groupName}" deleted successfully`);
         await fetchData();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to delete group");
       }
     },
@@ -195,7 +195,7 @@ export const useIAM = () => {
         await iamClient.send(new DeletePolicyCommand({ PolicyArn: policyArn }));
         toast.success("Policy deleted successfully");
         await fetchData();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to delete policy");
       }
     },
@@ -213,9 +213,8 @@ export const useIAM = () => {
         );
         toast.success(`User "${userName}" updated to "${newUserName}"`);
         await fetchData();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to update user");
-        throw err;
       }
     },
     [fetchData, toast],
@@ -232,9 +231,8 @@ export const useIAM = () => {
         );
         toast.success(`Group "${groupName}" updated to "${newGroupName}"`);
         await fetchData();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to update group");
-        throw err;
       }
     },
     [fetchData, toast],
@@ -251,7 +249,7 @@ export const useIAM = () => {
         );
         toast.success(`Trust policy for role "${roleName}" updated successfully`);
         await fetchData();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to update trust policy");
         throw err;
       }
@@ -293,7 +291,7 @@ export const useIAM = () => {
         );
         toast.success("Policy document updated successfully");
         await fetchData();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to update policy document");
         throw err;
       }
@@ -306,7 +304,7 @@ export const useIAM = () => {
       try {
         const res = await iamClient.send(new GetRoleCommand({ RoleName: roleName }));
         return res.Role;
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to fetch role details");
         throw err;
       }
@@ -319,7 +317,7 @@ export const useIAM = () => {
       try {
         const res = await iamClient.send(new GetPolicyVersionCommand({ PolicyArn: policyArn, VersionId: versionId }));
         return res.PolicyVersion;
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to fetch policy version");
         throw err;
       }
@@ -332,7 +330,7 @@ export const useIAM = () => {
       try {
         const res = await iamClient.send(new GetPolicyCommand({ PolicyArn: policyArn }));
         return res.Policy;
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to fetch policy details");
         throw err;
       }
@@ -355,7 +353,7 @@ export const useIAM = () => {
       try {
         const res = await iamClient.send(new ListAttachedRolePoliciesCommand({ RoleName: roleName }));
         return res.AttachedPolicies || [];
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to fetch attached policies");
         throw err;
       }
@@ -369,7 +367,7 @@ export const useIAM = () => {
         await iamClient.send(new AttachRolePolicyCommand({ RoleName: roleName, PolicyArn: policyArn }));
         toast.success("Policy attached successfully");
         await fetchData();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to attach policy");
         throw err;
       }
@@ -383,7 +381,7 @@ export const useIAM = () => {
         await iamClient.send(new DetachRolePolicyCommand({ RoleName: roleName, PolicyArn: policyArn }));
         toast.success("Policy detached successfully");
         await fetchData();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to detach policy");
         throw err;
       }
@@ -403,7 +401,7 @@ export const useIAM = () => {
         );
         toast.success(`Inline policy "${policyName}" updated successfully`);
         await fetchData();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to put inline policy");
         throw err;
       }
@@ -417,7 +415,7 @@ export const useIAM = () => {
         await iamClient.send(new DeleteRolePolicyCommand({ RoleName: roleName, PolicyName: policyName }));
         toast.success(`Inline policy "${policyName}" deleted successfully`);
         await fetchData();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to delete inline policy");
         throw err;
       }
@@ -430,7 +428,7 @@ export const useIAM = () => {
       try {
         const res = await iamClient.send(new ListRolePoliciesCommand({ RoleName: roleName }));
         return res.PolicyNames || [];
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to fetch inline policies");
         throw err;
       }
@@ -443,7 +441,7 @@ export const useIAM = () => {
       try {
         const res = await iamClient.send(new GetRolePolicyCommand({ RoleName: roleName, PolicyName: policyName }));
         return res.PolicyDocument ? decodeURIComponent(res.PolicyDocument) : null;
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to fetch inline policy details");
         throw err;
       }

@@ -19,7 +19,7 @@ export const useRoute53 = () => {
     try {
       const response = await route53Client.send(new ListHostedZonesCommand({}));
       setHostedZones(response.HostedZones || []);
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to fetch hosted zones");
     } finally {
       setLoading(false);
@@ -31,7 +31,7 @@ export const useRoute53 = () => {
       try {
         const response = await route53Client.send(new ListResourceRecordSetsCommand({ HostedZoneId: hostedZoneId }));
         return response.ResourceRecordSets || [];
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to fetch record sets");
         return [];
       }
@@ -50,7 +50,7 @@ export const useRoute53 = () => {
         );
         toast.success("Hosted zone created successfully");
         await fetchHostedZones();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to create hosted zone");
       }
     },
@@ -63,7 +63,7 @@ export const useRoute53 = () => {
         await route53Client.send(new DeleteHostedZoneCommand({ Id: hostedZoneId }));
         toast.success("Hosted zone deleted successfully");
         await fetchHostedZones();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to delete hosted zone");
       }
     },

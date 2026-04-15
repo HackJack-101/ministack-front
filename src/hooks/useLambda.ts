@@ -15,8 +15,11 @@ import {
   type LoggingConfig,
   type Runtime,
   type EventSourcePosition,
+  type LogFormat,
+  type ApplicationLogLevel,
+  type SystemLogLevel,
 } from "@aws-sdk/client-lambda";
-export type { EventSourceMappingConfiguration } from "@aws-sdk/client-lambda";
+export type { EventSourceMappingConfiguration, LogFormat, ApplicationLogLevel, SystemLogLevel };
 import { lambdaClient } from "../services/awsClients";
 import { useToast } from "./useToast";
 
@@ -64,7 +67,7 @@ export const useLambda = () => {
     try {
       const response = await lambdaClient.send(new ListFunctionsCommand({}));
       setFunctions(response.Functions || []);
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to fetch Lambda functions");
     } finally {
       setLoading(false);
@@ -88,7 +91,7 @@ export const useLambda = () => {
         toast.success(`Function "${params.FunctionName}" created successfully`);
         await fetchFunctions();
         return true;
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to create function");
         return false;
       }
@@ -101,7 +104,7 @@ export const useLambda = () => {
       try {
         const response = await lambdaClient.send(new GetFunctionCommand({ FunctionName: functionName }));
         return response;
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to fetch function details");
         return null;
       }
@@ -129,7 +132,7 @@ export const useLambda = () => {
         };
 
         return result;
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to invoke function");
         return null;
       }
@@ -158,7 +161,7 @@ export const useLambda = () => {
         );
         await fetchFunctions();
         return true;
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to update function configuration");
         return false;
       }
@@ -178,7 +181,7 @@ export const useLambda = () => {
         toast.success(`Function code for "${functionName}" updated successfully`);
         await fetchFunctions();
         return true;
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to update function code");
         return false;
       }
@@ -193,7 +196,7 @@ export const useLambda = () => {
         toast.success(`Function "${functionName}" deleted successfully`);
         await fetchFunctions();
         return true;
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to delete function");
         return false;
       }
@@ -205,7 +208,7 @@ export const useLambda = () => {
       try {
         const response = await lambdaClient.send(new ListEventSourceMappingsCommand({ FunctionName: functionName }));
         return response.EventSourceMappings || [];
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to fetch event source mappings");
         return [];
       }
@@ -227,7 +230,7 @@ export const useLambda = () => {
         );
         toast.success("Event source mapping created successfully");
         return true;
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to create event source mapping");
         return false;
       }
@@ -241,7 +244,7 @@ export const useLambda = () => {
         await lambdaClient.send(new DeleteEventSourceMappingCommand({ UUID: uuid }));
         toast.success("Event source mapping deleted successfully");
         return true;
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to delete event source mapping");
         return false;
       }
@@ -255,7 +258,7 @@ export const useLambda = () => {
         await lambdaClient.send(new UpdateEventSourceMappingCommand({ UUID: uuid, Enabled: enabled }));
         toast.success(`Event source mapping ${enabled ? "enabled" : "disabled"} successfully`);
         return true;
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to update event source mapping");
         return false;
       }

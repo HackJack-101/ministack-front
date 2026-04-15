@@ -7,4 +7,4 @@ globalThis.fetch = vi.fn().mockImplementation(() =>
     ok: true,
     json: () => Promise.resolve({}),
   }),
-) as any;
+) as typeof fetch;

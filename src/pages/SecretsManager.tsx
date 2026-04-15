@@ -37,7 +37,7 @@ export const SecretsManager = () => {
     try {
       const response = await secretsManagerClient.send(new ListSecretsCommand({}));
       setSecrets(response.SecretList || []);
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to fetch secrets");
     } finally {
       setLoading(false);
@@ -59,7 +59,7 @@ export const SecretsManager = () => {
           );
           fetchSecrets();
           toast.success(`Secret "${name}" deleted`);
-        } catch (err: unknown) {
+        } catch (err) {
           toast.error(err instanceof Error ? err.message : "Failed to delete secret");
         }
       },
@@ -78,7 +78,7 @@ export const SecretsManager = () => {
       try {
         const response = await secretsManagerClient.send(new GetSecretValueCommand({ SecretId: name }));
         setVisibleSecrets((prev) => ({ ...prev, [name]: response.SecretString || "" }));
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(`Failed to fetch value for ${name}: ${err instanceof Error ? err.message : "Unknown error"}`);
       } finally {
         setFetchingValue((prev) => ({ ...prev, [name]: false }));
@@ -95,7 +95,7 @@ export const SecretsManager = () => {
         const response = await secretsManagerClient.send(new GetSecretValueCommand({ SecretId: name }));
         value = response.SecretString || "";
         setVisibleSecrets((prev) => ({ ...prev, [name]: value }));
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(`Failed to fetch value: ${err instanceof Error ? err.message : "Unknown error"}`);
         setLoading(false);
         return;

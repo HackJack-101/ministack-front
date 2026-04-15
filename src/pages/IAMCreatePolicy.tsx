@@ -43,8 +43,8 @@ export const IAMCreatePolicy = () => {
       await iam.createPolicy(policyName, policyDocument);
       toast.success(`Policy "${policyName}" created successfully`);
       navigate("/iam");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to create policy");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create policy");
     } finally {
       setLoading(false);
     }

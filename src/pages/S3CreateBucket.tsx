@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import type { LucideIcon } from "lucide-react";
 import {
   Database,
   ArrowLeft,
@@ -15,7 +16,7 @@ import {
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { PageHeader } from "../components/ui/PageHeader";
-import { useS3 } from "../hooks/useS3";
+import { useS3, type BucketVersioningStatus } from "../hooks/useS3";
 import { useToast } from "../hooks/useToast";
 
 type TabType = "general" | "permissions" | "management" | "tags";
@@ -52,7 +53,7 @@ export const S3CreateBucket = () => {
       const tasks = [];
 
       if (versioning !== "Disabled") {
-        tasks.push(s3.putBucketVersioning(name, versioning as any));
+        tasks.push(s3.putBucketVersioning(name, versioning as BucketVersioningStatus));
       }
 
       if (encryption) {
@@ -81,8 +82,8 @@ export const S3CreateBucket = () => {
 
       toast.success(`Bucket "${name}" created successfully`);
       navigate(`/s3/${name}`);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to create bucket");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create bucket");
     } finally {
       setLoading(false);
     }
@@ -156,7 +157,7 @@ export const S3CreateBucket = () => {
                     <div className="flex items-center gap-4 bg-surface-elevated p-4 rounded-lg border border-border-subtle">
                       <select
                         value={versioning}
-                        onChange={(e) => setVersioning(e.target.value as any)}
+                        onChange={(e) => setVersioning(e.target.value as "Enabled" | "Suspended" | "Disabled")}
                         className="bg-surface-input border border-border-default rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:border-blue-500 transition-colors min-w-[140px]"
                       >
                         <option value="Disabled">Disabled</option>
@@ -343,7 +344,7 @@ export const S3CreateBucket = () => {
 interface TabButtonProps {
   active: boolean;
   onClick: () => void;
-  icon: any;
+  icon: LucideIcon;
   label: string;
 }
 

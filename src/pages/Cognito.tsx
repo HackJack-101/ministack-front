@@ -2,6 +2,8 @@ import { useState, useCallback, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Users, RefreshCw, Plus, Trash2, Key, Settings, Shield, UserPlus, Info } from "lucide-react";
 import { Badge } from "../components/ui/Badge";
+import type { UserPoolDescriptionType } from "@aws-sdk/client-cognito-identity-provider";
+import type { IdentityPoolShortDescription } from "@aws-sdk/client-cognito-identity";
 import { useCognito } from "../hooks/useCognito";
 import { PageHeader } from "../components/ui/PageHeader";
 import { Button } from "../components/ui/Button";
@@ -470,13 +472,13 @@ export default function Cognito() {
         ) : (
           <DataTable
             rows={userPools}
-            rowKey={(p) => p.Id || ""}
-            onRowClick={(p) => handleSelectPool(p.Id!)}
+            rowKey={(p: UserPoolDescriptionType) => p.Id || ""}
+            onRowClick={(p: UserPoolDescriptionType) => handleSelectPool(p.Id!)}
             columns={[
               {
                 key: "name",
                 header: "Name",
-                render: (p: any) => (
+                render: (p) => (
                   <div className="flex items-center gap-3">
                     <div className="p-1.5 bg-indigo-500/10 rounded">
                       <Users className="w-3.5 h-3.5 text-indigo-500" />
@@ -490,7 +492,7 @@ export default function Cognito() {
               {
                 key: "id",
                 header: "Pool ID",
-                render: (p: any) => (
+                render: (p) => (
                   <code className="text-xs bg-surface-elevated px-1.5 py-0.5 rounded text-text-primary border border-border-subtle">
                     {p.Id}
                   </code>
@@ -499,18 +501,18 @@ export default function Cognito() {
               {
                 key: "status",
                 header: "Status",
-                render: (p: any) => <Badge variant="success">{p.Status || "Enabled"}</Badge>,
+                render: (p) => <Badge variant="success">{p.Status || "Enabled"}</Badge>,
               },
               {
                 key: "modified",
                 header: "Last Modified",
-                render: (p: any) => (p.LastModifiedDate ? new Date(p.LastModifiedDate).toLocaleString() : "-"),
+                render: (p) => (p.LastModifiedDate ? new Date(p.LastModifiedDate).toLocaleString() : "-"),
               },
               {
                 key: "actions",
                 header: "",
                 className: "text-right",
-                render: (p: any) => (
+                render: (p) => (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -536,12 +538,12 @@ export default function Cognito() {
       ) : (
         <DataTable
           rows={identityPools}
-          rowKey={(p) => p.IdentityPoolId || ""}
+          rowKey={(p: IdentityPoolShortDescription) => p.IdentityPoolId || ""}
           columns={[
             {
               key: "name",
               header: "Name",
-              render: (p: any) => (
+              render: (p) => (
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 bg-indigo-500/10 rounded">
                     <Key className="w-3.5 h-3.5 text-indigo-500" />
@@ -553,7 +555,7 @@ export default function Cognito() {
             {
               key: "id",
               header: "Pool ID",
-              render: (p: any) => (
+              render: (p) => (
                 <code className="text-xs bg-surface-elevated px-1.5 py-0.5 rounded text-text-primary border border-border-subtle">
                   {p.IdentityPoolId}
                 </code>

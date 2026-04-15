@@ -34,7 +34,7 @@ export const useKMS = () => {
       );
 
       setKeys(keyDetails.filter((k): k is KeyMetadata => k !== null));
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to fetch keys");
     } finally {
       setLoading(false);
@@ -47,7 +47,7 @@ export const useKMS = () => {
         await kmsClient.send(new CreateKeyCommand({ Description: description }));
         toast.success("KMS key created successfully");
         await fetchKeys();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to create key");
       }
     },
@@ -65,7 +65,7 @@ export const useKMS = () => {
           toast.success("Key enabled");
         }
         await fetchKeys();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to update key status");
       }
     },
@@ -78,7 +78,7 @@ export const useKMS = () => {
         await kmsClient.send(new ScheduleKeyDeletionCommand({ KeyId: keyId, PendingWindowInDays: 7 }));
         toast.success("Key deletion scheduled");
         await fetchKeys();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to schedule key deletion");
       }
     },

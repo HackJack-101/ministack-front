@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import type { LucideIcon } from "lucide-react";
 import {
   Shield,
   Lock,
@@ -17,10 +18,11 @@ import { Spinner } from "../ui/Spinner";
 import {
   useS3,
   type NotificationConfiguration,
-  type ServerSideEncryptionConfiguration,
+  type ServerSideEncryptionRule,
   type LoggingEnabled,
   type ReplicationConfiguration,
   type ObjectLockConfiguration,
+  type BucketVersioningStatus,
 } from "../../hooks/useS3";
 import { useToast } from "../../hooks/useToast";
 import { NotificationSettings } from "./NotificationSettings";
@@ -62,8 +64,8 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
   const [saving, setSaving] = useState(false);
 
   // Form states
-  const [versioning, setVersioning] = useState<"Enabled" | "Suspended" | "Disabled">("Disabled");
-  const [encryption, setEncryption] = useState<ServerSideEncryptionConfiguration | null>(null);
+  const [versioning, setVersioning] = useState<BucketVersioningStatus | "Disabled">("Disabled");
+  const [encryption, setEncryption] = useState<ServerSideEncryptionRule | null | undefined>(null);
   const [policy, setPolicy] = useState("");
   const [cors, setCors] = useState("");
   const [lifecycle, setLifecycle] = useState("");
@@ -89,15 +91,15 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
         getBucketTagging(bucketName),
       ]);
 
-      setVersioning(v as "Enabled" | "Suspended" | "Disabled");
-      setEncryption(enc);
+      setVersioning(v as BucketVersioningStatus | "Disabled");
+      setEncryption(enc || null);
       setPolicy(pol);
       setCors(JSON.stringify(c, null, 2));
       setLifecycle(JSON.stringify(l, null, 2));
-      setLogging(log);
+      setLogging(log || null);
       setNotifications(n);
-      setReplication(r);
-      setObjectLock(ol);
+      setReplication(r || null);
+      setObjectLock(ol || null);
       setTags((t || []).map((tag) => ({ Key: tag.Key || "", Value: tag.Value || "" })));
     } catch (err) {
       console.error("Failed to load bucket settings", err);
@@ -129,7 +131,7 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
     try {
       if (activeTab === "general") {
         if (versioning !== "Disabled") {
-          await putBucketVersioning(bucketName, versioning as any);
+          await putBucketVersioning(bucketName, versioning as BucketVersioningStatus);
         }
         if (encryption) {
           await putBucketEncryption(bucketName);
@@ -226,7 +228,7 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
                     <div className="flex items-center gap-4 bg-surface-elevated p-4 rounded-xl border border-border-subtle">
                       <select
                         value={versioning}
-                        onChange={(e) => setVersioning(e.target.value as any)}
+                        onChange={(e) => setVersioning(e.target.value as BucketVersioningStatus)}
                         className="bg-surface-input border border-border-default rounded px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:border-blue-500/60 transition-colors"
                       >
                         <option value="Disabled">Disabled</option>
@@ -244,7 +246,13 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
                         <input
                           type="checkbox"
                           checked={!!encryption}
-                          onChange={(e) => setEncryption(e.target.checked ? { SSEAlgorithm: "AES256" } : null)}
+                          onChange={(e) =>
+                            setEncryption(
+                              e.target.checked
+                                ? { ApplyServerSideEncryptionByDefault: { SSEAlgorithm: "AES256" } }
+                                : null,
+                            )
+                          }
                           className="sr-only peer"
                         />
                         <div className="w-10 h-5 bg-border-default peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
@@ -433,7 +441,7 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
 interface TabButtonProps {
   active: boolean;
   onClick: () => void;
-  icon: any;
+  icon: LucideIcon;
   label: string;
 }
 

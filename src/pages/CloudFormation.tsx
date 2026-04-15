@@ -43,7 +43,7 @@ export const CloudFormation = () => {
     {
       key: "name",
       header: "Stack Name",
-      render: (stack: any) => (
+      render: (stack) => (
         <div className="flex flex-col">
           <span className="font-medium text-text-primary">{stack.StackName}</span>
           <span className="text-[10px] text-text-faint font-mono mt-0.5">{stack.StackId}</span>
@@ -53,18 +53,18 @@ export const CloudFormation = () => {
     {
       key: "status",
       header: "Status",
-      render: (stack: any) => getStatusBadge(stack.StackStatus),
+      render: (stack) => getStatusBadge(stack.StackStatus),
     },
     {
       key: "created",
       header: "Created",
-      render: (stack: any) => stack.CreationTime?.toLocaleString() ?? "Unknown",
+      render: (stack) => stack.CreationTime?.toLocaleString() ?? "Unknown",
     },
     {
       key: "actions",
       header: "Actions",
       className: "text-right",
-      render: (stack: any) => (
+      render: (stack) => (
         <div className="flex items-center justify-end">
           <button
             onClick={(e) => {
@@ -101,7 +101,7 @@ export const CloudFormation = () => {
         <DataTable
           columns={columns}
           rows={stacks}
-          rowKey={(s: any) => s.StackId}
+          rowKey={(s) => s.StackId}
           loading={loading && stacks.length === 0}
           emptyIcon={Layers2}
           emptyTitle="No stacks found"

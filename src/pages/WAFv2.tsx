@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ShieldCheck, RefreshCw, Plus, Trash2 } from "lucide-react";
+import type { WebACLSummary } from "@aws-sdk/client-wafv2";
 import { useWAFv2 } from "../hooks/useWAFv2";
 import { PageHeader } from "../components/ui/PageHeader";
 import { Button } from "../components/ui/Button";
@@ -75,12 +76,12 @@ export default function WAFv2() {
       ) : (
         <DataTable
           rows={webACLs}
-          rowKey={(p) => p.Id || ""}
+          rowKey={(p: WebACLSummary) => p.Id || ""}
           columns={[
             {
               key: "name",
               header: "Name",
-              render: (p: any) => (
+              render: (p: WebACLSummary) => (
                 <div className="flex items-center">
                   <ShieldCheck className="w-4 h-4 mr-2 text-rose-500" />
                   <span className="font-medium text-gray-900 dark:text-white">{p.Name}</span>
@@ -90,14 +91,14 @@ export default function WAFv2() {
             {
               key: "id",
               header: "ID",
-              render: (p: any) => (
+              render: (p: WebACLSummary) => (
                 <code className="text-xs bg-surface-elevated px-1 py-0.5 rounded text-text-secondary">{p.Id}</code>
               ),
             },
             {
               key: "arn",
               header: "ARN",
-              render: (p: any) => (
+              render: (p: WebACLSummary) => (
                 <span className="text-xs text-gray-500 break-all max-w-xs block" title={p.ARN}>
                   {p.ARN}
                 </span>
@@ -107,7 +108,7 @@ export default function WAFv2() {
               key: "actions",
               header: "",
               className: "text-right",
-              render: (p: any) => (
+              render: (p: WebACLSummary) => (
                 <Button
                   variant="ghost"
                   size="sm"

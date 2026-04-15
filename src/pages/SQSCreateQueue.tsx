@@ -55,8 +55,8 @@ export const SQSCreateQueue = () => {
       await sqs.createQueue(finalName, attributes);
       toast.success(`Queue "${finalName}" created successfully`);
       navigate(`/sqs/${finalName}`);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to create queue");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create queue");
     } finally {
       setLoading(false);
     }

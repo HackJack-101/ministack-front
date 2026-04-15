@@ -1,5 +1,10 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { ListWebACLsCommand, DeleteWebACLCommand, type WebACLSummary } from "@aws-sdk/client-wafv2";
+import {
+  ListWebACLsCommand,
+  DeleteWebACLCommand,
+  CreateWebACLCommand,
+  type WebACLSummary,
+} from "@aws-sdk/client-wafv2";
 import { wafv2Client } from "../services/awsClients";
 import { useToast } from "./useToast";
 
@@ -13,8 +18,8 @@ export const useWAFv2 = () => {
     try {
       const response = await wafv2Client.send(new ListWebACLsCommand({ Scope: "REGIONAL" }));
       setWebACLs(response.WebACLs || []);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to fetch Web ACLs");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to fetch Web ACLs");
     } finally {
       setLoading(false);
     }
@@ -23,22 +28,23 @@ export const useWAFv2 = () => {
   const createWebACL = useCallback(
     async (name: string) => {
       try {
-        await wafv2Client.send({
-          // Using any because of complex mandatory params in WAFv2
-          Name: name,
-          Scope: "REGIONAL",
-          DefaultAction: { Allow: {} },
-          VisibilityConfig: {
-            SampledRequestsEnabled: true,
-            CloudWatchMetricsEnabled: true,
-            MetricName: name,
-          },
-          Rules: [],
-        } as any);
+        await wafv2Client.send(
+          new CreateWebACLCommand({
+            Name: name,
+            Scope: "REGIONAL",
+            DefaultAction: { Allow: {} },
+            VisibilityConfig: {
+              SampledRequestsEnabled: true,
+              CloudWatchMetricsEnabled: true,
+              MetricName: name,
+            },
+            Rules: [],
+          }),
+        );
         toast.success(`Web ACL ${name} created`);
         await fetchWebACLs();
-      } catch (err: any) {
-        toast.error(err.message || "Failed to create Web ACL");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to create Web ACL");
       }
     },
     [fetchWebACLs, toast],
@@ -57,8 +63,8 @@ export const useWAFv2 = () => {
         );
         toast.success("Web ACL deleted");
         await fetchWebACLs();
-      } catch (err: any) {
-        toast.error(err.message || "Failed to delete Web ACL");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to delete Web ACL");
       }
     },
     [fetchWebACLs, toast],

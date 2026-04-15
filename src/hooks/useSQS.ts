@@ -70,7 +70,7 @@ export const useSQS = () => {
       );
 
       setQueues(queueInfos);
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to fetch queues");
     } finally {
       setLoading(false);
@@ -91,7 +91,7 @@ export const useSQS = () => {
           }),
         );
         await fetchQueues();
-      } catch (err: unknown) {
+      } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to create queue";
         toast.error(message);
         throw err;
@@ -152,7 +152,7 @@ export const useSQS = () => {
 
         await fetchQueues();
         return movedCount;
-      } catch (err: unknown) {
+      } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to move messages";
         toast.error(message);
         throw err;

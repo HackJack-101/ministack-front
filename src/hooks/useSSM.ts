@@ -19,7 +19,7 @@ export const useSSM = () => {
     try {
       const response = await ssmClient.send(new DescribeParametersCommand({}));
       setParameters(response.Parameters || []);
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to fetch parameters");
     } finally {
       setLoading(false);
@@ -31,7 +31,7 @@ export const useSSM = () => {
       try {
         const response = await ssmClient.send(new GetParameterCommand({ Name: name, WithDecryption: true }));
         return response.Parameter?.Value || "";
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to fetch parameter value");
         return "";
       }
@@ -52,7 +52,7 @@ export const useSSM = () => {
         );
         toast.success("Parameter saved successfully");
         await fetchParameters();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to save parameter");
       }
     },
@@ -65,7 +65,7 @@ export const useSSM = () => {
         await ssmClient.send(new DeleteParameterCommand({ Name: name }));
         toast.success("Parameter deleted successfully");
         await fetchParameters();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to delete parameter");
       }
     },

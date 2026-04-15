@@ -41,7 +41,7 @@ const SNS: React.FC = () => {
       try {
         const subs = await listSubscriptions(arn);
         setSubscriptions(subs);
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to fetch subscriptions");
       } finally {
         setLoadingSubscriptions(false);
@@ -73,7 +73,7 @@ const SNS: React.FC = () => {
           await deleteTopic(arn);
           if (selectedTopicArn === arn) setSelectedTopicArn(null);
           toast.success("Topic deleted successfully");
-        } catch (err: unknown) {
+        } catch (err) {
           toast.error(err instanceof Error ? err.message : "Failed to delete topic");
         }
       },
@@ -88,7 +88,7 @@ const SNS: React.FC = () => {
       setPublishMessage("");
       setPublishSubject("");
       toast.success("Message published successfully");
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to publish message");
     }
   };
@@ -102,7 +102,7 @@ const SNS: React.FC = () => {
       setShowSubscribe(false);
       toast.success("Subscribed successfully");
       fetchSubscriptions(selectedTopicArn);
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to subscribe");
     }
   };
@@ -121,7 +121,7 @@ const SNS: React.FC = () => {
           await unsubscribe(subscriptionArn);
           toast.success("Unsubscribed successfully");
           if (selectedTopicArn) fetchSubscriptions(selectedTopicArn);
-        } catch (err: unknown) {
+        } catch (err) {
           toast.error(err instanceof Error ? err.message : "Failed to unsubscribe");
         }
       },

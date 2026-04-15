@@ -64,7 +64,7 @@ export const useDynamoDB = () => {
       );
 
       setTables(tableDetails);
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to fetch tables");
     } finally {
       setLoading(false);
@@ -94,7 +94,7 @@ export const useDynamoDB = () => {
 
       const scanResponse = await ddbDocClient.send(new ScanCommand({ TableName: tableName }));
       setItems((scanResponse.Items as Record<string, unknown>[]) || []);
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : `Failed to fetch details for ${tableName}`);
     } finally {
       setItemsLoading(false);
@@ -135,7 +135,7 @@ export const useDynamoDB = () => {
         await ddbDocClient.send(new DeleteTableCommand({ TableName: tableName }));
         if (selectedTable?.TableName === tableName) setSelectedTable(null);
         fetchTables();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to delete table");
       }
     },
@@ -159,7 +159,7 @@ export const useDynamoDB = () => {
       try {
         await ddbDocClient.send(new DeleteCommand({ TableName: table.TableName, Key: key }));
         fetchTableDetails(table.TableName);
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to delete item");
       }
     },

@@ -27,7 +27,7 @@ export const AddItemModal = ({ open, onClose, onConfirm, table, isLoading }: Add
       JSON.parse(json);
       await onConfirm(json);
       onClose();
-    } catch (err: unknown) {
+    } catch (err) {
       setError(err instanceof Error ? err.message : "Invalid JSON or failed to add item");
     }
   };

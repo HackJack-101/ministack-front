@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { BadgeCheck, RefreshCw, Plus, Trash2, Globe } from "lucide-react";
 import { Badge } from "../components/ui/Badge";
+import type { CertificateSummary } from "@aws-sdk/client-acm";
 import { useACM } from "../hooks/useACM";
 import { PageHeader } from "../components/ui/PageHeader";
 import { Button } from "../components/ui/Button";
@@ -80,13 +81,13 @@ export default function ACM() {
       ) : (
         <DataTable
           rows={certificates}
-          rowKey={(p) => p.CertificateArn || ""}
+          rowKey={(p: CertificateSummary) => p.CertificateArn || ""}
           accentColor="emerald"
           columns={[
             {
               key: "domain",
               header: "Domain Name",
-              render: (p: any) => (
+              render: (p: CertificateSummary) => (
                 <div className="flex items-center">
                   <Globe className={`w-4 h-4 mr-2 ${acmToken.iconColor}`} />
                   <span className="font-medium text-text-primary">{p.DomainName}</span>
@@ -96,7 +97,7 @@ export default function ACM() {
             {
               key: "arn",
               header: "Certificate ARN",
-              render: (p: any) => (
+              render: (p: CertificateSummary) => (
                 <span className="text-xs text-text-muted break-all max-w-xs block" title={p.CertificateArn}>
                   {p.CertificateArn}
                 </span>
@@ -105,13 +106,15 @@ export default function ACM() {
             {
               key: "type",
               header: "Type",
-              render: (p: any) => <Badge variant={acmToken.badgeVariant}>{p.Type || "AMAZON_ISSUED"}</Badge>,
+              render: (p: CertificateSummary) => (
+                <Badge variant={acmToken.badgeVariant}>{p.Type || "AMAZON_ISSUED"}</Badge>
+              ),
             },
             {
               key: "actions",
               header: "",
               className: "text-right",
-              render: (p: any) => (
+              render: (p: CertificateSummary) => (
                 <Button
                   variant="ghost"
                   size="sm"

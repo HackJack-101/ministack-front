@@ -23,7 +23,7 @@ export const useSNS = () => {
     try {
       const response = await snsClient.send(new ListTopicsCommand({}));
       setTopics(response.Topics || []);
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to fetch topics");
     } finally {
       setLoading(false);

@@ -82,13 +82,13 @@ export default function Kinesis() {
       ) : (
         <DataTable
           rows={streams}
-          rowKey={(p) => p}
+          rowKey={(p: string) => p}
           accentColor="sky"
           columns={[
             {
               key: "name",
               header: "Stream Name",
-              render: (p: any) => (
+              render: (p: string) => (
                 <div className="flex items-center">
                   <Waves className={`w-4 h-4 mr-2 ${kinesisToken.iconColor}`} />
                   <span className="font-medium text-text-primary">{p}</span>
@@ -104,7 +104,7 @@ export default function Kinesis() {
               key: "actions",
               header: "",
               className: "text-right",
-              render: (p: any) => (
+              render: (p: string) => (
                 <Button
                   variant="ghost"
                   size="sm"

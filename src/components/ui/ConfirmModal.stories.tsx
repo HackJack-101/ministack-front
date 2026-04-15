@@ -12,7 +12,7 @@ const meta: Meta<typeof ConfirmModal> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const ConfirmStory = (args: any) => {
+const ConfirmStory = (args) => {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <>

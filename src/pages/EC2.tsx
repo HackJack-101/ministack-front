@@ -1,4 +1,5 @@
 import { RefreshCw, Trash2, Cpu, Play, Square } from "lucide-react";
+import type { Instance } from "@aws-sdk/client-ec2";
 import { useEC2 } from "../hooks/useEC2";
 import { PageHeader } from "../components/ui/PageHeader";
 import { DataTable } from "../components/ui/DataTable";
@@ -31,7 +32,7 @@ export const EC2 = () => {
     {
       key: "id",
       header: "Instance ID",
-      render: (instance: any) => (
+      render: (instance: Instance) => (
         <div className="flex flex-col">
           <span className="font-medium text-text-primary font-mono text-[11px]">{instance.InstanceId}</span>
           <span className="text-[10px] text-text-faint mt-0.5">
@@ -43,23 +44,23 @@ export const EC2 = () => {
     {
       key: "status",
       header: "Status",
-      render: (instance: any) => getStatusBadge(instance.State?.Name),
+      render: (instance: Instance) => getStatusBadge(instance.State?.Name),
     },
     {
       key: "publicIp",
       header: "Public IP",
-      render: (instance: any) => instance.PublicIpAddress || "-",
+      render: (instance: Instance) => instance.PublicIpAddress || "-",
     },
     {
       key: "privateIp",
       header: "Private IP",
-      render: (instance: any) => instance.PrivateIpAddress || "-",
+      render: (instance: Instance) => instance.PrivateIpAddress || "-",
     },
     {
       key: "actions",
       header: "Actions",
       className: "text-right",
-      render: (instance: any) => (
+      render: (instance: Instance) => (
         <div className="flex items-center justify-end gap-1">
           {instance.State?.Name === "stopped" && (
             <button
@@ -122,7 +123,7 @@ export const EC2 = () => {
         <DataTable
           columns={columns}
           rows={instances}
-          rowKey={(i: any) => i.InstanceId}
+          rowKey={(i: Instance) => i.InstanceId!}
           loading={loading && instances.length === 0}
           emptyIcon={Cpu}
           emptyTitle="No instances found"

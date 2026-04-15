@@ -13,13 +13,13 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const columns = [
-  { key: "name", header: "Name", className: "font-medium", render: (r: any) => r.name },
+  { key: "name", header: "Name", className: "font-medium", render: (r) => r.name },
   {
     key: "status",
     header: "Status",
-    render: (r: any) => <Badge variant={r.status === "active" ? "success" : "warning"}>{r.status}</Badge>,
+    render: (r) => <Badge variant={r.status === "active" ? "success" : "warning"}>{r.status}</Badge>,
   },
-  { key: "size", header: "Size", render: (r: any) => r.size },
+  { key: "size", header: "Size", render: (r) => r.size },
   {
     key: "actions",
     header: "",
@@ -44,7 +44,7 @@ export const Default: Story = {
   args: {
     columns,
     rows,
-    rowKey: (r: any) => r.id,
+    rowKey: (r) => r.id,
   },
 };
 

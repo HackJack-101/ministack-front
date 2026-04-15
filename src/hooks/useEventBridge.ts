@@ -20,7 +20,7 @@ export const useEventBridge = () => {
     try {
       const response = await eventBridgeClient.send(new ListEventBusesCommand({}));
       setEventBuses(response.EventBuses || []);
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to fetch event buses");
     } finally {
       setLoading(false);
@@ -32,7 +32,7 @@ export const useEventBridge = () => {
       try {
         const response = await eventBridgeClient.send(new ListRulesCommand({ EventBusName: eventBusName }));
         return response.Rules || [];
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to fetch rules");
         return [];
       }
@@ -46,7 +46,7 @@ export const useEventBridge = () => {
         await eventBridgeClient.send(new CreateEventBusCommand({ Name: name }));
         toast.success("Event bus created successfully");
         await fetchEventBuses();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to create event bus");
       }
     },
@@ -59,7 +59,7 @@ export const useEventBridge = () => {
         await eventBridgeClient.send(new DeleteEventBusCommand({ Name: name }));
         toast.success("Event bus deleted successfully");
         await fetchEventBuses();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to delete event bus");
       }
     },
@@ -82,7 +82,7 @@ export const useEventBridge = () => {
           }),
         );
         toast.success("Event sent successfully");
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to send event");
       }
     },

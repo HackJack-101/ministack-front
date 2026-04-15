@@ -159,8 +159,8 @@ export const IAMCreateRole = () => {
 
       toast.success(`Role "${roleName}" created successfully`);
       navigate("/iam");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to create role");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create role");
     } finally {
       setLoading(false);
     }

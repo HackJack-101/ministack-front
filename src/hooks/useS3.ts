@@ -47,6 +47,7 @@ import {
   type _Object,
   type NotificationConfiguration,
   type ServerSideEncryptionConfiguration,
+  type ServerSideEncryptionRule,
   type LoggingEnabled,
   type ReplicationConfiguration,
   type ObjectLockConfiguration,
@@ -56,11 +57,14 @@ import {
   type ObjectLockRetention,
   type HeadObjectCommandOutput,
   type ObjectLockLegalHold,
+  type BucketVersioningStatus,
+  type CommonPrefix,
 } from "@aws-sdk/client-s3";
 
 export type {
   NotificationConfiguration,
   ServerSideEncryptionConfiguration,
+  ServerSideEncryptionRule,
   LoggingEnabled,
   ReplicationConfiguration,
   ObjectLockConfiguration,
@@ -70,6 +74,7 @@ export type {
   ObjectLockRetention,
   HeadObjectCommandOutput,
   ObjectLockLegalHold,
+  BucketVersioningStatus,
 };
 export { type Bucket, type _Object };
 import { s3Client } from "../services/awsClients";
@@ -92,7 +97,7 @@ export const useS3 = () => {
     try {
       const response = await s3Client.send(new ListBucketsCommand({}));
       setBuckets(response.Buckets || []);
-    } catch (err: unknown) {
+    } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to fetch buckets");
     } finally {
       setLoading(false);
@@ -111,7 +116,7 @@ export const useS3 = () => {
           }),
         );
 
-        const folders: _Object[] = (response.CommonPrefixes || []).map((p) => ({
+        const folders: _Object[] = (response.CommonPrefixes || []).map((p: CommonPrefix) => ({
           Key: p.Prefix,
           Size: 0,
         }));
@@ -123,7 +128,7 @@ export const useS3 = () => {
         });
 
         setObjects([...folders, ...files]);
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : `Failed to fetch objects for ${bucketName}`);
       } finally {
         setObjectsLoading(false);
@@ -155,7 +160,7 @@ export const useS3 = () => {
         await s3Client.send(new DeleteBucketCommand({ Bucket: name }));
         if (selectedBucket === name) setSelectedBucket(null);
         fetchBuckets();
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to delete bucket. Is it empty?");
       }
     },
@@ -170,7 +175,7 @@ export const useS3 = () => {
         // Refresh current prefix
         const parentPrefix = key.includes("/") ? key.substring(0, key.lastIndexOf("/") + 1) : "";
         fetchObjects(selectedBucket, parentPrefix);
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to delete object");
       }
     },
@@ -192,7 +197,7 @@ export const useS3 = () => {
         const parentPrefix = key.includes("/") ? key.substring(0, key.lastIndexOf("/") + 1) : "";
         fetchObjects(selectedBucket, parentPrefix);
         toast.success(`Deleted ${keys.length} objects.`);
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to delete objects");
       }
     },
@@ -213,7 +218,7 @@ export const useS3 = () => {
         const parentPrefix = destKey.includes("/") ? destKey.substring(0, destKey.lastIndexOf("/") + 1) : "";
         fetchObjects(selectedBucket, parentPrefix);
         toast.success(`Copied ${sourceKey} to ${destKey}.`);
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to copy object");
       }
     },
@@ -240,7 +245,7 @@ export const useS3 = () => {
         const parentPrefix = sourceKey.includes("/") ? sourceKey.substring(0, sourceKey.lastIndexOf("/") + 1) : "";
         fetchObjects(selectedBucket, parentPrefix);
         toast.success(`Moved ${sourceKey} to ${destKey}.`);
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to move object");
       }
     },
@@ -252,7 +257,7 @@ export const useS3 = () => {
       if (!selectedBucket) return null;
       try {
         return await s3Client.send(new HeadObjectCommand({ Bucket: selectedBucket, Key: key }));
-      } catch (err: unknown) {
+      } catch (err) {
         console.error("HeadObject failed:", err);
         return null;
       }
@@ -266,7 +271,7 @@ export const useS3 = () => {
       try {
         const response = await s3Client.send(new ListObjectVersionsCommand({ Bucket: selectedBucket, Prefix: key }));
         return response.Versions || [];
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to fetch object versions");
         return [];
       }
@@ -283,7 +288,7 @@ export const useS3 = () => {
     }
   }, []);
 
-  const putBucketVersioning = useCallback(async (name: string, status: "Enabled" | "Suspended") => {
+  const putBucketVersioning = useCallback(async (name: string, status: BucketVersioningStatus) => {
     await s3Client.send(new PutBucketVersioningCommand({ Bucket: name, VersioningConfiguration: { Status: status } }));
   }, []);
 
@@ -445,7 +450,7 @@ export const useS3 = () => {
     }
   }, []);
 
-  const putBucketReplication = useCallback(async (name: string, config: any) => {
+  const putBucketReplication = useCallback(async (name: string, config: ReplicationConfiguration) => {
     await s3Client.send(new PutBucketReplicationCommand({ Bucket: name, ReplicationConfiguration: config }));
   }, []);
 
@@ -576,7 +581,7 @@ export const useS3 = () => {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
         toast.success(`Downloaded ${key}`);
-      } catch (err: unknown) {
+      } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed to download object");
       }
     },

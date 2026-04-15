@@ -69,7 +69,7 @@ export function DataTable<T>({
                 </td>
               </tr>
             ) : (
-              rows.map((row) => (
+              rows.map((row: T) => (
                 <tr
                   key={rowKey(row)}
                   onClick={() => onRowClick?.(row)}

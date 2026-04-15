@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import type { LucideIcon } from "lucide-react";
 import { User, Shield, Users, FileKey, RefreshCw, Plus, Edit2, Trash2, Link } from "lucide-react";
 import { useIAM } from "../hooks/useIAM";
+import type { User as IAMUser, Role, Group, Policy } from "@aws-sdk/client-iam";
 import { useConfirmModal } from "../hooks/useConfirmModal";
 import { PageHeader } from "../components/ui/PageHeader";
 import { Button } from "../components/ui/Button";
@@ -53,19 +55,26 @@ export const IAM: React.FC = () => {
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
 
   const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedUser, setSelectedUser] = useState<IAMUser | null>(null);
 
   const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState(false);
-  const [selectedGroup, setSelectedGroup] = useState<any>(null);
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
 
   const [isEditRoleModalOpen, setIsEditRoleModalOpen] = useState(false);
   const [isRolePoliciesModalOpen, setIsRolePoliciesModalOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<any>(null);
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
 
   const [isEditPolicyModalOpen, setIsEditPolicyModalOpen] = useState(false);
-  const [selectedPolicy, setSelectedPolicy] = useState<any>(null);
+  const [selectedPolicy, setSelectedPolicy] = useState<Policy | null>(null);
 
-  const tabs: { id: Tab; label: string; singular: string; plural?: string; icon: any; count: number }[] = [
+  const tabs: {
+    id: Tab;
+    label: string;
+    singular: string;
+    plural?: string;
+    icon: LucideIcon;
+    count: number;
+  }[] = [
     { id: "users", label: "Users", singular: "User", icon: User, count: users.length },
     { id: "roles", label: "Roles", singular: "Role", icon: Shield, count: roles.length },
     { id: "groups", label: "Groups", singular: "Group", icon: Users, count: groups.length },
@@ -88,19 +97,24 @@ export const IAM: React.FC = () => {
               {
                 key: "UserName",
                 header: "User Name",
-                render: (u: any) => u.UserName,
+                render: (u) => u.UserName,
                 className: "font-medium text-text-primary",
               },
-              { key: "UserId", header: "User ID", render: (u: any) => u.UserId, className: "font-mono text-[13px]" },
+              {
+                key: "UserId",
+                header: "User ID",
+                render: (u) => u.UserId,
+                className: "font-mono text-[13px]",
+              },
               {
                 key: "CreateDate",
                 header: "Created Date",
-                render: (u: any) => (u.CreateDate ? new Date(u.CreateDate).toLocaleDateString() : "-"),
+                render: (u) => (u.CreateDate ? new Date(u.CreateDate).toLocaleDateString() : "-"),
               },
               {
                 key: "Arn",
                 header: "ARN",
-                render: (u: any) => (
+                render: (u) => (
                   <span className="truncate max-w-xs block" title={u.Arn}>
                     {u.Arn}
                   </span>
@@ -110,7 +124,7 @@ export const IAM: React.FC = () => {
                 key: "actions",
                 header: "",
                 className: "w-20",
-                render: (u: any) => (
+                render: (u) => (
                   <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
                       variant="ghost"
@@ -144,7 +158,7 @@ export const IAM: React.FC = () => {
               },
             ]}
             rows={users}
-            rowKey={(u: any) => u.UserId}
+            rowKey={(u: IAMUser) => u.UserId!}
             loading={loading}
             emptyIcon={User}
             emptyTitle="No users found"
@@ -159,19 +173,19 @@ export const IAM: React.FC = () => {
               {
                 key: "RoleName",
                 header: "Role Name",
-                render: (r: any) => r.RoleName,
+                render: (r) => r.RoleName,
                 className: "font-medium text-text-primary",
               },
-              { key: "RoleId", header: "Role ID", render: (r: any) => r.RoleId, className: "font-mono text-[13px]" },
+              { key: "RoleId", header: "Role ID", render: (r) => r.RoleId, className: "font-mono text-[13px]" },
               {
                 key: "CreateDate",
                 header: "Created Date",
-                render: (r: any) => (r.CreateDate ? new Date(r.CreateDate).toLocaleDateString() : "-"),
+                render: (r) => (r.CreateDate ? new Date(r.CreateDate).toLocaleDateString() : "-"),
               },
               {
                 key: "Arn",
                 header: "ARN",
-                render: (r: any) => (
+                render: (r) => (
                   <span className="truncate max-w-xs block" title={r.Arn}>
                     {r.Arn}
                   </span>
@@ -181,7 +195,7 @@ export const IAM: React.FC = () => {
                 key: "actions",
                 header: "",
                 className: "w-20",
-                render: (r: any) => (
+                render: (r) => (
                   <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
                       variant="ghost"
@@ -227,7 +241,7 @@ export const IAM: React.FC = () => {
               },
             ]}
             rows={roles}
-            rowKey={(r: any) => r.RoleId}
+            rowKey={(r: Role) => r.RoleId!}
             loading={loading}
             emptyIcon={Shield}
             emptyTitle="No roles found"
@@ -242,19 +256,24 @@ export const IAM: React.FC = () => {
               {
                 key: "GroupName",
                 header: "Group Name",
-                render: (g: any) => g.GroupName,
+                render: (g) => g.GroupName,
                 className: "font-medium text-text-primary",
               },
-              { key: "GroupId", header: "Group ID", render: (g: any) => g.GroupId, className: "font-mono text-[13px]" },
+              {
+                key: "GroupId",
+                header: "Group ID",
+                render: (g) => g.GroupId,
+                className: "font-mono text-[13px]",
+              },
               {
                 key: "CreateDate",
                 header: "Created Date",
-                render: (g: any) => (g.CreateDate ? new Date(g.CreateDate).toLocaleDateString() : "-"),
+                render: (g) => (g.CreateDate ? new Date(g.CreateDate).toLocaleDateString() : "-"),
               },
               {
                 key: "Arn",
                 header: "ARN",
-                render: (g: any) => (
+                render: (g) => (
                   <span className="truncate max-w-xs block" title={g.Arn}>
                     {g.Arn}
                   </span>
@@ -264,7 +283,7 @@ export const IAM: React.FC = () => {
                 key: "actions",
                 header: "",
                 className: "w-20",
-                render: (g: any) => (
+                render: (g) => (
                   <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
                       variant="ghost"
@@ -298,7 +317,7 @@ export const IAM: React.FC = () => {
               },
             ]}
             rows={groups}
-            rowKey={(g: any) => g.GroupId}
+            rowKey={(g: Group) => g.GroupId!}
             loading={loading}
             emptyIcon={Users}
             emptyTitle="No groups found"
@@ -313,20 +332,20 @@ export const IAM: React.FC = () => {
               {
                 key: "PolicyName",
                 header: "Policy Name",
-                render: (p: any) => p.PolicyName,
+                render: (p) => p.PolicyName,
                 className: "font-medium text-text-primary",
               },
               {
                 key: "PolicyId",
                 header: "Policy ID",
-                render: (p: any) => p.PolicyId,
+                render: (p) => p.PolicyId,
                 className: "font-mono text-[13px]",
               },
-              { key: "DefaultVersionId", header: "Default Version", render: (p: any) => p.DefaultVersionId },
+              { key: "DefaultVersionId", header: "Default Version", render: (p) => p.DefaultVersionId },
               {
                 key: "Arn",
                 header: "ARN",
-                render: (p: any) => (
+                render: (p) => (
                   <span className="truncate max-w-xs block" title={p.Arn}>
                     {p.Arn}
                   </span>
@@ -336,7 +355,7 @@ export const IAM: React.FC = () => {
                 key: "actions",
                 header: "",
                 className: "w-20",
-                render: (p: any) => (
+                render: (p) => (
                   <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
                       variant="ghost"
@@ -370,7 +389,7 @@ export const IAM: React.FC = () => {
               },
             ]}
             rows={policies}
-            rowKey={(p: any) => p.PolicyId}
+            rowKey={(p: Policy) => p.PolicyId!}
             loading={loading}
             emptyIcon={FileKey}
             emptyTitle="No policies found"
@@ -453,7 +472,9 @@ export const IAM: React.FC = () => {
           setSelectedUser(null);
         }}
         initialUserName={selectedUser?.UserName || ""}
-        onConfirm={(newName) => updateUser(selectedUser?.UserName, newName)}
+        onConfirm={async (newName) => {
+          if (selectedUser?.UserName) await updateUser(selectedUser.UserName, newName);
+        }}
       />
 
       <EditGroupModal
@@ -463,7 +484,9 @@ export const IAM: React.FC = () => {
           setSelectedGroup(null);
         }}
         initialGroupName={selectedGroup?.GroupName || ""}
-        onConfirm={(newName) => updateGroup(selectedGroup?.GroupName, newName)}
+        onConfirm={async (newName) => {
+          if (selectedGroup?.GroupName) await updateGroup(selectedGroup.GroupName, newName);
+        }}
       />
 
       <EditRoleModal
@@ -473,7 +496,9 @@ export const IAM: React.FC = () => {
           setSelectedRole(null);
         }}
         roleName={selectedRole?.RoleName || ""}
-        onConfirm={(doc) => updateRoleTrustPolicy(selectedRole?.RoleName, doc)}
+        onConfirm={async (doc) => {
+          if (selectedRole?.RoleName) await updateRoleTrustPolicy(selectedRole.RoleName, doc);
+        }}
       />
 
       <RolePoliciesModal
@@ -494,7 +519,9 @@ export const IAM: React.FC = () => {
         policyArn={selectedPolicy?.Arn || ""}
         policyName={selectedPolicy?.PolicyName || ""}
         defaultVersionId={selectedPolicy?.DefaultVersionId || ""}
-        onConfirm={(doc) => updatePolicyDocument(selectedPolicy?.Arn, doc)}
+        onConfirm={async (doc) => {
+          if (selectedPolicy?.Arn) await updatePolicyDocument(selectedPolicy.Arn, doc);
+        }}
       />
 
       {ConfirmModalComponent}
