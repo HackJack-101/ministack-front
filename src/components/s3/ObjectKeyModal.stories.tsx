@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { ObjectKeyModal } from "./ObjectKeyModal";
+import { ObjectKeyModal, type ObjectKeyModalProps } from "./ObjectKeyModal";
 import { Button } from "../ui/Button";
 import { useState } from "react";
 
@@ -12,12 +12,14 @@ const meta: Meta<typeof ObjectKeyModal> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const ObjectKeyModalStory = (args) => {
+const ObjectKeyModalStory = (args: Partial<ObjectKeyModalProps>) => {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <>
       <Button onClick={() => setIsOpen(true)}>Open Modal</Button>
       <ObjectKeyModal
+        title="Modal Title"
+        initialValue=""
         {...args}
         open={isOpen}
         onConfirm={(value) => {

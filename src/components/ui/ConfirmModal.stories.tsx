@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { ConfirmModal } from "./ConfirmModal";
+import { ConfirmModal, type ConfirmModalProps } from "./ConfirmModal";
 import { Button } from "./Button";
 import { useState } from "react";
 
@@ -12,14 +12,21 @@ const meta: Meta<typeof ConfirmModal> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const ConfirmStory = (args) => {
+const ConfirmStory = (args: Partial<ConfirmModalProps>) => {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <>
       <Button variant={args.confirmVariant === "danger" ? "danger" : "warning"} onClick={() => setIsOpen(true)}>
         Open Confirm Modal
       </Button>
-      <ConfirmModal {...args} open={isOpen} onConfirm={() => setIsOpen(false)} onCancel={() => setIsOpen(false)} />
+      <ConfirmModal
+        title="Confirm"
+        description="Are you sure?"
+        {...args}
+        open={isOpen}
+        onConfirm={() => setIsOpen(false)}
+        onCancel={() => setIsOpen(false)}
+      />
     </>
   );
 };

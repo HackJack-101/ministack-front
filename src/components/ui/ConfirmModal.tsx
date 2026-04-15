@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { AlertTriangle } from "lucide-react";
 
-interface ConfirmModalProps {
+export interface ConfirmModalProps {
   open: boolean;
   title: string;
   description: string;

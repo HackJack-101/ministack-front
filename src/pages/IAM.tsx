@@ -145,7 +145,7 @@ export const IAM: React.FC = () => {
                         confirm({
                           title: "Delete User",
                           description: `Are you sure you want to delete user "${u.UserName}"? This action cannot be undone.`,
-                          action: () => deleteUser(u.UserName),
+                          action: () => deleteUser(u.UserName!),
                           confirmLabel: "Delete",
                           confirmVariant: "danger",
                         })
@@ -228,7 +228,7 @@ export const IAM: React.FC = () => {
                         confirm({
                           title: "Delete Role",
                           description: `Are you sure you want to delete role "${r.RoleName}"? This action cannot be undone.`,
-                          action: () => deleteRole(r.RoleName),
+                          action: () => deleteRole(r.RoleName!),
                           confirmLabel: "Delete",
                           confirmVariant: "danger",
                         })
@@ -304,7 +304,7 @@ export const IAM: React.FC = () => {
                         confirm({
                           title: "Delete Group",
                           description: `Are you sure you want to delete group "${g.GroupName}"? This action cannot be undone.`,
-                          action: () => deleteGroup(g.GroupName),
+                          action: () => deleteGroup(g.GroupName!),
                           confirmLabel: "Delete",
                           confirmVariant: "danger",
                         })
@@ -376,7 +376,7 @@ export const IAM: React.FC = () => {
                         confirm({
                           title: "Delete Policy",
                           description: `Are you sure you want to delete policy "${p.PolicyName}"? This action cannot be undone.`,
-                          action: () => deletePolicy(p.Arn),
+                          action: () => deletePolicy(p.Arn!),
                           confirmLabel: "Delete",
                           confirmVariant: "danger",
                         })

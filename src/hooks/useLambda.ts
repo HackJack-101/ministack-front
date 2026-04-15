@@ -8,6 +8,7 @@ import {
   UpdateFunctionCodeCommand,
   DeleteFunctionCommand,
   ListEventSourceMappingsCommand,
+  ListVersionsByFunctionCommand,
   CreateEventSourceMappingCommand,
   DeleteEventSourceMappingCommand,
   UpdateEventSourceMappingCommand,
@@ -18,8 +19,9 @@ import {
   type LogFormat,
   type ApplicationLogLevel,
   type SystemLogLevel,
+  type EventSourceMappingConfiguration,
 } from "@aws-sdk/client-lambda";
-export type { EventSourceMappingConfiguration, LogFormat, ApplicationLogLevel, SystemLogLevel };
+export type { FunctionConfiguration, EventSourceMappingConfiguration, LogFormat, ApplicationLogLevel, SystemLogLevel };
 import { lambdaClient } from "../services/awsClients";
 import { useToast } from "./useToast";
 
@@ -216,6 +218,19 @@ export const useLambda = () => {
     [toast],
   );
 
+  const listVersionsByFunction = useCallback(
+    async (functionName: string) => {
+      try {
+        const response = await lambdaClient.send(new ListVersionsByFunctionCommand({ FunctionName: functionName }));
+        return response.Versions || [];
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to fetch function versions");
+        return [];
+      }
+    },
+    [toast],
+  );
+
   const createEventSourceMapping = useCallback(
     async (params: CreateEventSourceMappingForm) => {
       try {
@@ -282,6 +297,7 @@ export const useLambda = () => {
       updateFunctionCode,
       deleteFunction,
       listEventSourceMappings,
+      listVersionsByFunction,
       createEventSourceMapping,
       deleteEventSourceMapping,
       updateEventSourceMapping,
@@ -297,6 +313,7 @@ export const useLambda = () => {
       updateFunctionCode,
       deleteFunction,
       listEventSourceMappings,
+      listVersionsByFunction,
       createEventSourceMapping,
       deleteEventSourceMapping,
       updateEventSourceMapping,

@@ -1,4 +1,5 @@
 import { RefreshCw, Trash2, Layers2, Clock, CheckCircle2, XCircle } from "lucide-react";
+import type { Stack } from "@aws-sdk/client-cloudformation";
 import { useCloudFormation } from "../hooks/useCloudFormation";
 import { PageHeader } from "../components/ui/PageHeader";
 import { DataTable } from "../components/ui/DataTable";
@@ -43,7 +44,7 @@ export const CloudFormation = () => {
     {
       key: "name",
       header: "Stack Name",
-      render: (stack) => (
+      render: (stack: Stack) => (
         <div className="flex flex-col">
           <span className="font-medium text-text-primary">{stack.StackName}</span>
           <span className="text-[10px] text-text-faint font-mono mt-0.5">{stack.StackId}</span>
@@ -53,23 +54,23 @@ export const CloudFormation = () => {
     {
       key: "status",
       header: "Status",
-      render: (stack) => getStatusBadge(stack.StackStatus),
+      render: (stack: Stack) => getStatusBadge(stack.StackStatus),
     },
     {
       key: "created",
       header: "Created",
-      render: (stack) => stack.CreationTime?.toLocaleString() ?? "Unknown",
+      render: (stack: Stack) => stack.CreationTime?.toLocaleString() ?? "Unknown",
     },
     {
       key: "actions",
       header: "Actions",
       className: "text-right",
-      render: (stack) => (
+      render: (stack: Stack) => (
         <div className="flex items-center justify-end">
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setDeleteModalStack(stack.StackName);
+              setDeleteModalStack(stack.StackName || null);
             }}
             className="p-1.5 text-text-muted hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
             title="Delete Stack"
@@ -101,7 +102,7 @@ export const CloudFormation = () => {
         <DataTable
           columns={columns}
           rows={stacks}
-          rowKey={(s) => s.StackId}
+          rowKey={(s: Stack) => s.StackId!}
           loading={loading && stacks.length === 0}
           emptyIcon={Layers2}
           emptyTitle="No stacks found"

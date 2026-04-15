@@ -3,7 +3,7 @@ import { DataTable } from "./DataTable";
 import { Badge } from "./Badge";
 import { Trash2, HardDrive } from "lucide-react";
 
-const meta: Meta<typeof DataTable> = {
+const meta: Meta<typeof DataTable<ExampleRow>> = {
   title: "UI/DataTable",
   component: DataTable,
   tags: ["autodocs"],
@@ -12,14 +12,21 @@ const meta: Meta<typeof DataTable> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+interface ExampleRow {
+  id: string;
+  name: string;
+  status: string;
+  size: string;
+}
+
 const columns = [
-  { key: "name", header: "Name", className: "font-medium", render: (r) => r.name },
+  { key: "name", header: "Name", className: "font-medium", render: (r: ExampleRow) => r.name },
   {
     key: "status",
     header: "Status",
-    render: (r) => <Badge variant={r.status === "active" ? "success" : "warning"}>{r.status}</Badge>,
+    render: (r: ExampleRow) => <Badge variant={r.status === "active" ? "success" : "warning"}>{r.status}</Badge>,
   },
-  { key: "size", header: "Size", render: (r) => r.size },
+  { key: "size", header: "Size", render: (r: ExampleRow) => r.size },
   {
     key: "actions",
     header: "",
@@ -34,7 +41,7 @@ const columns = [
   },
 ];
 
-const rows = [
+const rows: ExampleRow[] = [
   { id: "1", name: "backup-2024.zip", status: "active", size: "1.2 GB" },
   { id: "2", name: "logs-april.txt", status: "active", size: "450 KB" },
   { id: "3", name: "temp-data.tmp", status: "pending", size: "0 B" },
@@ -44,7 +51,7 @@ export const Default: Story = {
   args: {
     columns,
     rows,
-    rowKey: (r) => r.id,
+    rowKey: (r: ExampleRow) => r.id,
   },
 };
 

@@ -33,7 +33,7 @@ export const DynamoDBCreateTable = () => {
       await db.createTable(form);
       navigate(`/dynamodb/${form.name}`);
     } catch (err) {
-      toast.error(err.message || "Failed to create table");
+      toast.error(err instanceof Error ? err.message : "Failed to create table");
     } finally {
       setLoading(false);
     }

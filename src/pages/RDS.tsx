@@ -71,7 +71,7 @@ export const RDS = () => {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setDeleteModalInstance(instance.DBInstanceIdentifier);
+              setDeleteModalInstance(instance.DBInstanceIdentifier || null);
             }}
             className="p-1.5 text-text-muted hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
             title="Delete Instance"

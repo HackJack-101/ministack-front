@@ -26,7 +26,7 @@ export const SSM = () => {
     setEditingParam({
       name: param.Name,
       value,
-      type: param.Type,
+      type: param.Type as ParameterType,
     });
     setIsModalOpen(true);
   };

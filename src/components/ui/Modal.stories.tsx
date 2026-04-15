@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { Modal } from "./Modal";
+import { Modal, type ModalProps } from "./Modal";
 import { Button } from "./Button";
 import { Input } from "./Input";
 import { useState } from "react";
@@ -13,12 +13,12 @@ const meta: Meta<typeof Modal> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const ModalStory = (args) => {
+const ModalStory = (args: Partial<ModalProps>) => {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <>
       <Button onClick={() => setIsOpen(true)}>Open Modal</Button>
-      <Modal {...args} open={isOpen} onClose={() => setIsOpen(false)}>
+      <Modal title="Modal" {...args} open={isOpen} onClose={() => setIsOpen(false)}>
         <div className="space-y-4">
           <p className="text-sm text-text-secondary">
             This is a standard modal body. You can place any form fields or content here.

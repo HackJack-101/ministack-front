@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { GitMerge, RefreshCw, Plus, Trash2 } from "lucide-react";
 import { Badge } from "../components/ui/Badge";
-import type { StateMachineSummary } from "@aws-sdk/client-sfn";
+import type { StateMachineListItem } from "@aws-sdk/client-sfn";
 import { useStepFunctions } from "../hooks/useStepFunctions";
 import { PageHeader } from "../components/ui/PageHeader";
 import { Button } from "../components/ui/Button";
@@ -81,12 +81,12 @@ export default function StepFunctions() {
       ) : (
         <DataTable
           rows={stateMachines}
-          rowKey={(p: StateMachineSummary) => p.stateMachineArn || ""}
+          rowKey={(p: StateMachineListItem) => p.stateMachineArn || ""}
           columns={[
             {
               key: "name",
               header: "Name",
-              render: (p: StateMachineSummary) => (
+              render: (p: StateMachineListItem) => (
                 <div className="flex items-center">
                   <GitMerge className="w-4 h-4 mr-2 text-rose-600" />
                   <span className="font-medium text-gray-900 dark:text-white">{p.name}</span>
@@ -96,17 +96,17 @@ export default function StepFunctions() {
             {
               key: "type",
               header: "Type",
-              render: (p: StateMachineSummary) => <Badge variant="blue">{p.type || "STANDARD"}</Badge>,
+              render: (p: StateMachineListItem) => <Badge variant="blue">{p.type || "STANDARD"}</Badge>,
             },
             {
               key: "date",
               header: "Creation Date",
-              render: (p: StateMachineSummary) => (p.creationDate ? new Date(p.creationDate).toLocaleString() : "-"),
+              render: (p: StateMachineListItem) => (p.creationDate ? new Date(p.creationDate).toLocaleString() : "-"),
             },
             {
               key: "arn",
               header: "ARN",
-              render: (p: StateMachineSummary) => (
+              render: (p: StateMachineListItem) => (
                 <span className="text-xs text-gray-500 break-all max-w-xs block" title={p.stateMachineArn}>
                   {p.stateMachineArn}
                 </span>
@@ -116,7 +116,7 @@ export default function StepFunctions() {
               key: "actions",
               header: "",
               className: "text-right",
-              render: (p: StateMachineSummary) => (
+              render: (p: StateMachineListItem) => (
                 <Button
                   variant="ghost"
                   size="sm"

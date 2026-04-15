@@ -36,6 +36,7 @@ import {
   type LogFormat,
   type ApplicationLogLevel,
   type SystemLogLevel,
+  type FunctionConfiguration,
 } from "../hooks/useLambda";
 import { useCloudWatchLogs } from "../hooks/useCloudWatchLogs";
 import { MINISTACK_ENDPOINT } from "../services/awsClients";
@@ -107,6 +108,7 @@ const Lambda: React.FC = () => {
     updateFunctionCode,
     deleteFunction,
     listEventSourceMappings,
+    listVersionsByFunction,
     createEventSourceMapping,
     deleteEventSourceMapping,
     updateEventSourceMapping,
@@ -125,7 +127,7 @@ const Lambda: React.FC = () => {
   } = useIAM();
   const { filterLogEvents, describeLogGroups, createLogGroup } = useCloudWatchLogs();
 
-  const [activeTab, setActiveTab] = useState<"invoke" | "settings" | "triggers">("invoke");
+  const [activeTab, setActiveTab] = useState<"invoke" | "settings" | "triggers" | "versions">("invoke");
   const [invoking, setInvoking] = useState(false);
   const [saving, setSaving] = useState(false);
   const [updatingCode, setUpdatingCode] = useState(false);
@@ -135,6 +137,8 @@ const Lambda: React.FC = () => {
 
   const [triggers, setTriggers] = useState<EventSourceMappingConfiguration[]>([]);
   const [triggersLoading, setTriggersLoading] = useState(false);
+  const [versions, setVersions] = useState<FunctionConfiguration[]>([]);
+  const [versionsLoading, setVersionsLoading] = useState(false);
   const [isAddingTrigger, setIsAddingTrigger] = useState(false);
   const [roleTrustValid, setRoleTrustValid] = useState<boolean | null>(null);
   const [permissionsValid, setPermissionsValid] = useState<boolean | null>(null);
@@ -411,11 +415,31 @@ const Lambda: React.FC = () => {
     }
   }, [functionName, listEventSourceMappings]);
 
+  const fetchVersions = React.useCallback(async () => {
+    if (!functionName) return;
+    setVersionsLoading(true);
+    try {
+      const results = await listVersionsByFunction(functionName);
+      setVersions(
+        results.sort((a, b) => {
+          if (a.Version === "$LATEST") return -1;
+          if (b.Version === "$LATEST") return 1;
+          return parseInt(b.Version || "0") - parseInt(a.Version || "0");
+        }),
+      );
+    } finally {
+      setVersionsLoading(false);
+    }
+  }, [functionName, listVersionsByFunction]);
+
   React.useEffect(() => {
     if (activeTab === "triggers" && functionName) {
       fetchTriggers();
     }
-  }, [activeTab, functionName, fetchTriggers]);
+    if (activeTab === "versions" && functionName) {
+      fetchVersions();
+    }
+  }, [activeTab, functionName, fetchTriggers, fetchVersions]);
 
   const handleCreateTrigger = async (params: CreateEventSourceMappingForm) => {
     const success = await createEventSourceMapping(params);
@@ -807,6 +831,16 @@ const Lambda: React.FC = () => {
               }`}
             >
               Triggers
+            </button>
+            <button
+              onClick={() => setActiveTab("versions")}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-all ${
+                activeTab === "versions"
+                  ? "border-amber-500 text-text-primary"
+                  : "border-transparent text-text-muted hover:text-text-primary"
+              }`}
+            >
+              Versions
             </button>
           </div>
 
@@ -1665,6 +1699,82 @@ const Lambda: React.FC = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          ) : activeTab === "versions" ? (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h2 className="text-sm font-semibold text-text-primary">Function Versions</h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={fetchVersions}
+                  isLoading={versionsLoading}
+                  leftIcon={<RefreshCw className={`w-3.5 h-3.5 ${versionsLoading ? "animate-spin" : ""}`} />}
+                >
+                  Refresh
+                </Button>
+              </div>
+
+              <div className="bg-surface-card rounded-card border border-border-subtle overflow-hidden">
+                <table className="w-full text-left border-collapse text-sm">
+                  <thead>
+                    <tr className="bg-surface-elevated/50 border-b border-border-subtle">
+                      <th className="px-4 py-3 font-semibold text-text-secondary uppercase tracking-wider text-[10px]">
+                        Version
+                      </th>
+                      <th className="px-4 py-3 font-semibold text-text-secondary uppercase tracking-wider text-[10px]">
+                        Runtime
+                      </th>
+                      <th className="px-4 py-3 font-semibold text-text-secondary uppercase tracking-wider text-[10px]">
+                        Handler
+                      </th>
+                      <th className="px-4 py-3 font-semibold text-text-secondary uppercase tracking-wider text-[10px]">
+                        Last Modified
+                      </th>
+                      <th className="px-4 py-3 font-semibold text-text-secondary uppercase tracking-wider text-[10px]">
+                        Size
+                      </th>
+                      <th className="px-4 py-3 font-semibold text-text-secondary uppercase tracking-wider text-[10px]">
+                        Description
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border-subtle">
+                    {versionsLoading && versions.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-4 py-8 text-center">
+                          <Spinner className="mx-auto" />
+                        </td>
+                      </tr>
+                    ) : versions.length > 0 ? (
+                      versions.map((v) => (
+                        <tr key={v.Version} className="hover:bg-surface-hover transition-colors">
+                          <td className="px-4 py-3">
+                            <Badge variant={v.Version === "$LATEST" ? "warning" : "default"}>{v.Version}</Badge>
+                          </td>
+                          <td className="px-4 py-3 text-text-secondary">{v.Runtime}</td>
+                          <td className="px-4 py-3 text-text-secondary font-mono text-xs">{v.Handler}</td>
+                          <td className="px-4 py-3 text-text-muted">
+                            {v.LastModified ? new Date(v.LastModified).toLocaleString() : "-"}
+                          </td>
+                          <td className="px-4 py-3 text-text-muted">
+                            {v.CodeSize ? `${(v.CodeSize / 1024 / 1024).toFixed(2)} MB` : "-"}
+                          </td>
+                          <td className="px-4 py-3 text-text-muted truncate max-w-[200px]" title={v.Description}>
+                            {v.Description || "-"}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="px-4 py-8 text-center text-text-muted">
+                          No versions found.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           ) : (

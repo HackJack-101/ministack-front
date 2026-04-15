@@ -66,7 +66,7 @@ export const EC2 = () => {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                startInstance(instance.InstanceId);
+                startInstance(instance.InstanceId!);
               }}
               className="p-1.5 text-emerald-500 hover:bg-emerald-500/10 rounded transition-colors"
               title="Start Instance"
@@ -78,7 +78,7 @@ export const EC2 = () => {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                stopInstance(instance.InstanceId);
+                stopInstance(instance.InstanceId!);
               }}
               className="p-1.5 text-amber-500 hover:bg-amber-500/10 rounded transition-colors"
               title="Stop Instance"
@@ -89,7 +89,7 @@ export const EC2 = () => {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setDeleteModalInstance(instance.InstanceId);
+              setDeleteModalInstance(instance.InstanceId || null);
             }}
             className="p-1.5 text-text-muted hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
             title="Terminate Instance"
