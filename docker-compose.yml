@@ -1,7 +1,7 @@
 services:
   ministack:
     container_name: ministack
-    image: nahuelnucera/ministack:latest
+    image: ministackorg/ministack:latest
     pull_policy: always
     ports:
       - "4566:4566"
