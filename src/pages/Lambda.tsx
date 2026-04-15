@@ -509,7 +509,6 @@ const Lambda: React.FC = () => {
     try {
       const result = await invokeFunction(functionName, payload);
       if (result) {
-        console.log("Invoke result", result);
         setInvokeResult(result);
         if (result.functionError) {
           toast.error(`Function error: ${result.functionError}`);
