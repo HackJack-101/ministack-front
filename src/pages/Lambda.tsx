@@ -32,10 +32,11 @@ import {
   useLambda,
   type UpdateFunctionConfigurationForm,
   type EventSourceMappingConfiguration,
+  type CreateEventSourceMappingForm,
 } from "../hooks/useLambda";
 import { useCloudWatchLogs } from "../hooks/useCloudWatchLogs";
 import { MINISTACK_ENDPOINT } from "../services/awsClients";
-import { useIAM } from "../hooks/useIAM";
+import { useIAM, type PolicyDocument, type PolicyStatement } from "../hooks/useIAM";
 import { useToast } from "../hooks/useToast";
 import { useConfirmModal } from "../hooks/useConfirmModal";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -182,13 +183,13 @@ const Lambda: React.FC = () => {
 
         const role = await getRole(roleName);
         if (role?.AssumeRolePolicyDocument) {
-          const doc =
+          const doc: PolicyDocument =
             typeof role.AssumeRolePolicyDocument === "string"
               ? JSON.parse(decodeURIComponent(role.AssumeRolePolicyDocument))
               : role.AssumeRolePolicyDocument;
 
           const statements = Array.isArray(doc.Statement) ? doc.Statement : [doc.Statement];
-          const isValid = statements.some((s: any) => {
+          const isValid = statements.some((s: PolicyStatement) => {
             const principal = s.Principal?.Service;
             const services = Array.isArray(principal) ? principal : [principal];
             return s.Effect === "Allow" && s.Action === "sts:AssumeRole" && services.includes("lambda.amazonaws.com");
@@ -239,7 +240,7 @@ const Lambda: React.FC = () => {
         let hasSecretsManagerAccess = false;
         let hasCloudWatchLogsAccess = false;
 
-        const checkStatement = (s: any) => {
+        const checkStatement = (s: PolicyStatement) => {
           if (s.Effect !== "Allow") return { sm: false, cw: false };
           const actions = Array.isArray(s.Action) ? s.Action : [s.Action];
 
@@ -263,8 +264,8 @@ const Lambda: React.FC = () => {
           return { sm, cw };
         };
 
-        const processPolicyDocument = (doc: any) => {
-          const policyObj = typeof doc === "string" ? JSON.parse(doc) : doc;
+        const processPolicyDocument = (doc: PolicyDocument | string) => {
+          const policyObj: PolicyDocument = typeof doc === "string" ? JSON.parse(doc) : doc;
           const statements = Array.isArray(policyObj.Statement) ? policyObj.Statement : [policyObj.Statement];
 
           for (const s of statements) {
@@ -280,7 +281,7 @@ const Lambda: React.FC = () => {
             if (!policy.PolicyArn || (hasSecretsManagerAccess && hasCloudWatchLogsAccess)) return;
             try {
               const doc = await getPolicyDocument(policy.PolicyArn);
-              if (doc) processPolicyDocument(doc);
+              if (doc) processPolicyDocument(doc as PolicyDocument);
             } catch (err) {
               console.error(`Failed to check attached policy ${policy.PolicyArn}`, err);
             }
@@ -413,7 +414,7 @@ const Lambda: React.FC = () => {
     }
   }, [activeTab, functionName, fetchTriggers]);
 
-  const handleCreateTrigger = async (params: any) => {
+  const handleCreateTrigger = async (params: CreateEventSourceMappingForm) => {
     const success = await createEventSourceMapping(params);
     if (success) {
       fetchTriggers();
@@ -1101,7 +1102,7 @@ const Lambda: React.FC = () => {
                                       ...editForm,
                                       LoggingConfig: {
                                         ...editForm.LoggingConfig,
-                                        LogFormat: e.target.value as any,
+                                        LogFormat: e.target.value as unknown as any,
                                       },
                                     })
                                   }
@@ -1138,7 +1139,7 @@ const Lambda: React.FC = () => {
                                       ...editForm,
                                       LoggingConfig: {
                                         ...editForm.LoggingConfig,
-                                        ApplicationLogLevel: e.target.value as any,
+                                        ApplicationLogLevel: e.target.value as unknown as any,
                                       },
                                     })
                                   }
@@ -1164,7 +1165,7 @@ const Lambda: React.FC = () => {
                                       ...editForm,
                                       LoggingConfig: {
                                         ...editForm.LoggingConfig,
-                                        SystemLogLevel: e.target.value as any,
+                                        SystemLogLevel: e.target.value as unknown as any,
                                       },
                                     })
                                   }

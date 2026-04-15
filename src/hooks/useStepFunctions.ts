@@ -18,8 +18,8 @@ export const useStepFunctions = () => {
     try {
       const response = await sfnClient.send(new ListStateMachinesCommand({}));
       setStateMachines(response.stateMachines || []);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to fetch state machines");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to fetch state machines");
     } finally {
       setLoading(false);
     }
@@ -37,8 +37,8 @@ export const useStepFunctions = () => {
         );
         toast.success(`State machine ${name} created`);
         await fetchStateMachines();
-      } catch (err: any) {
-        toast.error(err.message || "Failed to create state machine");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to create state machine");
       }
     },
     [fetchStateMachines, toast],
@@ -50,8 +50,8 @@ export const useStepFunctions = () => {
         await sfnClient.send(new DeleteStateMachineCommand({ stateMachineArn: arn }));
         toast.success("State machine deleted");
         await fetchStateMachines();
-      } catch (err: any) {
-        toast.error(err.message || "Failed to delete state machine");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to delete state machine");
       }
     },
     [fetchStateMachines, toast],

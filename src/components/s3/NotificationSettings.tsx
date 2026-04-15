@@ -4,7 +4,13 @@ import { Button } from "../ui/Button";
 import { useLambda } from "../../hooks/useLambda";
 import { useSQS } from "../../hooks/useSQS";
 import { useSNS } from "../../hooks/useSNS";
-import type { NotificationConfiguration, Event } from "@aws-sdk/client-s3";
+import type {
+  NotificationConfiguration,
+  Event,
+  LambdaFunctionConfiguration,
+  QueueConfiguration,
+  TopicConfiguration,
+} from "@aws-sdk/client-s3";
 
 interface NotificationSettingsProps {
   config: NotificationConfiguration | null;
@@ -81,7 +87,7 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({ conf
     updateConfig(newConfig);
   };
 
-  const updateItem = (type: "lambda" | "queue" | "topic", index: number, field: string, value: any) => {
+  const updateItem = (type: "lambda" | "queue" | "topic", index: number, field: string, value: string | Event[]) => {
     const newConfig = { ...localConfig };
     if (type === "lambda") {
       const items = [...(newConfig.LambdaFunctionConfigurations || [])];
@@ -106,10 +112,10 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({ conf
     value: string,
   ) => {
     const newConfig = { ...localConfig };
-    let item: any;
+    let item: LambdaFunctionConfiguration | QueueConfiguration | TopicConfiguration;
     if (type === "lambda") item = { ...newConfig.LambdaFunctionConfigurations![index] };
     else if (type === "queue") item = { ...newConfig.QueueConfigurations![index] };
-    else if (type === "topic") item = { ...newConfig.TopicConfigurations![index] };
+    else item = { ...newConfig.TopicConfigurations![index] };
 
     const rules = [...(item.Filter?.Key?.FilterRules || [])];
     const existingIdx = rules.findIndex((r) => r.Name === filterType);
@@ -144,8 +150,11 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({ conf
     updateConfig(newConfig);
   };
 
-  const getFilterValue = (item: any, filterType: "Prefix" | "Suffix") => {
-    return item.Filter?.Key?.FilterRules?.find((r: any) => r.Name === filterType)?.Value || "";
+  const getFilterValue = (
+    item: LambdaFunctionConfiguration | QueueConfiguration | TopicConfiguration,
+    filterType: "Prefix" | "Suffix",
+  ) => {
+    return item.Filter?.Key?.FilterRules?.find((r) => r.Name === filterType)?.Value || "";
   };
 
   return (

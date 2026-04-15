@@ -178,7 +178,7 @@ export const CreateTriggerModal = ({ open, onClose, onConfirm, functionName }: C
                 </label>
                 <select
                   value={startingPosition}
-                  onChange={(e) => setStartingPosition(e.target.value as any)}
+                  onChange={(e) => setStartingPosition(e.target.value as "TRIM_HORIZON" | "LATEST")}
                   className="w-full bg-surface-elevated border border-border-subtle rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-amber-500/50"
                 >
                   <option value="LATEST">LATEST</option>

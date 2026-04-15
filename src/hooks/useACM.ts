@@ -18,8 +18,8 @@ export const useACM = () => {
     try {
       const response = await acmClient.send(new ListCertificatesCommand({}));
       setCertificates(response.CertificateSummaryList || []);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to fetch certificates");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to fetch certificates");
     } finally {
       setLoading(false);
     }
@@ -31,8 +31,8 @@ export const useACM = () => {
         await acmClient.send(new RequestCertificateCommand({ DomainName: domainName }));
         toast.success(`Certificate request for ${domainName} submitted`);
         await fetchCertificates();
-      } catch (err: any) {
-        toast.error(err.message || "Failed to request certificate");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to request certificate");
       }
     },
     [fetchCertificates, toast],
@@ -44,8 +44,8 @@ export const useACM = () => {
         await acmClient.send(new DeleteCertificateCommand({ CertificateArn: arn }));
         toast.success("Certificate deleted");
         await fetchCertificates();
-      } catch (err: any) {
-        toast.error(err.message || "Failed to delete certificate");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to delete certificate");
       }
     },
     [fetchCertificates, toast],

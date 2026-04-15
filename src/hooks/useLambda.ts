@@ -13,6 +13,8 @@ import {
   UpdateEventSourceMappingCommand,
   type FunctionConfiguration,
   type LoggingConfig,
+  type Runtime,
+  type EventSourcePosition,
 } from "@aws-sdk/client-lambda";
 export type { EventSourceMappingConfiguration } from "@aws-sdk/client-lambda";
 import { lambdaClient } from "../services/awsClients";
@@ -75,7 +77,7 @@ export const useLambda = () => {
         await lambdaClient.send(
           new CreateFunctionCommand({
             FunctionName: params.FunctionName,
-            Runtime: params.Runtime as any,
+            Runtime: params.Runtime as Runtime,
             Handler: params.Handler,
             Role: params.Role,
             Code: { ZipFile: params.ZipFile },
@@ -141,7 +143,7 @@ export const useLambda = () => {
         await lambdaClient.send(
           new UpdateFunctionConfigurationCommand({
             FunctionName: params.FunctionName,
-            Runtime: params.Runtime as any,
+            Runtime: params.Runtime as Runtime,
             Handler: params.Handler,
             Role: params.Role,
             Description: params.Description,
@@ -220,7 +222,7 @@ export const useLambda = () => {
             EventSourceArn: params.EventSourceArn,
             BatchSize: params.BatchSize,
             Enabled: params.Enabled,
-            StartingPosition: params.StartingPosition as any,
+            StartingPosition: params.StartingPosition as EventSourcePosition,
           }),
         );
         toast.success("Event source mapping created successfully");

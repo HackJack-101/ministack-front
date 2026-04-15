@@ -14,7 +14,14 @@ import {
 } from "lucide-react";
 import { Button } from "../ui/Button";
 import { Spinner } from "../ui/Spinner";
-import { useS3, type NotificationConfiguration } from "../../hooks/useS3";
+import {
+  useS3,
+  type NotificationConfiguration,
+  type ServerSideEncryptionConfiguration,
+  type LoggingEnabled,
+  type ReplicationConfiguration,
+  type ObjectLockConfiguration,
+} from "../../hooks/useS3";
 import { useToast } from "../../hooks/useToast";
 import { NotificationSettings } from "./NotificationSettings";
 
@@ -56,14 +63,14 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
 
   // Form states
   const [versioning, setVersioning] = useState<"Enabled" | "Suspended" | "Disabled">("Disabled");
-  const [encryption, setEncryption] = useState<any>(null);
+  const [encryption, setEncryption] = useState<ServerSideEncryptionConfiguration | null>(null);
   const [policy, setPolicy] = useState("");
   const [cors, setCors] = useState("");
   const [lifecycle, setLifecycle] = useState("");
-  const [logging, setLogging] = useState<any>(null);
+  const [logging, setLogging] = useState<LoggingEnabled | null>(null);
   const [notifications, setNotifications] = useState<NotificationConfiguration | null>(null);
-  const [replication, setReplication] = useState<any>(null);
-  const [objectLock, setObjectLock] = useState<any>(null);
+  const [replication, setReplication] = useState<ReplicationConfiguration | null>(null);
+  const [objectLock, setObjectLock] = useState<ObjectLockConfiguration | null>(null);
   const [tags, setTags] = useState<{ Key: string; Value: string }[]>([]);
 
   const loadSettings = useCallback(async () => {
@@ -82,7 +89,7 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
         getBucketTagging(bucketName),
       ]);
 
-      setVersioning(v as any);
+      setVersioning(v as "Enabled" | "Suspended" | "Disabled");
       setEncryption(enc);
       setPolicy(pol);
       setCors(JSON.stringify(c, null, 2));
@@ -159,8 +166,8 @@ export const BucketSettings = ({ bucketName }: BucketSettingsProps) => {
         }
       }
       toast.success("Settings updated successfully");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to update settings");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save settings");
     } finally {
       setSaving(false);
     }

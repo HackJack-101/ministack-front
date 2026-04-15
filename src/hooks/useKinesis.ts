@@ -13,8 +13,8 @@ export const useKinesis = () => {
     try {
       const response = await kinesisClient.send(new ListStreamsCommand({}));
       setStreams(response.StreamNames || []);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to fetch streams");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to fetch streams");
     } finally {
       setLoading(false);
     }
@@ -26,8 +26,8 @@ export const useKinesis = () => {
         await kinesisClient.send(new CreateStreamCommand({ StreamName: name, ShardCount: shardCount }));
         toast.success(`Stream ${name} created`);
         await fetchStreams();
-      } catch (err: any) {
-        toast.error(err.message || "Failed to create stream");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to create stream");
       }
     },
     [fetchStreams, toast],
@@ -39,8 +39,8 @@ export const useKinesis = () => {
         await kinesisClient.send(new DeleteStreamCommand({ StreamName: name }));
         toast.success("Stream deleted");
         await fetchStreams();
-      } catch (err: any) {
-        toast.error(err.message || "Failed to delete stream");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to delete stream");
       }
     },
     [fetchStreams, toast],

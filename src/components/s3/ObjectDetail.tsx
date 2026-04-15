@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { Button } from "../ui/Button";
 import { useToast } from "../../hooks/useToast";
-import { useS3 } from "../../hooks/useS3";
+import { useS3, type HeadObjectCommandOutput, type ObjectLockLegalHold } from "../../hooks/useS3";
 import { MINISTACK_ENDPOINT } from "../../services/awsClients";
 import { Spinner } from "../ui/Spinner";
 
@@ -35,9 +35,9 @@ export const ObjectDetail: React.FC<ObjectDetailProps> = ({ bucketName, object, 
   const toast = useToast();
   const s3Uri = `s3://${bucketName}/${object.Key}`;
   const [loading, setLoading] = useState(true);
-  const [headInfo, setHeadInfo] = useState<any>(null);
+  const [headInfo, setHeadInfo] = useState<HeadObjectCommandOutput | null>(null);
   const [versions, setVersions] = useState<ObjectVersion[]>([]);
-  const [legalHold, setLegalHold] = useState<any>(null);
+  const [legalHold, setLegalHold] = useState<ObjectLockLegalHold | null>(null);
 
   const loadObjectDetails = useCallback(async () => {
     setLoading(true);
@@ -67,8 +67,8 @@ export const ObjectDetail: React.FC<ObjectDetailProps> = ({ bucketName, object, 
       await putObjectLegalHold(object.Key!, newStatus);
       setLegalHold({ Status: newStatus });
       toast.success(`Legal Hold turned ${newStatus}`);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to update Legal Hold");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update Legal Hold");
     }
   };
 

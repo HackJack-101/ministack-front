@@ -64,7 +64,7 @@ export const CreateParameterModal: React.FC<CreateParameterModalProps> = ({
           <label className="text-xs font-medium text-text-secondary">Type</label>
           <select
             value={type}
-            onChange={(e) => setType(e.target.value as any)}
+            onChange={(e) => setType(e.target.value as "String" | "StringList" | "SecureString")}
             className="w-full bg-surface-elevated border border-border-subtle rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 appearance-none"
             disabled={isEdit}
           >

@@ -11,6 +11,8 @@ import {
   type UserPoolDescriptionType,
   type UserPoolType,
   type UserType,
+  type AttributeType,
+  type UpdateUserPoolCommandInput,
 } from "@aws-sdk/client-cognito-identity-provider";
 import { ListIdentityPoolsCommand, type IdentityPoolShortDescription } from "@aws-sdk/client-cognito-identity";
 import { cognitoClient, cognitoIdentityClient } from "../services/awsClients";
@@ -27,8 +29,8 @@ export const useCognito = () => {
     try {
       const response = await cognitoClient.send(new ListUserPoolsCommand({ MaxResults: 60 }));
       setUserPools(response.UserPools || []);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to fetch user pools");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to fetch user pools");
     } finally {
       setLoading(false);
     }
@@ -39,7 +41,7 @@ export const useCognito = () => {
     try {
       const response = await cognitoIdentityClient.send(new ListIdentityPoolsCommand({ MaxResults: 60 }));
       setIdentityPools(response.IdentityPools || []);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Identity Pools fetch failed", err);
     } finally {
       setLoading(false);
@@ -52,8 +54,8 @@ export const useCognito = () => {
         await cognitoClient.send(new CreateUserPoolCommand({ PoolName: name }));
         toast.success(`User pool ${name} created`);
         await fetchUserPools();
-      } catch (err: any) {
-        toast.error(err.message || "Failed to create user pool");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to create user pool");
       }
     },
     [fetchUserPools, toast],
@@ -65,8 +67,8 @@ export const useCognito = () => {
         await cognitoClient.send(new DeleteUserPoolCommand({ UserPoolId: id }));
         toast.success("User pool deleted");
         await fetchUserPools();
-      } catch (err: any) {
-        toast.error(err.message || "Failed to delete user pool");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to delete user pool");
       }
     },
     [fetchUserPools, toast],
@@ -77,8 +79,8 @@ export const useCognito = () => {
       try {
         const response = await cognitoClient.send(new DescribeUserPoolCommand({ UserPoolId: id }));
         return response.UserPool as UserPoolType;
-      } catch (err: any) {
-        toast.error(err.message || "Failed to describe user pool");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to describe user pool");
         return null;
       }
     },
@@ -86,12 +88,12 @@ export const useCognito = () => {
   );
 
   const updateUserPool = useCallback(
-    async (id: string, config: any) => {
+    async (id: string, config: Omit<UpdateUserPoolCommandInput, "UserPoolId">) => {
       try {
         await cognitoClient.send(new UpdateUserPoolCommand({ UserPoolId: id, ...config }));
         toast.success("User pool updated");
-      } catch (err: any) {
-        toast.error(err.message || "Failed to update user pool");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to update user pool");
       }
     },
     [toast],
@@ -102,8 +104,8 @@ export const useCognito = () => {
       try {
         const response = await cognitoClient.send(new ListUsersCommand({ UserPoolId: id }));
         return (response.Users || []) as UserType[];
-      } catch (err: any) {
-        toast.error(err.message || "Failed to list users");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to list users");
         return [];
       }
     },
@@ -111,7 +113,7 @@ export const useCognito = () => {
   );
 
   const adminCreateUser = useCallback(
-    async (id: string, username: string, attributes: any[] = []) => {
+    async (id: string, username: string, attributes: AttributeType[] = []) => {
       try {
         await cognitoClient.send(
           new AdminCreateUserCommand({
@@ -122,8 +124,8 @@ export const useCognito = () => {
           }),
         );
         toast.success(`User ${username} created`);
-      } catch (err: any) {
-        toast.error(err.message || "Failed to create user");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to create user");
       }
     },
     [toast],
@@ -134,8 +136,8 @@ export const useCognito = () => {
       try {
         await cognitoClient.send(new AdminDeleteUserCommand({ UserPoolId: id, Username: username }));
         toast.success(`User ${username} deleted`);
-      } catch (err: any) {
-        toast.error(err.message || "Failed to delete user");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to delete user");
       }
     },
     [toast],

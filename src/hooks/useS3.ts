@@ -46,9 +46,31 @@ import {
   type Bucket,
   type _Object,
   type NotificationConfiguration,
+  type ServerSideEncryptionConfiguration,
+  type LoggingEnabled,
+  type ReplicationConfiguration,
+  type ObjectLockConfiguration,
+  type CORSRule,
+  type LifecycleRule,
+  type AccessControlPolicy,
+  type ObjectLockRetention,
+  type HeadObjectCommandOutput,
+  type ObjectLockLegalHold,
 } from "@aws-sdk/client-s3";
 
-export type { NotificationConfiguration };
+export type {
+  NotificationConfiguration,
+  ServerSideEncryptionConfiguration,
+  LoggingEnabled,
+  ReplicationConfiguration,
+  ObjectLockConfiguration,
+  CORSRule,
+  LifecycleRule,
+  AccessControlPolicy,
+  ObjectLockRetention,
+  HeadObjectCommandOutput,
+  ObjectLockLegalHold,
+};
 export { type Bucket, type _Object };
 import { s3Client } from "../services/awsClients";
 import { useToast } from "./useToast";
@@ -305,7 +327,7 @@ export const useS3 = () => {
     }
   }, []);
 
-  const putBucketCors = useCallback(async (name: string, rules: any[]) => {
+  const putBucketCors = useCallback(async (name: string, rules: CORSRule[]) => {
     await s3Client.send(new PutBucketCorsCommand({ Bucket: name, CORSConfiguration: { CORSRules: rules } }));
   }, []);
 
@@ -356,7 +378,7 @@ export const useS3 = () => {
     }
   }, []);
 
-  const putBucketLifecycle = useCallback(async (name: string, rules: any[]) => {
+  const putBucketLifecycle = useCallback(async (name: string, rules: LifecycleRule[]) => {
     await s3Client.send(
       new PutBucketLifecycleConfigurationCommand({
         Bucket: name,
@@ -377,7 +399,7 @@ export const useS3 = () => {
     }
   }, []);
 
-  const putBucketAcl = useCallback(async (name: string, acl: any) => {
+  const putBucketAcl = useCallback(async (name: string, acl: AccessControlPolicy) => {
     await s3Client.send(new PutBucketAclCommand({ Bucket: name, ...acl }));
   }, []);
 
@@ -390,8 +412,10 @@ export const useS3 = () => {
     }
   }, []);
 
-  const putBucketLogging = useCallback(async (name: string, logging: any) => {
-    await s3Client.send(new PutBucketLoggingCommand({ Bucket: name, BucketLoggingStatus: logging }));
+  const putBucketLogging = useCallback(async (name: string, logging: LoggingEnabled) => {
+    await s3Client.send(
+      new PutBucketLoggingCommand({ Bucket: name, BucketLoggingStatus: { LoggingEnabled: logging } }),
+    );
   }, []);
 
   const getBucketNotification = useCallback(async (name: string): Promise<NotificationConfiguration | null> => {
@@ -438,7 +462,7 @@ export const useS3 = () => {
     }
   }, []);
 
-  const putObjectLockConfiguration = useCallback(async (name: string, config: any) => {
+  const putObjectLockConfiguration = useCallback(async (name: string, config: ObjectLockConfiguration) => {
     await s3Client.send(new PutObjectLockConfigurationCommand({ Bucket: name, ObjectLockConfiguration: config }));
   }, []);
 
@@ -456,7 +480,7 @@ export const useS3 = () => {
   );
 
   const putObjectRetention = useCallback(
-    async (key: string, retention: any) => {
+    async (key: string, retention: ObjectLockRetention) => {
       if (!selectedBucket) return;
       await s3Client.send(new PutObjectRetentionCommand({ Bucket: selectedBucket, Key: key, Retention: retention }));
     },

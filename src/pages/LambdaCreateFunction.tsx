@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Zap,
@@ -20,7 +20,7 @@ import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { PageHeader } from "../components/ui/PageHeader";
 import { useLambda } from "../hooks/useLambda";
-import { useIAM } from "../hooks/useIAM";
+import { useIAM, type PolicyDocument, type PolicyStatement } from "../hooks/useIAM";
 import { useToast } from "../hooks/useToast";
 import { Spinner } from "../components/ui/Spinner";
 import { MINISTACK_ENDPOINT } from "../services/awsClients";
@@ -154,120 +154,126 @@ export const LambdaCreateFunction = () => {
     toast.success("Logging settings reset to defaults");
   };
 
-  const checkRoleTrustPolicy = async (roleArn: string) => {
-    if (!roleArn) return;
-    setCheckingRole(true);
-    try {
-      const roleName = roleArn.split("/").pop();
-      if (!roleName) return;
+  const checkRoleTrustPolicy = useCallback(
+    async (roleArn: string) => {
+      if (!roleArn) return;
+      setCheckingRole(true);
+      try {
+        const roleName = roleArn.split("/").pop();
+        if (!roleName) return;
 
-      const role = await getRole(roleName);
-      if (role?.AssumeRolePolicyDocument) {
-        const doc =
-          typeof role.AssumeRolePolicyDocument === "string"
-            ? JSON.parse(decodeURIComponent(role.AssumeRolePolicyDocument))
-            : role.AssumeRolePolicyDocument;
+        const role = await getRole(roleName);
+        if (role?.AssumeRolePolicyDocument) {
+          const doc: PolicyDocument =
+            typeof role.AssumeRolePolicyDocument === "string"
+              ? JSON.parse(decodeURIComponent(role.AssumeRolePolicyDocument))
+              : role.AssumeRolePolicyDocument;
 
-        const statements = Array.isArray(doc.Statement) ? doc.Statement : [doc.Statement];
-        const isValid = statements.some((s: any) => {
-          const principal = s.Principal?.Service;
-          const services = Array.isArray(principal) ? principal : [principal];
-          return s.Effect === "Allow" && s.Action === "sts:AssumeRole" && services.includes("lambda.amazonaws.com");
-        });
-        setRoleTrustValid(isValid);
-      }
-    } catch (err) {
-      console.error("Failed to check role trust policy", err);
-      setRoleTrustValid(null);
-    } finally {
-      setCheckingRole(false);
-    }
-  };
-
-  const checkPermissions = async (roleArn: string) => {
-    if (!roleArn) return;
-    setCheckingPermissions(true);
-    try {
-      const roleName = roleArn.split("/").pop();
-      if (!roleName) return;
-
-      const [attachedPolicies, inlinePolicyNames] = await Promise.all([
-        listAttachedRolePolicies(roleName),
-        listRolePolicies(roleName),
-      ]);
-
-      let hasSecretsManagerAccess = false;
-      let hasCloudWatchLogsAccess = false;
-
-      const checkStatement = (s: any) => {
-        if (s.Effect !== "Allow") return { sm: false, cw: false };
-        const actions = Array.isArray(s.Action) ? s.Action : [s.Action];
-
-        const sm = actions.some(
-          (a: string) =>
-            a === "*" ||
-            a === "secretsmanager:*" ||
-            a === "secretsmanager:GetSecretValue" ||
-            a.startsWith("secretsmanager:Get"),
-        );
-
-        const cw = actions.some(
-          (a: string) =>
-            a === "*" ||
-            a === "logs:*" ||
-            a === "logs:CreateLogGroup" ||
-            a === "logs:PutLogEvents" ||
-            a === "logs:CreateLogStream",
-        );
-
-        return { sm, cw };
-      };
-
-      const processPolicyDocument = (doc: any) => {
-        const policyObj = typeof doc === "string" ? JSON.parse(doc) : doc;
-        const statements = Array.isArray(policyObj.Statement) ? policyObj.Statement : [policyObj.Statement];
-
-        for (const s of statements) {
-          const { sm, cw } = checkStatement(s);
-          if (sm) hasSecretsManagerAccess = true;
-          if (cw) hasCloudWatchLogsAccess = true;
+          const statements = Array.isArray(doc.Statement) ? doc.Statement : [doc.Statement];
+          const isValid = statements.some((s: PolicyStatement) => {
+            const principal = s.Principal?.Service;
+            const services = Array.isArray(principal) ? principal : [principal];
+            return s.Effect === "Allow" && s.Action === "sts:AssumeRole" && services.includes("lambda.amazonaws.com");
+          });
+          setRoleTrustValid(isValid);
         }
-      };
+      } catch (err) {
+        console.error("Failed to check role trust policy", err);
+        setRoleTrustValid(null);
+      } finally {
+        setCheckingRole(false);
+      }
+    },
+    [getRole],
+  );
 
-      await Promise.all(
-        attachedPolicies.map(async (policy) => {
-          if (!policy.PolicyArn || (hasSecretsManagerAccess && hasCloudWatchLogsAccess)) return;
-          try {
-            const doc = await getPolicyDocument(policy.PolicyArn);
-            if (doc) processPolicyDocument(doc);
-          } catch (err) {
-            console.error(`Failed to check attached policy ${policy.PolicyArn}`, err);
+  const checkPermissions = useCallback(
+    async (roleArn: string) => {
+      if (!roleArn) return;
+      setCheckingPermissions(true);
+      try {
+        const roleName = roleArn.split("/").pop();
+        if (!roleName) return;
+
+        const [attachedPolicies, inlinePolicyNames] = await Promise.all([
+          listAttachedRolePolicies(roleName),
+          listRolePolicies(roleName),
+        ]);
+
+        let hasSecretsManagerAccess = false;
+        let hasCloudWatchLogsAccess = false;
+
+        const checkStatement = (s: PolicyStatement) => {
+          if (s.Effect !== "Allow") return { sm: false, cw: false };
+          const actions = Array.isArray(s.Action) ? s.Action : [s.Action];
+
+          const sm = actions.some(
+            (a: string) =>
+              a === "*" ||
+              a === "secretsmanager:*" ||
+              a === "secretsmanager:GetSecretValue" ||
+              a.startsWith("secretsmanager:Get"),
+          );
+
+          const cw = actions.some(
+            (a: string) =>
+              a === "*" ||
+              a === "logs:*" ||
+              a === "logs:CreateLogGroup" ||
+              a === "logs:PutLogEvents" ||
+              a === "logs:CreateLogStream",
+          );
+
+          return { sm, cw };
+        };
+
+        const processPolicyDocument = (doc: PolicyDocument | string) => {
+          const policyObj: PolicyDocument = typeof doc === "string" ? JSON.parse(doc) : doc;
+          const statements = Array.isArray(policyObj.Statement) ? policyObj.Statement : [policyObj.Statement];
+
+          for (const s of statements) {
+            const { sm, cw } = checkStatement(s);
+            if (sm) hasSecretsManagerAccess = true;
+            if (cw) hasCloudWatchLogsAccess = true;
           }
-        }),
-      );
+        };
 
-      if (!hasSecretsManagerAccess || !hasCloudWatchLogsAccess) {
         await Promise.all(
-          inlinePolicyNames.map(async (policyName) => {
-            if (hasSecretsManagerAccess && hasCloudWatchLogsAccess) return;
+          attachedPolicies.map(async (policy) => {
+            if (!policy.PolicyArn || (hasSecretsManagerAccess && hasCloudWatchLogsAccess)) return;
             try {
-              const doc = await getRolePolicy(roleName, policyName);
-              if (doc) processPolicyDocument(doc);
+              const doc = await getPolicyDocument(policy.PolicyArn);
+              if (doc) processPolicyDocument(doc as PolicyDocument);
             } catch (err) {
-              console.error(`Failed to check inline policy ${policyName}`, err);
+              console.error(`Failed to check attached policy ${policy.PolicyArn}`, err);
             }
           }),
         );
-      }
 
-      setPermissionsValid(hasSecretsManagerAccess && hasCloudWatchLogsAccess);
-    } catch (err) {
-      console.error("Failed to check permissions", err);
-      setPermissionsValid(null);
-    } finally {
-      setCheckingPermissions(false);
-    }
-  };
+        if (!hasSecretsManagerAccess || !hasCloudWatchLogsAccess) {
+          await Promise.all(
+            inlinePolicyNames.map(async (policyName) => {
+              if (hasSecretsManagerAccess && hasCloudWatchLogsAccess) return;
+              try {
+                const doc = await getRolePolicy(roleName, policyName);
+                if (doc) processPolicyDocument(doc);
+              } catch (err) {
+                console.error(`Failed to check inline policy ${policyName}`, err);
+              }
+            }),
+          );
+        }
+
+        setPermissionsValid(hasSecretsManagerAccess && hasCloudWatchLogsAccess);
+      } catch (err) {
+        console.error("Failed to check permissions", err);
+        setPermissionsValid(null);
+      } finally {
+        setCheckingPermissions(false);
+      }
+    },
+    [getPolicyDocument, getRolePolicy, listAttachedRolePolicies, listRolePolicies],
+  );
 
   const handleFixPermissions = async () => {
     if (!formData.Role) return;
@@ -321,8 +327,8 @@ export const LambdaCreateFunction = () => {
       await createRole(roleName, JSON.stringify(LAMBDA_TRUST_POLICY));
       // Note: useIAM hook will automatically refresh roles list
       toast.success(`Role "${roleName}" created and trust policy configured`);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to create role");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create role");
     } finally {
       setLoading(false);
     }
@@ -336,7 +342,7 @@ export const LambdaCreateFunction = () => {
       setRoleTrustValid(null);
       setPermissionsValid(null);
     }
-  }, [formData.Role]);
+  }, [formData.Role, checkRoleTrustPolicy, checkPermissions]);
 
   const handleCreate = async () => {
     if (!formData.FunctionName || !file) {
@@ -352,9 +358,9 @@ export const LambdaCreateFunction = () => {
         ZipFile: new Uint8Array(arrayBuffer),
         LoggingConfig: {
           ...formData.LoggingConfig,
-          LogFormat: formData.LoggingConfig.LogFormat as any,
-          ApplicationLogLevel: formData.LoggingConfig.ApplicationLogLevel as any,
-          SystemLogLevel: formData.LoggingConfig.SystemLogLevel as any,
+          LogFormat: formData.LoggingConfig.LogFormat as unknown as any,
+          ApplicationLogLevel: formData.LoggingConfig.ApplicationLogLevel as unknown as any,
+          SystemLogLevel: formData.LoggingConfig.SystemLogLevel as unknown as any,
           LogGroup: formData.LoggingConfig.LogGroup || undefined,
         },
         Environment:
@@ -367,8 +373,8 @@ export const LambdaCreateFunction = () => {
       if (success) {
         navigate(`/lambda/${formData.FunctionName}`);
       }
-    } catch (err: any) {
-      toast.error(err.message || "Failed to create function");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create function");
     } finally {
       setLoading(false);
     }

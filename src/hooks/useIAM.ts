@@ -36,6 +36,21 @@ import {
 import { iamClient } from "../services/awsClients";
 import { useToast } from "./useToast";
 
+export interface PolicyStatement {
+  Effect: "Allow" | "Deny";
+  Action: string | string[];
+  Resource?: string | string[];
+  Principal?: {
+    Service?: string | string[];
+    AWS?: string | string[];
+  };
+}
+
+export interface PolicyDocument {
+  Version?: string;
+  Statement: PolicyStatement | PolicyStatement[];
+}
+
 export const useIAM = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
