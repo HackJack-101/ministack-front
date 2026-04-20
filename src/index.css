@@ -1,5 +1,62 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap");
 @import "tailwindcss";
+
+/* ─── Brand Fonts (self-hosted) ─────────────────────────────── */
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter-VariableFont_opsz_wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter-Italic-VariableFont_opsz_wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DM Mono";
+  src: url("/fonts/DMMono-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DM Mono";
+  src: url("/fonts/DMMono-LightItalic.ttf") format("truetype");
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DM Mono";
+  src: url("/fonts/DMMono-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DM Mono";
+  src: url("/fonts/DMMono-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DM Mono";
+  src: url("/fonts/DMMono-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DM Mono";
+  src: url("/fonts/DMMono-MediumItalic.ttf") format("truetype");
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
 
 @theme {
   --font-sans: "Inter", "system-ui", "-apple-system", "sans-serif";
@@ -58,6 +115,44 @@
     --color-error: #ef4444;
     --color-warning: #f59e0b;
     --color-info: #3b82f6;
+
+    /* Service Accent Colors */
+    --service-dashboard: #a855f7; /* purple-500 */
+    --service-iam: #9333ea; /* purple-600 */
+    --service-lambda: #f59e0b; /* amber-500 */
+    --service-ec2: #ea580c; /* orange-600 */
+    --service-ecs: #f97316; /* orange-500 */
+    --service-sfn: #e11d48; /* rose-600 */
+    --service-s3: #3b82f6; /* blue-500 */
+    --service-dynamodb: #10b981; /* emerald-500 */
+    --service-rds: #2563eb; /* blue-600 */
+    --service-elasticache: #ef4444; /* red-500 */
+    --service-route53: #0ea5e9; /* sky-500 */
+    --service-acm: #059669; /* emerald-600 */
+    --service-wafv2: #f43f5e; /* rose-500 */
+    --service-apigwv2: #8b5cf6; /* violet-500 */
+    --service-apigwv1: #7c3aed; /* violet-600 */
+    --service-elbv2: #22c55e; /* green-500 */
+    --service-cloudfront: #0284c7; /* sky-600 */
+    --service-cloudmap: #0d9488; /* teal-600 */
+    --service-sqs: #f97316; /* orange-500 */
+    --service-sns: #f43f5e; /* rose-500 */
+    --service-eventbridge: #14b8a6; /* teal-500 */
+    --service-ses: #ec4899; /* pink-500 */
+    --service-appsync: #c084fc; /* purple-400 */
+    --service-kms: #d97706; /* amber-600 */
+    --service-secrets: #a855f7; /* purple-500 */
+    --service-cognito: #4f46e5; /* indigo-600 */
+    --service-cloudformation: #db2777; /* pink-600 */
+    --service-cwlogs: #06b6d4; /* cyan-500 */
+    --service-ssm: #6366f1; /* indigo-500 */
+    --service-cwmetrics: #0891b2; /* cyan-600 */
+    --service-appconfig: #818cf8; /* indigo-400 */
+    --service-kinesis: #60a5fa; /* blue-400 */
+    --service-firehose: #fb923c; /* orange-400 */
+    --service-ecr: #c2410c; /* orange-700 */
+    --service-codebuild: #10b981; /* emerald-500 */
+    --service-autoscaling: #fbbf24; /* amber-400 */
 
     color-scheme: light;
   }
