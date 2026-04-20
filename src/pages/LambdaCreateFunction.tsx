@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Zap,
-  ArrowLeft,
   Upload,
   Settings,
   Shield,
@@ -410,15 +409,14 @@ export const LambdaCreateFunction = () => {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => navigate("/lambda")}
-          className="p-2 hover:bg-surface-hover rounded-full transition-colors text-text-muted hover:text-text-primary"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <PageHeader title="Create Lambda Function" subtitle="Deploy new serverless code to your environment" />
-      </div>
+      <PageHeader
+        title="Create Lambda Function"
+        subtitle="Deploy new serverless code to your environment"
+        backButton={{
+          label: "Functions",
+          onClick: () => navigate("/lambda"),
+        }}
+      />
 
       <div className="bg-surface-card border border-border-default rounded-card shadow-sm overflow-hidden flex flex-col">
         <div className="p-6 border-b border-border-subtle bg-surface-elevated/30">
