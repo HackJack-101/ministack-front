@@ -23,6 +23,18 @@ import { ACMClient } from "@aws-sdk/client-acm";
 import { WAFV2Client } from "@aws-sdk/client-wafv2";
 import { KinesisClient } from "@aws-sdk/client-kinesis";
 import { SFNClient } from "@aws-sdk/client-sfn";
+import { ApiGatewayV2Client } from "@aws-sdk/client-apigatewayv2";
+import { APIGatewayClient } from "@aws-sdk/client-api-gateway";
+import { ElasticLoadBalancingV2Client } from "@aws-sdk/client-elastic-load-balancing-v2";
+import { CloudFrontClient } from "@aws-sdk/client-cloudfront";
+import { ElastiCacheClient } from "@aws-sdk/client-elasticache";
+import { FirehoseClient } from "@aws-sdk/client-firehose";
+import { ECRClient } from "@aws-sdk/client-ecr";
+import { AppSyncClient } from "@aws-sdk/client-appsync";
+import { ServiceDiscoveryClient } from "@aws-sdk/client-servicediscovery";
+import { AutoScalingClient } from "@aws-sdk/client-auto-scaling";
+import { CodeBuildClient } from "@aws-sdk/client-codebuild";
+import { AppConfigClient } from "@aws-sdk/client-appconfig";
 
 const REGION = "us-east-1";
 const getMinistackEndpoint = () => {
@@ -206,6 +218,78 @@ export const kinesisClient = new KinesisClient({
 });
 
 export const sfnClient = new SFNClient({
+  region: REGION,
+  endpoint: MINISTACK_ENDPOINT,
+  credentials,
+});
+
+export const apiGatewayV2Client = new ApiGatewayV2Client({
+  region: REGION,
+  endpoint: MINISTACK_ENDPOINT,
+  credentials,
+});
+
+export const apiGatewayClient = new APIGatewayClient({
+  region: REGION,
+  endpoint: MINISTACK_ENDPOINT,
+  credentials,
+});
+
+export const elbv2Client = new ElasticLoadBalancingV2Client({
+  region: REGION,
+  endpoint: MINISTACK_ENDPOINT,
+  credentials,
+});
+
+export const cloudFrontClient = new CloudFrontClient({
+  region: REGION,
+  endpoint: MINISTACK_ENDPOINT,
+  credentials,
+});
+
+export const elastiCacheClient = new ElastiCacheClient({
+  region: REGION,
+  endpoint: MINISTACK_ENDPOINT,
+  credentials,
+});
+
+export const firehoseClient = new FirehoseClient({
+  region: REGION,
+  endpoint: MINISTACK_ENDPOINT,
+  credentials,
+});
+
+export const ecrClient = new ECRClient({
+  region: REGION,
+  endpoint: MINISTACK_ENDPOINT,
+  credentials,
+});
+
+export const appSyncClient = new AppSyncClient({
+  region: REGION,
+  endpoint: MINISTACK_ENDPOINT,
+  credentials,
+});
+
+export const serviceDiscoveryClient = new ServiceDiscoveryClient({
+  region: REGION,
+  endpoint: MINISTACK_ENDPOINT,
+  credentials,
+});
+
+export const autoScalingClient = new AutoScalingClient({
+  region: REGION,
+  endpoint: MINISTACK_ENDPOINT,
+  credentials,
+});
+
+export const codeBuildClient = new CodeBuildClient({
+  region: REGION,
+  endpoint: MINISTACK_ENDPOINT,
+  credentials,
+});
+
+export const appConfigClient = new AppConfigClient({
   region: REGION,
   endpoint: MINISTACK_ENDPOINT,
   credentials,

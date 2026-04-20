@@ -29,6 +29,19 @@ import WAFv2 from "./pages/WAFv2";
 import ACM from "./pages/ACM";
 import Kinesis from "./pages/Kinesis";
 import StepFunctions from "./pages/StepFunctions";
+import CloudWatch from "./pages/CloudWatch";
+import APIGatewayV2 from "./pages/APIGatewayV2";
+import APIGatewayV1 from "./pages/APIGatewayV1";
+import ELBv2 from "./pages/ELBv2";
+import CloudFront from "./pages/CloudFront";
+import ElastiCache from "./pages/ElastiCache";
+import Firehose from "./pages/Firehose";
+import ECR from "./pages/ECR";
+import AppSync from "./pages/AppSync";
+import CloudMap from "./pages/CloudMap";
+import AutoScaling from "./pages/AutoScaling";
+import CodeBuild from "./pages/CodeBuild";
+import AppConfig from "./pages/AppConfig";
 import { ToastProvider } from "./hooks/useToast";
 import { ToastContainer } from "./components/ui/ToastContainer";
 
@@ -78,6 +91,19 @@ function App() {
             <Route path="/acm" element={<ACM />} />
             <Route path="/kinesis" element={<Kinesis />} />
             <Route path="/states" element={<StepFunctions />} />
+            <Route path="/cloudwatch-metrics" element={<CloudWatch />} />
+            <Route path="/apigw-v2" element={<APIGatewayV2 />} />
+            <Route path="/apigw-v1" element={<APIGatewayV1 />} />
+            <Route path="/elbv2" element={<ELBv2 />} />
+            <Route path="/cloudfront" element={<CloudFront />} />
+            <Route path="/elasticache" element={<ElastiCache />} />
+            <Route path="/firehose" element={<Firehose />} />
+            <Route path="/ecr" element={<ECR />} />
+            <Route path="/appsync" element={<AppSync />} />
+            <Route path="/cloud-map" element={<CloudMap />} />
+            <Route path="/autoscaling" element={<AutoScaling />} />
+            <Route path="/codebuild" element={<CodeBuild />} />
+            <Route path="/appconfig" element={<AppConfig />} />
           </Routes>
         </AppLayout>
       </Router>

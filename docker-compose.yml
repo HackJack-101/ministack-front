@@ -3,20 +3,26 @@ services:
     container_name: ministack
     image: ministackorg/ministack:latest
     pull_policy: always
+    privileged: true
     ports:
       - "4566:4566"
     environment:
+      #- DOCKER_SOCK=/var/run/docker.sock
       - GATEWAY_PORT=4566
       - LOG_LEVEL=DEBUG
       - S3_PERSIST=1
       - RDS_PERSIST=1
       - PERSIST_STATE=1
-    #      - LAMBDA_EXECUTOR=docker
-    #      - LAMBDA_DOCKER_NETWORK=ministack-front_default
+      - LAMBDA_EXECUTOR=docker
+      - LAMBDA_STRICT=1
+      #- LAMBDA_DOCKER_NETWORK=ministack-front_infra-network
+      #- LAMBDA_DOCKER_VOLUME_MOUNT=ministack-front_lambda-docker-volume
+      #- LAMBDA_REMOTE_DOCKER_VOLUME_MOUNT=ministack-front_lambda-docker-volume
     volumes:
       - ./data/s3:/tmp/ministack-data/s3
       - ./data/state:/tmp/ministack-state
       - /var/run/docker.sock:/var/run/docker.sock
+      #- lambda-docker-volume:/var/task
     healthcheck:
       test:
         [
@@ -30,6 +36,8 @@ services:
       retries: 3
       start_period: 5s
     restart: unless-stopped
+    #networks:
+    #  infra-network:
 
   ministack-ui:
     image: ghcr.io/hackjack-101/ministack-front:latest
@@ -41,3 +49,9 @@ services:
     depends_on:
       ministack:
         condition: service_healthy
+
+#volumes:
+#  lambda-docker-volume:
+
+#networks:
+#  infra-network:

@@ -22,6 +22,18 @@ import {
   BadgeCheck,
   ShieldCheck,
   Users,
+  BarChart3,
+  Globe2,
+  Network,
+  Scale,
+  Cloud,
+  Flame,
+  Package,
+  Sparkles,
+  Map,
+  TrendingUp,
+  Hammer,
+  SlidersHorizontal,
   type LucideIcon,
 } from "lucide-react";
 import type { ButtonVariant } from "../components/ui/Button";
@@ -50,7 +62,20 @@ export type ServiceKey =
   | "cloudformation"
   | "cloudwatchLogs"
   | "parameterStore"
-  | "kinesis";
+  | "kinesis"
+  | "cloudwatchMetrics"
+  | "apiGatewayV2"
+  | "apiGatewayV1"
+  | "elbv2"
+  | "cloudfront"
+  | "elasticache"
+  | "firehose"
+  | "ecr"
+  | "appsync"
+  | "cloudMap"
+  | "autoScaling"
+  | "codeBuild"
+  | "appConfig";
 
 export interface ServiceToken {
   label: string;
@@ -70,7 +95,8 @@ export interface ServiceToken {
     | "appIntegration"
     | "security"
     | "management"
-    | "streaming";
+    | "streaming"
+    | "developer";
 }
 
 export const serviceTokens: Record<ServiceKey, ServiceToken> = {
@@ -326,6 +352,149 @@ export const serviceTokens: Record<ServiceKey, ServiceToken> = {
     badgeVariant: "blue",
     focusRing: "focus:border-blue-400/60",
     category: "streaming",
+  },
+  cloudwatchMetrics: {
+    label: "CloudWatch Metrics",
+    path: "/cloudwatch-metrics",
+    icon: BarChart3,
+    iconColor: "text-cyan-600",
+    iconBg: "bg-cyan-600/10",
+    buttonVariant: "cyan",
+    badgeVariant: "cyan",
+    focusRing: "focus:border-cyan-600/60",
+    category: "management",
+  },
+  apiGatewayV2: {
+    label: "API Gateway v2",
+    path: "/apigw-v2",
+    icon: Globe2,
+    iconColor: "text-violet-500",
+    iconBg: "bg-violet-500/10",
+    buttonVariant: "purple",
+    badgeVariant: "purple",
+    focusRing: "focus:border-violet-500/60",
+    category: "network",
+  },
+  apiGatewayV1: {
+    label: "API Gateway v1",
+    path: "/apigw-v1",
+    icon: Network,
+    iconColor: "text-violet-600",
+    iconBg: "bg-violet-600/10",
+    buttonVariant: "purple",
+    badgeVariant: "purple",
+    focusRing: "focus:border-violet-600/60",
+    category: "network",
+  },
+  elbv2: {
+    label: "ELBv2 / ALB",
+    path: "/elbv2",
+    icon: Scale,
+    iconColor: "text-green-500",
+    iconBg: "bg-green-500/10",
+    buttonVariant: "teal",
+    badgeVariant: "teal",
+    focusRing: "focus:border-green-500/60",
+    category: "network",
+  },
+  cloudfront: {
+    label: "CloudFront",
+    path: "/cloudfront",
+    icon: Cloud,
+    iconColor: "text-sky-600",
+    iconBg: "bg-sky-600/10",
+    buttonVariant: "sky",
+    badgeVariant: "sky",
+    focusRing: "focus:border-sky-600/60",
+    category: "network",
+  },
+  elasticache: {
+    label: "ElastiCache",
+    path: "/elasticache",
+    icon: Database,
+    iconColor: "text-red-500",
+    iconBg: "bg-red-500/10",
+    buttonVariant: "rose",
+    badgeVariant: "rose",
+    focusRing: "focus:border-red-500/60",
+    category: "database",
+  },
+  firehose: {
+    label: "Firehose",
+    path: "/firehose",
+    icon: Flame,
+    iconColor: "text-orange-400",
+    iconBg: "bg-orange-400/10",
+    buttonVariant: "orange",
+    badgeVariant: "orange",
+    focusRing: "focus:border-orange-400/60",
+    category: "streaming",
+  },
+  ecr: {
+    label: "ECR",
+    path: "/ecr",
+    icon: Package,
+    iconColor: "text-orange-700",
+    iconBg: "bg-orange-700/10",
+    buttonVariant: "orange",
+    badgeVariant: "orange",
+    focusRing: "focus:border-orange-700/60",
+    category: "compute",
+  },
+  appsync: {
+    label: "AppSync",
+    path: "/appsync",
+    icon: Sparkles,
+    iconColor: "text-purple-400",
+    iconBg: "bg-purple-400/10",
+    buttonVariant: "purple",
+    badgeVariant: "purple",
+    focusRing: "focus:border-purple-400/60",
+    category: "appIntegration",
+  },
+  cloudMap: {
+    label: "Cloud Map",
+    path: "/cloud-map",
+    icon: Map,
+    iconColor: "text-teal-600",
+    iconBg: "bg-teal-600/10",
+    buttonVariant: "teal",
+    badgeVariant: "teal",
+    focusRing: "focus:border-teal-600/60",
+    category: "network",
+  },
+  autoScaling: {
+    label: "AutoScaling",
+    path: "/autoscaling",
+    icon: TrendingUp,
+    iconColor: "text-amber-400",
+    iconBg: "bg-amber-400/10",
+    buttonVariant: "amber",
+    badgeVariant: "amber",
+    focusRing: "focus:border-amber-400/60",
+    category: "compute",
+  },
+  codeBuild: {
+    label: "CodeBuild",
+    path: "/codebuild",
+    icon: Hammer,
+    iconColor: "text-emerald-500",
+    iconBg: "bg-emerald-500/10",
+    buttonVariant: "emerald",
+    badgeVariant: "emerald",
+    focusRing: "focus:border-emerald-500/60",
+    category: "developer",
+  },
+  appConfig: {
+    label: "AppConfig",
+    path: "/appconfig",
+    icon: SlidersHorizontal,
+    iconColor: "text-indigo-400",
+    iconBg: "bg-indigo-400/10",
+    buttonVariant: "indigo",
+    badgeVariant: "indigo",
+    focusRing: "focus:border-indigo-400/60",
+    category: "management",
   },
 };
 
