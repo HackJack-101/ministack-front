@@ -4,7 +4,6 @@ import {
   Zap,
   RefreshCw,
   Play,
-  ArrowLeft,
   Code2,
   FileJson,
   Terminal,
@@ -698,8 +697,20 @@ const Lambda: React.FC = () => {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Lambda Functions"
-        subtitle="Manage and invoke your serverless functions in your local environment"
+        title={functionName || "Lambda Functions"}
+        subtitle={
+          functionName
+            ? "Manage and invoke your serverless function"
+            : "Manage and invoke your serverless functions in your local environment"
+        }
+        backButton={
+          functionName
+            ? {
+                label: "Functions",
+                onClick: () => navigate("/lambda"),
+              }
+            : undefined
+        }
         actions={
           <>
             <Button variant="ghost" size="sm" onClick={fetchFunctions} title="Refresh" aria-label="Refresh">
@@ -843,26 +854,6 @@ const Lambda: React.FC = () => {
               }`}
             >
               Versions
-            </button>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate("/lambda")}
-              className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-primary transition-colors"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              Functions
-            </button>
-            <span className="text-text-faint">/</span>
-            <button
-              onClick={() => {
-                navigate(`/lambda/${functionName}`);
-                setActiveTab("invoke");
-              }}
-              className="text-sm font-medium text-amber-500 hover:text-amber-600 transition-colors"
-            >
-              {functionName}
             </button>
           </div>
 
