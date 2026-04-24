@@ -35,7 +35,7 @@
     "@aws-sdk/client-dynamodb": "^3.1025.0",
     "@aws-sdk/client-ec2": "^3.1027.0",
     "@aws-sdk/client-ecr": "^3.1030.0",
-    "@aws-sdk/client-ecs": "^3.1027.0",
+    "@aws-sdk/client-ecs": "^3.1036.0",
     "@aws-sdk/client-elastic-load-balancing-v2": "^3.1030.0",
     "@aws-sdk/client-elasticache": "^3.1030.0",
     "@aws-sdk/client-eventbridge": "^3.1027.0",
