@@ -42,6 +42,14 @@ import CloudMap from "./pages/CloudMap";
 import AutoScaling from "./pages/AutoScaling";
 import CodeBuild from "./pages/CodeBuild";
 import AppConfig from "./pages/AppConfig";
+import Glue from "./pages/Glue";
+import Athena from "./pages/Athena";
+import EFS from "./pages/EFS";
+import EMR from "./pages/EMR";
+import EKS from "./pages/EKS";
+import TransferFamily from "./pages/TransferFamily";
+import Scheduler from "./pages/Scheduler";
+import OpenSearch from "./pages/OpenSearch";
 import { ToastProvider } from "./hooks/useToast";
 import { ToastContainer } from "./components/ui/ToastContainer";
 
@@ -104,6 +112,14 @@ function App() {
             <Route path="/autoscaling" element={<AutoScaling />} />
             <Route path="/codebuild" element={<CodeBuild />} />
             <Route path="/appconfig" element={<AppConfig />} />
+            <Route path="/glue" element={<Glue />} />
+            <Route path="/athena" element={<Athena />} />
+            <Route path="/efs" element={<EFS />} />
+            <Route path="/emr" element={<EMR />} />
+            <Route path="/eks" element={<EKS />} />
+            <Route path="/transfer-family" element={<TransferFamily />} />
+            <Route path="/scheduler" element={<Scheduler />} />
+            <Route path="/opensearch" element={<OpenSearch />} />
           </Routes>
         </AppLayout>
       </Router>
