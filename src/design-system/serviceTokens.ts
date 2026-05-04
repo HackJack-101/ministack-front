@@ -34,6 +34,14 @@ import {
   TrendingUp,
   Hammer,
   SlidersHorizontal,
+  Combine,
+  Search,
+  Folder,
+  Server,
+  Layers,
+  FolderSync,
+  CalendarClock,
+  SearchCode,
   type LucideIcon,
 } from "lucide-react";
 import type { ButtonVariant } from "../components/ui/Button";
@@ -75,7 +83,15 @@ export type ServiceKey =
   | "cloudMap"
   | "autoScaling"
   | "codeBuild"
-  | "appConfig";
+  | "appConfig"
+  | "glue"
+  | "athena"
+  | "efs"
+  | "emr"
+  | "eks"
+  | "transferFamily"
+  | "scheduler"
+  | "openSearch";
 
 export interface ServiceToken {
   label: string;
@@ -495,6 +511,94 @@ export const serviceTokens: Record<ServiceKey, ServiceToken> = {
     badgeVariant: "indigo",
     focusRing: "focus:border-indigo-400/60",
     category: "management",
+  },
+  glue: {
+    label: "Glue",
+    path: "/glue",
+    icon: Combine,
+    iconColor: "text-teal-700",
+    iconBg: "bg-teal-700/10",
+    buttonVariant: "teal",
+    badgeVariant: "teal",
+    focusRing: "focus:border-teal-700/60",
+    category: "developer",
+  },
+  athena: {
+    label: "Athena",
+    path: "/athena",
+    icon: Search,
+    iconColor: "text-cyan-700",
+    iconBg: "bg-cyan-700/10",
+    buttonVariant: "cyan",
+    badgeVariant: "cyan",
+    focusRing: "focus:border-cyan-700/60",
+    category: "developer",
+  },
+  efs: {
+    label: "EFS",
+    path: "/efs",
+    icon: Folder,
+    iconColor: "text-violet-500",
+    iconBg: "bg-violet-500/10",
+    buttonVariant: "indigo",
+    badgeVariant: "indigo",
+    focusRing: "focus:border-violet-500/60",
+    category: "storage",
+  },
+  emr: {
+    label: "EMR",
+    path: "/emr",
+    icon: Server,
+    iconColor: "text-amber-700",
+    iconBg: "bg-amber-700/10",
+    buttonVariant: "amber",
+    badgeVariant: "amber",
+    focusRing: "focus:border-amber-700/60",
+    category: "compute",
+  },
+  eks: {
+    label: "EKS",
+    path: "/eks",
+    icon: Layers,
+    iconColor: "text-orange-400",
+    iconBg: "bg-orange-400/10",
+    buttonVariant: "orange",
+    badgeVariant: "orange",
+    focusRing: "focus:border-orange-400/60",
+    category: "compute",
+  },
+  transferFamily: {
+    label: "Transfer Family",
+    path: "/transfer-family",
+    icon: FolderSync,
+    iconColor: "text-sky-600",
+    iconBg: "bg-sky-600/10",
+    buttonVariant: "sky",
+    badgeVariant: "sky",
+    focusRing: "focus:border-sky-600/60",
+    category: "network",
+  },
+  scheduler: {
+    label: "Scheduler",
+    path: "/scheduler",
+    icon: CalendarClock,
+    iconColor: "text-teal-600",
+    iconBg: "bg-teal-600/10",
+    buttonVariant: "teal",
+    badgeVariant: "teal",
+    focusRing: "focus:border-teal-600/60",
+    category: "appIntegration",
+  },
+  openSearch: {
+    label: "OpenSearch",
+    path: "/opensearch",
+    icon: SearchCode,
+    iconColor: "text-blue-700",
+    iconBg: "bg-blue-700/10",
+    buttonVariant: "primary",
+    badgeVariant: "blue",
+    focusRing: "focus:border-blue-700/60",
+    category: "database",
   },
 };
 
