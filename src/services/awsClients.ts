@@ -35,6 +35,14 @@ import { ServiceDiscoveryClient } from "@aws-sdk/client-servicediscovery";
 import { AutoScalingClient } from "@aws-sdk/client-auto-scaling";
 import { CodeBuildClient } from "@aws-sdk/client-codebuild";
 import { AppConfigClient } from "@aws-sdk/client-appconfig";
+import { GlueClient } from "@aws-sdk/client-glue";
+import { AthenaClient } from "@aws-sdk/client-athena";
+import { EFSClient } from "@aws-sdk/client-efs";
+import { EMRClient } from "@aws-sdk/client-emr";
+import { EKSClient } from "@aws-sdk/client-eks";
+import { TransferClient } from "@aws-sdk/client-transfer";
+import { SchedulerClient } from "@aws-sdk/client-scheduler";
+import { OpenSearchClient } from "@aws-sdk/client-opensearch";
 
 const REGION = "us-east-1";
 const getMinistackEndpoint = () => {
@@ -290,6 +298,54 @@ export const codeBuildClient = new CodeBuildClient({
 });
 
 export const appConfigClient = new AppConfigClient({
+  region: REGION,
+  endpoint: MINISTACK_ENDPOINT,
+  credentials,
+});
+
+export const glueClient = new GlueClient({
+  region: REGION,
+  endpoint: MINISTACK_ENDPOINT,
+  credentials,
+});
+
+export const athenaClient = new AthenaClient({
+  region: REGION,
+  endpoint: MINISTACK_ENDPOINT,
+  credentials,
+});
+
+export const efsClient = new EFSClient({
+  region: REGION,
+  endpoint: MINISTACK_ENDPOINT,
+  credentials,
+});
+
+export const emrClient = new EMRClient({
+  region: REGION,
+  endpoint: MINISTACK_ENDPOINT,
+  credentials,
+});
+
+export const eksClient = new EKSClient({
+  region: REGION,
+  endpoint: MINISTACK_ENDPOINT,
+  credentials,
+});
+
+export const transferClient = new TransferClient({
+  region: REGION,
+  endpoint: MINISTACK_ENDPOINT,
+  credentials,
+});
+
+export const schedulerClient = new SchedulerClient({
+  region: REGION,
+  endpoint: MINISTACK_ENDPOINT,
+  credentials,
+});
+
+export const openSearchClient = new OpenSearchClient({
   region: REGION,
   endpoint: MINISTACK_ENDPOINT,
   credentials,
